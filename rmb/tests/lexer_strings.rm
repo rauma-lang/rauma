@@ -1,0 +1,6 @@
+fn main() {
+    print("hello\n");
+    print("quote: \"");
+    print("slash: \\");
+    print("tab:\t");
+}

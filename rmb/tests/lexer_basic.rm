@@ -1,0 +1,8 @@
+fn main() {
+    count := 0;
+    count += 1;
+
+    if (count >= 1) {
+        print("ok\n");
+    }
+}
