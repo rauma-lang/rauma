@@ -1,0 +1,16 @@
+fn main() {
+    count := 0;
+    count += 1;
+
+    if (count >= 1) {
+        print("ok\n");
+    } else {
+        print("bad\n");
+    }
+
+    return;
+}
+
+fn add(a, b) {
+    return a + b;
+}

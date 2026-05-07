@@ -24,7 +24,9 @@ SRCS = $(SRC_DIR)/main.c \
        $(SRC_DIR)/source.c \
        $(SRC_DIR)/span.c \
        $(SRC_DIR)/token.c \
-       $(SRC_DIR)/lexer.c
+       $(SRC_DIR)/lexer.c \
+       $(SRC_DIR)/ast.c \
+       $(SRC_DIR)/parser.c
 
 # Object files
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
@@ -81,6 +83,20 @@ test: debug
 		exit 1; \
 	else \
 		echo "SUCCESS: lexer_errors.rm failed as expected"; \
+	fi
+	@echo ""
+	@echo "=== Basic parser test ==="
+	@./$(TARGET) parse tests/parser_basic.rm
+	@echo ""
+	@echo "=== Struct/Enum parser test ==="
+	@./$(TARGET) parse tests/parser_struct_enum.rm
+	@echo ""
+	@echo "=== Error parser test (should fail) ==="
+	@if ./$(TARGET) parse tests/parser_errors.rm 2>/dev/null; then \
+		echo "ERROR: Expected parser_errors.rm to fail but it succeeded"; \
+		exit 1; \
+	else \
+		echo "SUCCESS: parser_errors.rm failed as expected"; \
 	fi
 
 # Show help

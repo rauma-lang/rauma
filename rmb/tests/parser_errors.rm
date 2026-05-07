@@ -1,0 +1,6 @@
+fn main( {
+    count := ;
+    if count > 1 {
+        print("bad");
+    }
+}

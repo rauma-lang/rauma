@@ -35,12 +35,14 @@
 
 ## Architecture
 
-### Components (v0.0.2)
+### Components (v0.0.3)
 1. **Source Loading**: Read `.rm` files
 2. **Lexer/Tokenizer**: Convert source to tokens with span tracking
 3. **Diagnostics**: Error reporting with source locations
+4. **Parser**: Recursive descent parser building AST
+5. **AST**: Abstract Syntax Tree representation
 
-### Build Pipeline (v0.0.2)
+### Build Pipeline (v0.0.3)
 ```
 .rm source
     ↓
@@ -48,10 +50,12 @@ Source Loader → RmbSource
     ↓
 Lexer → tokens (with spans)
     ↓
-Token Printer → human-readable output
+Parser → AST (Abstract Syntax Tree)
+    ↓
+AST Printer → human-readable summary
 ```
 
-## Language Support (v0.0.2)
+## Language Support (v0.0.3)
 
 ### Lexer Features
 - **Keywords**: `fn`, `pub`, `struct`, `enum`, `use`, `return`, `if`, `else`, `while`, `for`, `match`, `case`, `const`, `defer`, `true`, `false`, `none`
@@ -61,12 +65,20 @@ Token Printer → human-readable output
 - **Comments**: Line comments (`//`) and block comments (`/* */`)
 - **Operators/Punctuation**: All basic RauMa operators
 
-### Unsupported Features (in v0.0.2)
-- Parser (syntax tree)
+### Parser Features (v0.0.3)
+- **Top-level items**: `use`, `fn`, `struct`, `enum` declarations
+- **Function declarations**: Parameters, return types, error types (`!!`), body blocks
+- **Struct declarations**: Fields with types
+- **Enum declarations**: Simple and tuple variants
+- **Statements**: Variable declarations (`:=`, `: Type =`), assignments, control flow (`if`, `while`, `for`), `return`, `defer`, `match`
+- **Expressions**: Identifiers, literals, calls, field access, unary/binary operators, error operators (`?`, `!`), `else` expressions
+- **Type references**: Simple types, pointers (`*T`), slices (`[]T`), arrays (`[N]T`), optional (`T?`), qualified (`module.Type`)
+
+### Unsupported Features (in v0.0.3)
 - Type checking
 - Semantic analysis
 - Code generation
-- Error handling syntax (`!!`, `?`)
+- Module resolution (beyond parsing `use` statements)
 
 ## Building
 
@@ -95,7 +107,7 @@ The compiler executable is built at:
 rmb/build/rmb
 ```
 
-## Usage (v0.0.2)
+## Usage (v0.0.3)
 
 ```bash
 # Show help
@@ -103,6 +115,9 @@ rmb/build/rmb
 
 # Tokenize a RauMa file
 ./build/rmb lex source.rm
+
+# Parse a RauMa file and show AST summary
+./build/rmb parse source.rm
 
 # Show version
 ./build/rmb version

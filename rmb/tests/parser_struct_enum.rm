@@ -1,0 +1,16 @@
+pub struct User {
+    id int;
+    name str;
+    email str;
+    age int?;
+}
+
+enum Status {
+    Pending;
+    Paid;
+    Failed(reason str);
+}
+
+pub fn get_name(user User) str {
+    return user.name;
+}
