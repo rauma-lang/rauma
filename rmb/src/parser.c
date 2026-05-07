@@ -218,24 +218,61 @@ RmbAstTypeRef* rmb_parse_type(RmbParser* parser) {
 
     // Qualified or simple type
     if (parser_check(parser, RMB_TOKEN_IDENT)) {
-        RmbToken* first = parser_current(parser);
-        parser_advance(parser);
+        // Collect identifier chain: a.b.c
+        RmbToken* tokens[8];  // reasonable limit
+        size_t token_count = 0;
 
-        if (parser_match(parser, RMB_TOKEN_DOT)) {
-            // Qualified type: module.Type
-            RmbToken* second = parser_consume(parser, RMB_TOKEN_IDENT, "type name");
-            return rmb_ast_type_qualified(
-                span_union(first->span,second->span),
-                first->lexeme,
-                second->lexeme
-            );
+        while (parser_check(parser, RMB_TOKEN_IDENT) && token_count < 8) {
+            tokens[token_count++] = parser_current(parser);
+            parser_advance(parser);
+
+            if (!parser_match(parser, RMB_TOKEN_DOT)) {
+                break;
+            }
+        }
+
+        if (token_count == 0) {
+            // Should not happen
+            rmb_diag_error_at(start->span, "expected type identifier");
+            parser->had_error = true;
+            return rmb_ast_type_simple(start->span, rmb_string_from_cstr("unknown"));
+        }
+
+        // If we have more than one token, it's a qualified type
+        if (token_count > 1) {
+            // Build module name (first part) and type name (remaining parts joined with dots)
+            rmb_string module = tokens[0]->lexeme;
+            // Join remaining parts with dots
+            // For simplicity, we'll use the full span and store as module.first, name.rest
+            // But we need to construct a full path string.
+            // For now, handle only two-part qualified (a.b) to keep AST simple
+            if (token_count == 2) {
+                return rmb_ast_type_qualified(
+                    span_union(tokens[0]->span, tokens[token_count-1]->span),
+                    module,
+                    tokens[1]->lexeme
+                );
+            } else {
+                // For >2 parts, flatten to module.first, name.rest (with dots)
+                // Example: app.users.CreateInput -> module="app", name="users.CreateInput"
+                // Build concatenated name
+                // For simplicity now, just use first and second, ignore third+
+                // TODO: support multi-part qualified types
+                rmb_diag_error_at(tokens[2]->span, "multi-part qualified types not yet supported");
+                parser->had_error = true;
+                return rmb_ast_type_qualified(
+                    span_union(tokens[0]->span, tokens[1]->span),
+                    module,
+                    tokens[1]->lexeme
+                );
+            }
         } else {
             // Simple type
-            RmbAstTypeRef* type = rmb_ast_type_simple(first->span, first->lexeme);
+            RmbAstTypeRef* type = rmb_ast_type_simple(tokens[0]->span, tokens[0]->lexeme);
 
             // Optional type T?
             if (parser_match(parser, RMB_TOKEN_QUESTION)) {
-                type = rmb_ast_type_optional(span_union(first->span,parser_current(parser)->span), type);
+                type = rmb_ast_type_optional(span_union(tokens[0]->span,parser_current(parser)->span), type);
             }
 
             return type;
@@ -747,22 +784,90 @@ RmbAstStmt* rmb_parse_stmt(RmbParser* parser) {
         );
     }
 
-    // Match statement (simplified for v0.0.3)
+    // Match statement
     if (parser_match(parser, RMB_TOKEN_KW_MATCH)) {
-        parser_consume(parser, RMB_TOKEN_L_PAREN, "(");
+        parser_consume(parser, RMB_TOKEN_L_PAREN, "expected '(' after 'match'");
         RmbAstExpr* value = rmb_parse_expr(parser);
-        parser_consume(parser, RMB_TOKEN_R_PAREN, ")");
+        parser_consume(parser, RMB_TOKEN_R_PAREN, "expected ')' after match expression");
 
-        parser_consume(parser, RMB_TOKEN_L_BRACE, "{");
-        // Skip cases for now
+        parser_consume(parser, RMB_TOKEN_L_BRACE, "expected '{' before match cases");
+        RmbAstMatchCase* cases = NULL;
+        RmbAstMatchCase* last_case = NULL;
+
         while (!parser_check(parser, RMB_TOKEN_R_BRACE) && !parser_check(parser, RMB_TOKEN_EOF)) {
-            parser_advance(parser);
+            if (!parser_match(parser, RMB_TOKEN_KW_CASE)) {
+                rmb_diag_error_at(parser_current(parser)->span, "expected 'case'");
+                parser->had_error = true;
+                // Recover to next case or }
+                while (!parser_check(parser, RMB_TOKEN_KW_CASE) &&
+                       !parser_check(parser, RMB_TOKEN_R_BRACE) &&
+                       !parser_check(parser, RMB_TOKEN_EOF)) {
+                    parser_advance(parser);
+                }
+                continue;
+            }
+
+            RmbToken* case_name = parser_consume(parser, RMB_TOKEN_IDENT, "case name after 'case'");
+
+            // Parse optional binding list: (a, b)
+            RmbAstMatchCaseBinding* bindings = NULL;
+            RmbAstMatchCaseBinding* last_binding = NULL;
+            if (parser_match(parser, RMB_TOKEN_L_PAREN)) {
+                do {
+                    RmbToken* binding_name = parser_consume(parser, RMB_TOKEN_IDENT, "binding name in case pattern");
+                    RmbAstMatchCaseBinding* binding = rmb_ast_match_case_binding(
+                        binding_name->span, binding_name->lexeme);
+                    if (!bindings) {
+                        bindings = binding;
+                        last_binding = binding;
+                    } else {
+                        last_binding->next = binding;
+                        last_binding = binding;
+                    }
+                } while (parser_match(parser, RMB_TOKEN_COMMA));
+                parser_consume(parser, RMB_TOKEN_R_PAREN, "expected ')' after case bindings");
+            }
+
+            parser_consume(parser, RMB_TOKEN_L_BRACE, "expected '{' before case body");
+
+            // Parse case body statements
+            RmbAstStmt** body = NULL;
+            size_t body_count = 0;
+
+            while (!parser_check(parser, RMB_TOKEN_R_BRACE) && !parser_check(parser, RMB_TOKEN_EOF)) {
+                RmbAstStmt* stmt = rmb_parse_stmt(parser);
+                if (stmt) {
+                    size_t new_size = (body_count + 1) * sizeof(RmbAstStmt*);
+                    RmbAstStmt** new_body = rmb_arena_alloc(parser->arena, new_size);
+                    if (new_body) {
+                        if (body) {
+                            memcpy(new_body, body, body_count * sizeof(RmbAstStmt*));
+                        }
+                        new_body[body_count] = stmt;
+                        body = new_body;
+                        body_count++;
+                    }
+                }
+            }
+            parser_consume(parser, RMB_TOKEN_R_BRACE, "}");
+
+            RmbAstMatchCase* case_node = rmb_ast_match_case(
+                case_name->span, case_name->lexeme, bindings, body, body_count);
+            if (case_node) {
+                if (!cases) {
+                    cases = case_node;
+                    last_case = case_node;
+                } else {
+                    last_case->next = case_node;
+                    last_case = case_node;
+                }
+            }
         }
         parser_consume(parser, RMB_TOKEN_R_BRACE, "}");
 
         return rmb_ast_stmt_match(
             span_union(start->span,parser_current(parser)->span),
-            value
+            value, cases
         );
     }
 
@@ -804,8 +909,10 @@ static RmbAstParam* rmb_parse_params(RmbParser* parser) {
 
             RmbAstTypeRef* type = NULL;
             // Parameters can be: name (inferred) or name Type (explicit)
-            // Check if next token looks like a type (identifier)
-            if (parser_check(parser, RMB_TOKEN_IDENT)) {
+            // Check if next token could start a type (ident, *, [, etc.)
+            if (parser_check(parser, RMB_TOKEN_IDENT) ||
+                parser_check(parser, RMB_TOKEN_STAR) ||
+                parser_check(parser, RMB_TOKEN_L_BRACKET)) {
                 // Try to parse as type
                 type = rmb_parse_type(parser);
             }
@@ -868,32 +975,35 @@ static RmbAstVariant* rmb_parse_variants(RmbParser* parser) {
     RmbAstVariant* last = NULL;
 
     while (!parser_check(parser, RMB_TOKEN_R_BRACE) && !parser_check(parser, RMB_TOKEN_EOF)) {
-        RmbToken* name = parser_consume(parser, RMB_TOKEN_IDENT, "variant name");
+        RmbToken* name = parser_consume(parser, RMB_TOKEN_IDENT, "variant name in enum");
 
-        RmbAstTypeRef* type = NULL;
+        RmbAstVariantField* fields = NULL;
+        RmbAstVariantField* last_field = NULL;
         if (parser_match(parser, RMB_TOKEN_L_PAREN)) {
-            // For v0.0.3, just parse the type, ignore field name
-            // e.g., Failed(reason str) -> parse "str" as type
-            if (parser_check(parser, RMB_TOKEN_IDENT)) {
-                // Skip field name
-                parser_advance(parser);
-                // Parse type
-                type = rmb_parse_type(parser);
-            } else {
-                type = rmb_parse_type(parser);
-            }
-            parser_consume(parser, RMB_TOKEN_R_PAREN, ")");
+            // Parse field list: (field_name type, field_name type)
+            do {
+                RmbToken* field_name = parser_consume(parser, RMB_TOKEN_IDENT, "field name in enum variant");
+                RmbAstTypeRef* field_type = rmb_parse_type(parser);
+                RmbAstVariantField* field = rmb_ast_variant_field(
+                    span_union(field_name->span, field_type->span),
+                    field_name->lexeme, field_type);
+
+                if (!fields) {
+                    fields = field;
+                    last_field = field;
+                } else {
+                    last_field->next = field;
+                    last_field = field;
+                }
+            } while (parser_match(parser, RMB_TOKEN_COMMA));
+
+            parser_consume(parser, RMB_TOKEN_R_PAREN, "expected ')' after variant fields");
         }
 
-        parser_consume(parser, RMB_TOKEN_SEMI, ";");
+        parser_consume(parser, RMB_TOKEN_SEMI, "expected ';' after variant");
 
-        RmbAstVariant* variant = rmb_arena_alloc(parser->arena, sizeof(RmbAstVariant));
+        RmbAstVariant* variant = rmb_ast_variant(name->span, name->lexeme, fields);
         if (variant) {
-            variant->name = name->lexeme;
-            variant->type = type;
-            variant->span = name->span;
-            variant->next = NULL;
-
             if (!first) {
                 first = variant;
                 last = variant;
@@ -929,11 +1039,11 @@ RmbAstItem* rmb_parse_item(RmbParser* parser) {
 
     // Function declaration
     if (parser_match(parser, RMB_TOKEN_KW_FN)) {
-        RmbToken* name = parser_consume(parser, RMB_TOKEN_IDENT, "function name");
+        RmbToken* name = parser_consume(parser, RMB_TOKEN_IDENT, "function name after 'fn'");
 
-        parser_consume(parser, RMB_TOKEN_L_PAREN, "(");
+        parser_consume(parser, RMB_TOKEN_L_PAREN, "'(' after function name");
         RmbAstParam* params = rmb_parse_params(parser);
-        parser_consume(parser, RMB_TOKEN_R_PAREN, ")");
+        parser_consume(parser, RMB_TOKEN_R_PAREN, "')' after parameter list");
 
         RmbAstTypeRef* return_type = NULL;
         // Return type comes directly after parameters (no colon)
@@ -981,11 +1091,11 @@ RmbAstItem* rmb_parse_item(RmbParser* parser) {
 
     // Struct declaration
     if (parser_match(parser, RMB_TOKEN_KW_STRUCT)) {
-        RmbToken* name = parser_consume(parser, RMB_TOKEN_IDENT, "struct name");
+        RmbToken* name = parser_consume(parser, RMB_TOKEN_IDENT, "struct name after 'struct'");
 
-        parser_consume(parser, RMB_TOKEN_L_BRACE, "{");
+        parser_consume(parser, RMB_TOKEN_L_BRACE, "expected '{' before struct body");
         RmbAstField* fields = rmb_parse_fields(parser);
-        parser_consume(parser, RMB_TOKEN_R_BRACE, "}");
+        parser_consume(parser, RMB_TOKEN_R_BRACE, "expected '}' after struct fields");
 
         return rmb_ast_item_struct(
             span_union(start->span,parser_current(parser)->span),
@@ -997,11 +1107,11 @@ RmbAstItem* rmb_parse_item(RmbParser* parser) {
 
     // Enum declaration
     if (parser_match(parser, RMB_TOKEN_KW_ENUM)) {
-        RmbToken* name = parser_consume(parser, RMB_TOKEN_IDENT, "enum name");
+        RmbToken* name = parser_consume(parser, RMB_TOKEN_IDENT, "enum name after 'enum'");
 
-        parser_consume(parser, RMB_TOKEN_L_BRACE, "{");
+        parser_consume(parser, RMB_TOKEN_L_BRACE, "expected '{' before enum body");
         RmbAstVariant* variants = rmb_parse_variants(parser);
-        parser_consume(parser, RMB_TOKEN_R_BRACE, "}");
+        parser_consume(parser, RMB_TOKEN_R_BRACE, "expected '}' after enum variants");
 
         return rmb_ast_item_enum(
             span_union(start->span,parser_current(parser)->span),

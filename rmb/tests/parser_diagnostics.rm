@@ -1,0 +1,13 @@
+fn {
+    count := ;
+}
+
+struct Bad {
+    name
+}
+
+match (status) {
+    case {
+        print("bad");
+    }
+}

@@ -1,0 +1,7 @@
+fn broken( {
+    x := ;
+}
+
+fn still_parses() {
+    print("ok\n");
+}

@@ -1,0 +1,21 @@
+enum Status {
+    Pending;
+    Paid;
+    Failed(reason str);
+}
+
+fn describe(status) {
+    match (status) {
+        case Pending {
+            print("pending\n");
+        }
+
+        case Paid {
+            print("paid\n");
+        }
+
+        case Failed(reason) {
+            print(reason);
+        }
+    }
+}

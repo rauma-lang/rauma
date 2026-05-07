@@ -1,5 +1,5 @@
 // RauMa Bootstrap Compiler - Main Entry Point
-// v0.0.3: Parser implementation
+// v0.0.4: AST + diagnostics refinement
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +30,7 @@ static void print_help(void) {
 
 // Print version information
 static void print_version(void) {
-    printf("rmb 0.0.3\n");
+    printf("rmb 0.0.4\n");
 }
 
 // Handle lex command

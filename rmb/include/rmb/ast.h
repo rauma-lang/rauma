@@ -17,7 +17,10 @@ typedef struct RmbAstExpr RmbAstExpr;
 typedef struct RmbAstTypeRef RmbAstTypeRef;
 typedef struct RmbAstParam RmbAstParam;
 typedef struct RmbAstField RmbAstField;
+typedef struct RmbAstVariantField RmbAstVariantField;
 typedef struct RmbAstVariant RmbAstVariant;
+typedef struct RmbAstMatchCaseBinding RmbAstMatchCaseBinding;
+typedef struct RmbAstMatchCase RmbAstMatchCase;
 
 // AST node kinds
 typedef enum {
@@ -118,10 +121,18 @@ struct RmbAstField {
     RmbAstField* next;
 };
 
+// Enum variant payload field (name and type)
+struct RmbAstVariantField {
+    rmb_string name;
+    RmbAstTypeRef* type;
+    RmbSpan span;
+    RmbAstVariantField* next;
+};
+
 // Enum variant
 struct RmbAstVariant {
     rmb_string name;
-    RmbAstTypeRef* type;  // NULL for simple variants
+    RmbAstVariantField* fields;  // NULL for simple variants
     RmbSpan span;
     RmbAstVariant* next;
 };
@@ -197,6 +208,23 @@ struct RmbAstExpr {
     };
 };
 
+// Match case binding (pattern variable name)
+struct RmbAstMatchCaseBinding {
+    rmb_string name;
+    RmbSpan span;
+    RmbAstMatchCaseBinding* next;
+};
+
+// Match case
+struct RmbAstMatchCase {
+    rmb_string name;
+    RmbAstMatchCaseBinding* bindings;  // NULL if no bindings
+    RmbAstStmt** body;
+    size_t body_count;
+    RmbSpan span;
+    RmbAstMatchCase* next;
+};
+
 // Statement
 struct RmbAstStmt {
     RmbAstKind kind;
@@ -246,10 +274,10 @@ struct RmbAstStmt {
             size_t body_count;
         } for_stmt;
 
-        // Match statement (simplified for v0.0.3)
+        // Match statement
         struct {
             RmbAstExpr* value;
-            // Cases omitted for v0.0.3
+            RmbAstMatchCase* cases;
         } match_stmt;
 
         // Defer statement
@@ -338,9 +366,19 @@ RmbAstStmt* rmb_ast_stmt_if(RmbSpan span, RmbAstExpr* cond, RmbAstStmt** then_bo
 RmbAstStmt* rmb_ast_stmt_while(RmbSpan span, RmbAstExpr* cond, RmbAstStmt** body, size_t body_count);
 RmbAstStmt* rmb_ast_stmt_for(RmbSpan span, RmbAstStmt* init, RmbAstExpr* cond, RmbAstExpr* step,
                             RmbAstStmt** body, size_t body_count);
-RmbAstStmt* rmb_ast_stmt_match(RmbSpan span, RmbAstExpr* value);
+RmbAstStmt* rmb_ast_stmt_match(RmbSpan span, RmbAstExpr* value, RmbAstMatchCase* cases);
 RmbAstStmt* rmb_ast_stmt_defer(RmbSpan span, RmbAstExpr* expr);
 RmbAstStmt* rmb_ast_stmt_expr(RmbSpan span, RmbAstExpr* expr);
+
+// Variant field creation
+RmbAstVariantField* rmb_ast_variant_field(RmbSpan span, rmb_string name, RmbAstTypeRef* type);
+// Variant creation
+RmbAstVariant* rmb_ast_variant(RmbSpan span, rmb_string name, RmbAstVariantField* fields);
+// Match case creation
+RmbAstMatchCase* rmb_ast_match_case(RmbSpan span, rmb_string name, RmbAstMatchCaseBinding* bindings,
+                                   RmbAstStmt** body, size_t body_count);
+// Match case binding creation
+RmbAstMatchCaseBinding* rmb_ast_match_case_binding(RmbSpan span, rmb_string name);
 
 RmbAstItem* rmb_ast_item_use(RmbSpan span, rmb_string path);
 RmbAstItem* rmb_ast_item_fn(RmbSpan span, bool is_pub, rmb_string name, RmbAstParam* params,

@@ -91,12 +91,34 @@ test: debug
 	@echo "=== Struct/Enum parser test ==="
 	@./$(TARGET) parse tests/parser_struct_enum.rm
 	@echo ""
+	@echo "=== Match parser test ==="
+	@./$(TARGET) parse tests/parser_match.rm
+	@echo ""
+	@echo "=== Types parser test ==="
+	@./$(TARGET) parse tests/parser_types.rm
+	@echo ""
 	@echo "=== Error parser test (should fail) ==="
 	@if ./$(TARGET) parse tests/parser_errors.rm 2>/dev/null; then \
 		echo "ERROR: Expected parser_errors.rm to fail but it succeeded"; \
 		exit 1; \
 	else \
 		echo "SUCCESS: parser_errors.rm failed as expected"; \
+	fi
+	@echo ""
+	@echo "=== Diagnostics parser test (should fail) ==="
+	@if ./$(TARGET) parse tests/parser_diagnostics.rm 2>/dev/null; then \
+		echo "ERROR: Expected parser_diagnostics.rm to fail but it succeeded"; \
+		exit 1; \
+	else \
+		echo "SUCCESS: parser_diagnostics.rm failed as expected"; \
+	fi
+	@echo ""
+	@echo "=== Recovery parser test (should fail) ==="
+	@if ./$(TARGET) parse tests/parser_recovery.rm 2>/dev/null; then \
+		echo "ERROR: Expected parser_recovery.rm to fail but it succeeded"; \
+		exit 1; \
+	else \
+		echo "SUCCESS: parser_recovery.rm failed as expected (recovery demonstrated)"; \
 	fi
 
 # Show help

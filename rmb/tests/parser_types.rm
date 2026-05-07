@@ -1,0 +1,14 @@
+pub struct Data {
+    id int;
+    name str;
+    users []User;
+    buf [1024]byte;
+    req http.Request;
+    input app.CreateInput;
+    age int?;
+    ptr *User;
+}
+
+pub fn handle(req http.Request, data *Data) http.Response !! HttpError {
+    return make_response(req, data)?;
+}
