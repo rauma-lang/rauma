@@ -20,11 +20,12 @@
 - Build AST structure
 - Handle basic error recovery
 
-### v0.0.4 AST + Diagnostics
-- Complete AST representation
-- Improve error messages
-- Add source location tracking
-- Implement visitor pattern for AST traversal
+### v0.0.4 AST + Diagnostics ✓ DONE
+- Complete AST representation with spans
+- Improve parser diagnostics and error recovery
+- Parse match statements and enum variant payload fields
+- Refine AST summary output
+- Add test coverage for new syntax
 
 ### v0.0.5 Type Checking
 - Implement type inference engine

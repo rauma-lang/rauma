@@ -75,12 +75,12 @@ let u = User { id: 1, name: "Alice", email: "alice@example.com" };
 ### Enumerations
 ```rauma
 enum Result {
-    Ok(value);
-    Err(error);
+    Ok(value int);
+    Err(error str);
 }
 
 enum Option {
-    Some(value);
+    Some(value T);
     None;
 }
 
@@ -91,12 +91,13 @@ let option = Option::Some("hello");
 
 ### Pattern Matching
 ```rauma
-match result {
-    Result::Ok(value) => {
+match (result) {
+    case Ok(value) {
         print("success: ");
         print(value);
     }
-    Result::Err(error) => {
+
+    case Err(error) {
         print("error: ");
         print(error);
     }
