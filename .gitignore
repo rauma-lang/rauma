@@ -2,11 +2,13 @@
 /build/
 rmb/build/
 *.o
+*.obj
 *.a
 *.so
 *.dylib
 *.dll
 *.exe
+*.out
 
 # Editor files
 .vscode/

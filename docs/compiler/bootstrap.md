@@ -1,0 +1,187 @@
+# Bootstrap Process
+
+## Overview
+
+RauMa's bootstrap process enables the compiler to build itself, ensuring the language implementation is correct and consistent.
+
+## Bootstrap Stages
+
+### Stage 0: rmb (Bootstrap Compiler)
+- Written in C11
+- Minimal RauMa compiler
+- Only implements core language subset
+- Generates C code as output
+- Stable, verified implementation
+
+### Stage 1: rmc1 (First RauMa Compiler)
+- Written in RauMa bootstrap subset
+- Compiled by rmb
+- Implements full RauMa language
+- Can compile RauMa source to C
+- More features than rmb
+
+### Stage 2: rmc2 (Second RauMa Compiler)
+- Written in full RauMa
+- Compiled by rmc1
+- Should be identical to rmc1 in behavior
+- Self-compilation test
+
+### Stage 3: rmc3 (Third RauMa Compiler)
+- Written in full RauMa  
+- Compiled by rmc2
+- Must produce identical output to rmc2
+- Verification of self-hosting stability
+
+## Bootstrap Verification
+
+### Fixed Point Verification
+The bootstrap is successful when:
+1. `rmb` compiles `rmc1` source successfully
+2. `rmc1` compiles `rmc2` source successfully
+3. `rmc2` compiles `rmc3` source successfully
+4. `rmc2` and `rmc3` produce identical behavior on all test inputs
+
+### Test Suite Verification
+All three compilers must pass:
+- Same unit tests
+- Same integration tests  
+- Same regression tests
+- Same performance tests (within tolerance)
+
+## Bootstrap Language Subset
+
+### Included Features (Stage 0)
+- Basic types: `int`, `float`, `bool`, `str`
+- Functions with explicit return types
+- Variables with type inference
+- Control flow: `if`, `while`, `for`
+- Structures
+- Basic error handling with `!!` and `?`
+- Import/export declarations
+
+### Excluded Features (Stage 0)
+- Advanced type system (generics, traits)
+- Complex error handling patterns
+- Concurrency primitives
+- Standard library beyond basics
+- Optimization passes
+- Multiple backends
+
+## Bootstrap Implementation Details
+
+### rmb Structure
+```
+rmb/
+├── include/rmb/     # C headers
+├── src/            # C source files
+├── tests/          # Bootstrap tests
+└── build/          # Build output
+```
+
+### rmb Compilation Process
+1. Parse RauMa source to AST
+2. Basic type checking and resolution
+3. Generate C99/C11 code
+4. Invoke system C compiler (gcc/clang)
+5. Link into executable
+
+### Generated C Code Characteristics
+- Simple, readable C output
+- No complex macros
+- Minimal dependencies
+- Portable across platforms
+- Debuggable with standard tools
+
+## Self-Hosting Milestones
+
+### Milestone 1: rmb Completeness
+- `rmb` can compile simple RauMa programs
+- Basic test suite passes
+- Ready to compile `rmc1`
+
+### Milestone 2: rmc1 Development
+- Write `rmc1` in bootstrap subset
+- `rmb` successfully compiles `rmc1`
+- `rmc1` passes all bootstrap tests
+
+### Milestone 3: rmc2 Self-Compilation
+- `rmc1` compiles `rmc2` (full RauMa)
+- `rmc2` passes all language tests
+- Ready for fixed-point verification
+
+### Milestone 4: Fixed Point Achieved
+- `rmc2` compiles `rmc3`
+- `rmc2` and `rmc3` produce identical output
+- Bootstrap process verified
+
+## Challenges and Solutions
+
+### Challenge: Circular Dependencies
+**Solution**: Careful layering of compiler components. Lower-level modules don't depend on higher-level ones.
+
+### Challenge: Bug Propagation
+**Solution**: Extensive test suites at each stage. Compare outputs between stages.
+
+### Challenge: Performance Regression
+**Solution**: Benchmark each stage. Ensure no significant performance degradation.
+
+### Challenge: Platform Differences
+**Solution**: Use portable C code generation. Test on multiple platforms.
+
+## Bootstrap Testing Strategy
+
+### Unit Testing
+- Test each compiler component in isolation
+- Mock dependencies where needed
+- Ensure correctness of individual pieces
+
+### Integration Testing
+- Test full compilation pipeline
+- Verify generated code executes correctly
+- Test error handling and diagnostics
+
+### Comparison Testing
+- Compare output of different compiler stages
+- Ensure behavioral equivalence
+- Detect regressions early
+
+### Property Testing
+- Generate random valid programs
+- Verify all compilers handle them correctly
+- Test edge cases automatically
+
+## Bootstrap Maintenance
+
+### Stability Guarantees
+- `rmb` codebase remains stable
+- Only bug fixes and essential improvements
+- No new features added to `rmb`
+- All evolution happens in `rmc`
+
+### Version Compatibility
+- `rmb` must always compile the bootstrap subset
+- `rmc` must maintain backward compatibility with bootstrap
+- Breaking changes require migration path
+
+### Documentation
+- Clear bootstrap process documentation
+- Step-by-step build instructions
+- Troubleshooting guide
+- Platform-specific notes
+
+## Future Bootstrap Extensions
+
+### Cross-Compilation Support
+- Bootstrap compiler can target multiple architectures
+- Support for embedded systems
+- WebAssembly compilation
+
+### Alternative Bootstrap Languages
+- Potential bootstrap from other languages (Go, Rust)
+- Redundancy for verification
+- Educational value
+
+### Formal Verification
+- Prove compiler correctness mathematically
+- Certified compilation
+- Eliminate entire classes of bugs
