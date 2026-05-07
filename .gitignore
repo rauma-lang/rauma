@@ -1,0 +1,31 @@
+# Build artifacts
+/build/
+rmb/build/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*~
+*.orig
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Compiled C files (but not source files in src directories)
+!*/src/*.c
+*.c
+
+# Temporary files
+tmp/
+temp/
