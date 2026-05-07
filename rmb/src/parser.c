@@ -192,6 +192,40 @@ static void parser_synchronize(RmbParser* parser) {
     }
 }
 
+// Helper: join multiple strings with dot separator
+static rmb_string join_with_dots(RmbParser* parser, RmbToken** tokens, size_t start, size_t count) {
+    if (count == 0) {
+        return rmb_string_from_cstr("");
+    }
+
+    // Calculate total length
+    size_t total_len = 0;
+    for (size_t i = 0; i < count; i++) {
+        total_len += tokens[start + i]->lexeme.len;
+    }
+    // Add dots between (count - 1)
+    total_len += (count - 1);
+
+    // Allocate buffer
+    char* buf = rmb_arena_alloc(parser->arena, total_len + 1);
+    if (!buf) {
+        return rmb_string_from_cstr("");
+    }
+
+    char* pos = buf;
+    for (size_t i = 0; i < count; i++) {
+        if (i > 0) {
+            *pos++ = '.';
+        }
+        rmb_string part = tokens[start + i]->lexeme;
+        memcpy(pos, part.ptr, part.len);
+        pos += part.len;
+    }
+    *pos = '\0';
+
+    return (rmb_string){buf, total_len};
+}
+
 // Parse a type reference
 RmbAstTypeRef* rmb_parse_type(RmbParser* parser) {
     RmbToken* start = parser_current(parser);
@@ -238,45 +272,27 @@ RmbAstTypeRef* rmb_parse_type(RmbParser* parser) {
             return rmb_ast_type_simple(start->span, rmb_string_from_cstr("unknown"));
         }
 
-        // If we have more than one token, it's a qualified type
+        RmbAstTypeRef* type = NULL;
         if (token_count > 1) {
-            // Build module name (first part) and type name (remaining parts joined with dots)
+            // Qualified type: module.name
             rmb_string module = tokens[0]->lexeme;
-            // Join remaining parts with dots
-            // For simplicity, we'll use the full span and store as module.first, name.rest
-            // But we need to construct a full path string.
-            // For now, handle only two-part qualified (a.b) to keep AST simple
-            if (token_count == 2) {
-                return rmb_ast_type_qualified(
-                    span_union(tokens[0]->span, tokens[token_count-1]->span),
-                    module,
-                    tokens[1]->lexeme
-                );
-            } else {
-                // For >2 parts, flatten to module.first, name.rest (with dots)
-                // Example: app.users.CreateInput -> module="app", name="users.CreateInput"
-                // Build concatenated name
-                // For simplicity now, just use first and second, ignore third+
-                // TODO: support multi-part qualified types
-                rmb_diag_error_at(tokens[2]->span, "multi-part qualified types not yet supported");
-                parser->had_error = true;
-                return rmb_ast_type_qualified(
-                    span_union(tokens[0]->span, tokens[1]->span),
-                    module,
-                    tokens[1]->lexeme
-                );
-            }
+            rmb_string name = join_with_dots(parser, tokens, 1, token_count - 1);
+            type = rmb_ast_type_qualified(
+                span_union(tokens[0]->span, tokens[token_count-1]->span),
+                module,
+                name
+            );
         } else {
             // Simple type
-            RmbAstTypeRef* type = rmb_ast_type_simple(tokens[0]->span, tokens[0]->lexeme);
-
-            // Optional type T?
-            if (parser_match(parser, RMB_TOKEN_QUESTION)) {
-                type = rmb_ast_type_optional(span_union(tokens[0]->span,parser_current(parser)->span), type);
-            }
-
-            return type;
+            type = rmb_ast_type_simple(tokens[0]->span, tokens[0]->lexeme);
         }
+
+        // Optional type T?
+        if (parser_match(parser, RMB_TOKEN_QUESTION)) {
+            type = rmb_ast_type_optional(span_union(tokens[0]->span,parser_current(parser)->span), type);
+        }
+
+        return type;
     }
 
     // Error: expected a type

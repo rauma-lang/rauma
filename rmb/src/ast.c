@@ -501,46 +501,52 @@ static size_t count_match_cases(RmbAstMatchCase* cases) {
     return count;
 }
 
-// Helper: print type reference summary
-static void print_type_summary(RmbAstTypeRef* type) {
+// Helper: print type reference without "type=" prefix
+static void print_type_raw(RmbAstTypeRef* type) {
     if (!type) {
-        printf("type=?");
+        printf("?");
         return;
     }
     switch (type->kind) {
         case RMB_AST_TYPE_SIMPLE:
-            printf("type=%.*s", (int)type->simple.name.len, type->simple.name.ptr);
+            printf("%.*s", (int)type->simple.name.len, type->simple.name.ptr);
             break;
         case RMB_AST_TYPE_POINTER:
-            printf("type=*");
-            print_type_summary(type->pointer.elem);
+            printf("*");
+            print_type_raw(type->pointer.elem);
             break;
         case RMB_AST_TYPE_SLICE:
-            printf("type=[]");
-            print_type_summary(type->slice.elem);
+            printf("[]");
+            print_type_raw(type->slice.elem);
             break;
         case RMB_AST_TYPE_ARRAY:
-            printf("type=[");
+            printf("[");
             if (type->array.size && type->array.size->kind == RMB_AST_EXPR_INT) {
                 printf("%.*s", (int)type->array.size->int_lit.value.len, type->array.size->int_lit.value.ptr);
             } else {
                 printf("?");
             }
             printf("]");
-            print_type_summary(type->array.elem);
+            print_type_raw(type->array.elem);
             break;
         case RMB_AST_TYPE_OPTIONAL:
-            print_type_summary(type->optional.elem);
+            print_type_raw(type->optional.elem);
             printf("?");
             break;
         case RMB_AST_TYPE_QUALIFIED:
-            printf("type=%.*s.%.*s", (int)type->qualified.module.len, type->qualified.module.ptr,
+            printf("%.*s.%.*s", (int)type->qualified.module.len, type->qualified.module.ptr,
                    (int)type->qualified.name.len, type->qualified.name.ptr);
             break;
         default:
-            printf("type=?");
+            printf("?");
             break;
     }
+}
+
+// Helper: print type reference summary
+static void print_type_summary(RmbAstTypeRef* type) {
+    printf("type=");
+    print_type_raw(type);
 }
 
 // Helper: print function statement summary

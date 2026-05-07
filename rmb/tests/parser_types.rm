@@ -4,7 +4,7 @@ pub struct Data {
     users []User;
     buf [1024]byte;
     req http.Request;
-    input app.CreateInput;
+    input app.users.CreateInput;
     age int?;
     ptr *User;
 }
