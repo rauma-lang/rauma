@@ -1077,6 +1077,7 @@ RmbAstItem* rmb_parse_item(RmbParser* parser) {
         size_t body_count = 0;
 
         while (!parser_check(parser, RMB_TOKEN_R_BRACE) && !parser_check(parser, RMB_TOKEN_EOF)) {
+            size_t pos_before = parser->pos;
             RmbAstStmt* stmt = rmb_parse_stmt(parser);
             if (stmt) {
                 size_t new_size = (body_count + 1) * sizeof(RmbAstStmt*);
@@ -1089,6 +1090,11 @@ RmbAstItem* rmb_parse_item(RmbParser* parser) {
                     body = new_body;
                     body_count++;
                 }
+            }
+            // Recovery guard
+            if (parser->pos == pos_before && !parser_check(parser, RMB_TOKEN_R_BRACE) &&
+                !parser_check(parser, RMB_TOKEN_EOF)) {
+                parser_advance(parser);
             }
         }
         parser_consume(parser, RMB_TOKEN_R_BRACE, "}");
@@ -1157,6 +1163,7 @@ RmbAstFile* rmb_parse_file(RmbParser* parser, const char* path) {
     size_t item_count = 0;
 
     while (!parser_check(parser, RMB_TOKEN_EOF)) {
+        size_t pos_before = parser->pos;
         RmbAstItem* item = rmb_parse_item(parser);
         if (item) {
             if (!first) {
@@ -1171,6 +1178,11 @@ RmbAstFile* rmb_parse_file(RmbParser* parser, const char* path) {
 
         // Skip any stray semicolons
         while (parser_match(parser, RMB_TOKEN_SEMI)) {}
+
+        // Recovery guard: if no progress was made, force advance to avoid infinite loop
+        if (parser->pos == pos_before && !parser_check(parser, RMB_TOKEN_EOF)) {
+            parser_advance(parser);
+        }
     }
 
     return rmb_ast_file_create(path, first, item_count);
