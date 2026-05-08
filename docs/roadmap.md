@@ -35,11 +35,12 @@
 - Error syntax `!!`, `?`, `!`, and `else` checking
 - `rmb check <file>` command
 
-### v0.0.6 C Codegen
+### v0.0.6 C Codegen ✓ DONE
 - Generate C code from typed AST
-- Implement basic C backend
-- Compile simple RauMa programs to executable
-- Test bootstrap compilation pipeline
+- Implement basic C backend (single-file `rmb build`)
+- Compile simple RauMa programs to executable via `gcc`
+- Test bootstrap compilation pipeline (hello, functions, control flow, structs)
+- Reject error-returning functions, `match`, `defer`, `?`, and `!` with clear diagnostics
 
 ### v0.0.7 Chunk Build System
 - Implement file-based chunk compilation

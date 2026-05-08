@@ -1,0 +1,8 @@
+fn read_file(path str) str !! IoError {
+    return "data";
+}
+
+fn main() {
+    text := read_file("app.txt")?;
+    print(text);
+}

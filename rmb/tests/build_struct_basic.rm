@@ -1,0 +1,12 @@
+struct User {
+    id int;
+    name str;
+}
+
+fn get_id(user User) int {
+    return user.id;
+}
+
+fn main() {
+    return 0;
+}

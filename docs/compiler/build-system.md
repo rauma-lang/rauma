@@ -4,6 +4,26 @@
 
 RauMa uses a chunk-based build system designed for incremental compilation, parallel builds, and efficient dependency management.
 
+## v0.0.6 bootstrap layout (temporary)
+
+The chunk-based system below is the long-term design. The v0.0.6 bootstrap
+compiler `rmb` ships a minimal single-file build that maps directly onto the
+filesystem:
+
+```
+tests/foo.rm  ->  rmb/build/foo.c  ->  rmb/build/foo
+```
+
+`rmb build <file>`:
+1. lex / parse / type-check the input
+2. emit a portable C99/C11 file at `rmb/build/<stem>.c`
+3. invoke `gcc` to produce `rmb/build/<stem>` (or `<stem>.exe` on Windows)
+
+There is no chunk metadata, no interface hashing, no dependency graph, no
+incremental rebuild, and no multi-file resolution yet — those are scheduled
+for **v0.0.7 Chunk Build System**, which will introduce the layout described
+below.
+
 ## Chunk-Based Architecture
 
 ### What is a Chunk?

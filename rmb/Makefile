@@ -28,7 +28,8 @@ SRCS = $(SRC_DIR)/main.c \
        $(SRC_DIR)/ast.c \
        $(SRC_DIR)/parser.c \
        $(SRC_DIR)/type.c \
-       $(SRC_DIR)/checker.c
+       $(SRC_DIR)/checker.c \
+       $(SRC_DIR)/cgen.c
 
 # Object files
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
@@ -141,6 +142,30 @@ test: debug
 		exit 1; \
 	else \
 		echo "SUCCESS: check_errors.rm failed as expected"; \
+	fi
+	@echo ""
+	@echo "=== Build hello test ==="
+	@./$(TARGET) build tests/build_hello.rm
+	@./$(BUILD_DIR)/build_hello
+	@echo ""
+	@echo "=== Build functions test ==="
+	@./$(TARGET) build tests/build_functions.rm
+	@./$(BUILD_DIR)/build_functions
+	@echo ""
+	@echo "=== Build if/while test ==="
+	@./$(TARGET) build tests/build_if_while.rm
+	@./$(BUILD_DIR)/build_if_while
+	@echo ""
+	@echo "=== Build struct basic test ==="
+	@./$(TARGET) build tests/build_struct_basic.rm
+	@./$(BUILD_DIR)/build_struct_basic
+	@echo ""
+	@echo "=== Build errors test (should fail) ==="
+	@if ./$(TARGET) build tests/build_errors.rm 2>/dev/null; then \
+		echo "ERROR: Expected build_errors.rm to fail but it succeeded"; \
+		exit 1; \
+	else \
+		echo "SUCCESS: build_errors.rm failed as expected"; \
 	fi
 
 # Show help

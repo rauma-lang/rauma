@@ -355,8 +355,9 @@ static RmbAstExpr* rmb_parse_logical_and(RmbParser* parser) {
 static RmbAstExpr* rmb_parse_equality(RmbParser* parser) {
     RmbAstExpr* expr = rmb_parse_comparison(parser);
 
-    while (parser_match(parser, RMB_TOKEN_EQ_EQ) || parser_match(parser, RMB_TOKEN_BANG_EQ)) {
-        RmbTokenKind op = parser_current(parser)->kind == RMB_TOKEN_EQ_EQ ? RMB_TOKEN_EQ_EQ : RMB_TOKEN_BANG_EQ;
+    while (parser_check(parser, RMB_TOKEN_EQ_EQ) || parser_check(parser, RMB_TOKEN_BANG_EQ)) {
+        RmbTokenKind op = parser_current(parser)->kind;
+        parser_advance(parser);
         RmbAstExpr* right = rmb_parse_comparison(parser);
         expr = rmb_ast_expr_binary(
             span_union(expr->span,right->span),
@@ -373,9 +374,10 @@ static RmbAstExpr* rmb_parse_equality(RmbParser* parser) {
 static RmbAstExpr* rmb_parse_comparison(RmbParser* parser) {
     RmbAstExpr* expr = rmb_parse_term(parser);
 
-    while (parser_match(parser, RMB_TOKEN_LT) || parser_match(parser, RMB_TOKEN_GT) ||
-           parser_match(parser, RMB_TOKEN_LT_EQ) || parser_match(parser, RMB_TOKEN_GT_EQ)) {
+    while (parser_check(parser, RMB_TOKEN_LT) || parser_check(parser, RMB_TOKEN_GT) ||
+           parser_check(parser, RMB_TOKEN_LT_EQ) || parser_check(parser, RMB_TOKEN_GT_EQ)) {
         RmbTokenKind op = parser_current(parser)->kind;
+        parser_advance(parser);
         RmbAstExpr* right = rmb_parse_term(parser);
         expr = rmb_ast_expr_binary(
             span_union(expr->span,right->span),
@@ -392,8 +394,9 @@ static RmbAstExpr* rmb_parse_comparison(RmbParser* parser) {
 static RmbAstExpr* rmb_parse_term(RmbParser* parser) {
     RmbAstExpr* expr = rmb_parse_factor(parser);
 
-    while (parser_match(parser, RMB_TOKEN_PLUS) || parser_match(parser, RMB_TOKEN_MINUS)) {
+    while (parser_check(parser, RMB_TOKEN_PLUS) || parser_check(parser, RMB_TOKEN_MINUS)) {
         RmbTokenKind op = parser_current(parser)->kind;
+        parser_advance(parser);
         RmbAstExpr* right = rmb_parse_factor(parser);
         expr = rmb_ast_expr_binary(
             span_union(expr->span,right->span),
@@ -410,9 +413,10 @@ static RmbAstExpr* rmb_parse_term(RmbParser* parser) {
 static RmbAstExpr* rmb_parse_factor(RmbParser* parser) {
     RmbAstExpr* expr = rmb_parse_unary(parser);
 
-    while (parser_match(parser, RMB_TOKEN_STAR) || parser_match(parser, RMB_TOKEN_SLASH) ||
-           parser_match(parser, RMB_TOKEN_PERCENT)) {
+    while (parser_check(parser, RMB_TOKEN_STAR) || parser_check(parser, RMB_TOKEN_SLASH) ||
+           parser_check(parser, RMB_TOKEN_PERCENT)) {
         RmbTokenKind op = parser_current(parser)->kind;
+        parser_advance(parser);
         RmbAstExpr* right = rmb_parse_unary(parser);
         expr = rmb_ast_expr_binary(
             span_union(expr->span,right->span),
@@ -606,10 +610,11 @@ RmbAstStmt* rmb_parse_stmt(RmbParser* parser) {
         // Note: This is simplified - real assignment parsing would handle lvalues
         RmbAstExpr* target = rmb_parse_expr(parser);
 
-        if (parser_match(parser, RMB_TOKEN_EQ) || parser_match(parser, RMB_TOKEN_PLUS_EQ) ||
-            parser_match(parser, RMB_TOKEN_MINUS_EQ) || parser_match(parser, RMB_TOKEN_STAR_EQ) ||
-            parser_match(parser, RMB_TOKEN_SLASH_EQ)) {
+        if (parser_check(parser, RMB_TOKEN_EQ) || parser_check(parser, RMB_TOKEN_PLUS_EQ) ||
+            parser_check(parser, RMB_TOKEN_MINUS_EQ) || parser_check(parser, RMB_TOKEN_STAR_EQ) ||
+            parser_check(parser, RMB_TOKEN_SLASH_EQ)) {
             RmbTokenKind op = parser_current(parser)->kind;
+            parser_advance(parser);
             RmbAstExpr* value = rmb_parse_expr(parser);
             parser_consume(parser, RMB_TOKEN_SEMI, ";");
             return rmb_ast_stmt_assign(

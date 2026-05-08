@@ -4,6 +4,22 @@
 
 RauMa uses a multi-stage compiler architecture designed for incremental development and self-hosting.
 
+### Bootstrap pipeline status (v0.0.6)
+
+The full pipeline (Resolver → HIR → MIR → multi-backend) is the long-term design.
+The v0.0.6 bootstrap compiler `rmb` deliberately skips most of these stages and
+emits C directly from the checked AST:
+
+```
+.rm source → Lexer → Parser → AST → Type Checker → C Code Generator → gcc → executable
+```
+
+- **HIR is still planned but not implemented in `rmb`.**
+- **MIR is still planned but not implemented in `rmb`.**
+- **The C backend in `rmb` is a bootstrap backend** — small, boring, and
+  table-driven from the AST. It will eventually be replaced (or sit alongside)
+  the richer pipeline once `rmc` takes over.
+
 ## Compilation Pipeline
 
 ```

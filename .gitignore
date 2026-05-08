@@ -25,8 +25,9 @@ Thumbs.db
 *.log
 
 # Compiled C files (but not source files in src directories)
-!*/src/*.c
 *.c
+!*/src/*.c
+!*/src/**/*.c
 
 # Temporary files
 tmp/
