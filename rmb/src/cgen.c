@@ -328,6 +328,10 @@ static RmbType* call_type(RmbCGen* g, RmbAstExpr* e) {
     if (callee && callee->kind == RMB_AST_EXPR_IDENT) {
         rmb_string name = callee->ident.name;
         if (rmb_string_equal(name, rmb_string_from_cstr("print"))) return rmb_type_void();
+        if (rmb_string_equal(name, rmb_string_from_cstr("str_len")) ||
+            rmb_string_equal(name, rmb_string_from_cstr("str_byte"))) {
+            return rmb_type_int();
+        }
         CgFn* fn = find_fn(g, name);
         if (fn) return fn->return_type ? fn->return_type : rmb_type_void();
     }
@@ -493,6 +497,30 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
         rmb_string name = callee->ident.name;
         if (rmb_string_equal(name, rmb_string_from_cstr("print"))) {
             emit_print_call(g, e);
+            return;
+        }
+        if (rmb_string_equal(name, rmb_string_from_cstr("str_len"))) {
+            if (e->call.arg_count != 1) {
+                cg_error(g, e->span, "str_len expects exactly 1 argument");
+                emit_str(g, "0");
+                return;
+            }
+            emit_str(g, "rm_str_len(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ")");
+            return;
+        }
+        if (rmb_string_equal(name, rmb_string_from_cstr("str_byte"))) {
+            if (e->call.arg_count != 2) {
+                cg_error(g, e->span, "str_byte expects exactly 2 arguments");
+                emit_str(g, "0");
+                return;
+            }
+            emit_str(g, "rm_str_byte(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ", ");
+            emit_expr(g, e->call.args[1]);
+            emit_str(g, ")");
             return;
         }
         CgFn* fn = find_fn(g, name);
@@ -830,6 +858,14 @@ static void emit_prelude(RmbCGen* g) {
         "    out.ptr = s;\n"
         "    out.len = (int64_t)strlen(s);\n"
         "    return out;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED int64_t rm_str_len(RmStr s) {\n"
+        "    return s.len;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED int64_t rm_str_byte(RmStr s, int64_t index) {\n"
+        "    return (int64_t)((unsigned char)s.ptr[index]);\n"
         "}\n"
         "\n"
         "static RM_UNUSED void rm_print(RmStr s) {\n"

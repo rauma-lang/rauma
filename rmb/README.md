@@ -102,6 +102,7 @@ gcc link → build/debug/native/bin/<entry-stem>
 - **Structs**: `struct User { ... }` → `typedef struct Rm_User { ... } Rm_User;`
 - **Functions**: prefixed `rm_fn_<name>`; `main` becomes the C entry point
 - **Built-in `print`**: emits `rm_print(rm_str(...))`, `rm_print_int`, or `rm_print_bool` depending on argument type
+- **String builtins**: `str_len(s str) int` and `str_byte(s str, index int) int` for bootstrap byte scanning
 - **Statements**: variable declarations (`:=`, `: T = e`), assignment (`=`, `+=`, `-=`, `*=`, `/=`), `return`, `if`/`else`, `while`, `for`
 - **Expressions**: int/string/bool literals, identifiers, calls, field access, unary (`-`, `!`, `&`, `*`), binary arithmetic and comparisons, `&&`/`||`
 
@@ -124,6 +125,7 @@ gcc link → build/debug/native/bin/<entry-stem>
 - No `defer` codegen
 - No optional/`else` codegen
 - No struct literal codegen
+- String builtins are byte-level only; no Unicode, no char type, no `s[i]` syntax
 - No HIR / MIR / optimizer / native backend
 
 ### Unsupported Features (in v0.0.7)

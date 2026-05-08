@@ -36,6 +36,19 @@ v0.0.5 does not perform implicit conversions between numeric kinds, between `int
 - Field access type checking is partial: known struct fields resolve, but unknown bases yield `unknown` rather than errors.
 - Module-qualified names (`module.Type`) are accepted as opaque external names without resolution.
 
+### Temporary String Builtins (v0.0.8d)
+
+The bootstrap compiler recognizes two temporary byte-level string builtins:
+
+```rauma
+str_len(value str) int
+str_byte(value str, index int) int
+```
+
+`str_len` returns the string length in bytes. `str_byte` returns the byte value
+at a zero-based index. These are ASCII/byte helpers for bootstrap compiler
+work; there is no Unicode handling, no `char` type, and no `s[i]` syntax yet.
+
 ---
 
 ## Type Inference by Default

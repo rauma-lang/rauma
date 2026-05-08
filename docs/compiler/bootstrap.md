@@ -52,6 +52,14 @@ Real file-driven lexing depends on later file input support and practical
 string indexing/scanning support in the bootstrap subset. The self-host fixed
 point remains v0.0.9.
 
+### v0.0.8d: Hardcoded Source Scanner
+
+v0.0.8d adds minimal string byte support to `rmb` and uses it from `rmc` to
+scan a hardcoded source string. The `rmc` lexer now loops over bytes with
+`str_len` and `str_byte`, but it still does not read files or accept CLI input.
+
+The parser still starts later, and the self-host fixed point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

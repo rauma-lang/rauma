@@ -1,18 +1,190 @@
 use source.source;
 use lex.token;
 
+pub fn is_space(b int) bool {
+    if (b == 32) {
+        return true;
+    }
+    if (b == 10) {
+        return true;
+    }
+    if (b == 9) {
+        return true;
+    }
+    if (b == 13) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_alpha(b int) bool {
+    if (b >= 65 && b <= 90) {
+        return true;
+    }
+    if (b >= 97 && b <= 122) {
+        return true;
+    }
+    if (b == 95) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_digit(b int) bool {
+    return b >= 48 && b <= 57;
+}
+
+pub fn is_ident_continue(b int) bool {
+    if (is_alpha(b)) {
+        return true;
+    }
+    if (is_digit(b)) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_fn_keyword(text str, start int, end int) bool {
+    if (end - start != 2) {
+        return false;
+    }
+    if (str_byte(text, start) == 102 && str_byte(text, start + 1) == 110) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_main_ident(text str, start int, end int) bool {
+    if (end - start != 4) {
+        return false;
+    }
+    if (str_byte(text, start) == 109 && str_byte(text, start + 1) == 97 &&
+        str_byte(text, start + 2) == 105 && str_byte(text, start + 3) == 110) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_print_ident(text str, start int, end int) bool {
+    if (end - start != 5) {
+        return false;
+    }
+    if (str_byte(text, start) == 112 && str_byte(text, start + 1) == 114 &&
+        str_byte(text, start + 2) == 105 && str_byte(text, start + 3) == 110 &&
+        str_byte(text, start + 4) == 116) {
+        return true;
+    }
+    return false;
+}
+
+pub fn scan_ident(text str, start int, len int) int {
+    i := start;
+    while (i < len && is_ident_continue(str_byte(text, i))) {
+        i += 1;
+    }
+
+    if (is_fn_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_fn(), "fn");
+        return i;
+    }
+    if (is_main_ident(text, start, i)) {
+        lex.token.print_token(lex.token.kind_ident(), "main");
+        return i;
+    }
+    if (is_print_ident(text, start, i)) {
+        lex.token.print_token(lex.token.kind_ident(), "print");
+        return i;
+    }
+
+    lex.token.print_token(lex.token.kind_ident(), "<ident>");
+    return i;
+}
+
+pub fn scan_string(text str, start int, len int) int {
+    i := start + 1;
+    while (i < len) {
+        b := str_byte(text, i);
+        if (b == 92) {
+            i += 2;
+        } else {
+            if (b == 34) {
+                lex.token.print_token(lex.token.kind_string(), "\"hi\\n\"");
+                return i + 1;
+            }
+            i += 1;
+        }
+    }
+    lex.token.print_token(lex.token.kind_invalid(), "<string>");
+    return i;
+}
+
+pub fn scan_punct(text str, start int, len int) int {
+    b := str_byte(text, start);
+    if (b == 40) {
+        lex.token.print_token(lex.token.kind_l_paren(), "(");
+        return start + 1;
+    }
+    if (b == 41) {
+        lex.token.print_token(lex.token.kind_r_paren(), ")");
+        return start + 1;
+    }
+    if (b == 123) {
+        lex.token.print_token(lex.token.kind_l_brace(), "{");
+        return start + 1;
+    }
+    if (b == 125) {
+        lex.token.print_token(lex.token.kind_r_brace(), "}");
+        return start + 1;
+    }
+    if (b == 59) {
+        lex.token.print_token(lex.token.kind_semi(), ";");
+        return start + 1;
+    }
+    if (b == 44) {
+        lex.token.print_token(lex.token.kind_comma(), ",");
+        return start + 1;
+    }
+    if (b == 43) {
+        lex.token.print_token(lex.token.kind_plus(), "+");
+        return start + 1;
+    }
+    if (b == 61) {
+        lex.token.print_token(lex.token.kind_eq(), "=");
+        return start + 1;
+    }
+    if (b == 58 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        lex.token.print_token(lex.token.kind_colon_eq(), ":=");
+        return start + 2;
+    }
+    lex.token.print_token(lex.token.kind_invalid(), "<invalid>");
+    return start + 1;
+}
+
+pub fn scan_source(text str) {
+    len := str_len(text);
+    i := 0;
+
+    while (i < len) {
+        b := str_byte(text, i);
+        if (is_space(b)) {
+            i += 1;
+        } else {
+            if (is_alpha(b)) {
+                i = scan_ident(text, i, len);
+            } else {
+                if (b == 34) {
+                    i = scan_string(text, i, len);
+                } else {
+                    i = scan_punct(text, i, len);
+                }
+            }
+        }
+    }
+
+    lex.token.print_eof();
+}
+
 pub fn run_smoke() {
     print("rmc lexer smoke:\n");
-    lex.token.print_token(lex.token.kind_kw_fn(), "fn");
-    lex.token.print_token(lex.token.kind_ident(), "main");
-    lex.token.print_token(lex.token.kind_l_paren(), "(");
-    lex.token.print_token(lex.token.kind_r_paren(), ")");
-    lex.token.print_token(lex.token.kind_l_brace(), "{");
-    lex.token.print_token(lex.token.kind_ident(), "print");
-    lex.token.print_token(lex.token.kind_l_paren(), "(");
-    lex.token.print_token(lex.token.kind_string(), "\"hi\\n\"");
-    lex.token.print_token(lex.token.kind_r_paren(), ")");
-    lex.token.print_token(lex.token.kind_semi(), ";");
-    lex.token.print_token(lex.token.kind_r_brace(), "}");
-    lex.token.print_eof();
+    scan_source(source.source.demo_text());
 }

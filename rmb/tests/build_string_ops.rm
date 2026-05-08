@@ -1,0 +1,9 @@
+fn main() {
+    n := str_len("abc");
+    b := str_byte("abc", 1);
+
+    print(n);
+    print("\n");
+    print(b);
+    print("\n");
+}
