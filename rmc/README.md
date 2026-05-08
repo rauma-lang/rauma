@@ -4,31 +4,41 @@
 
 `rmc` is the future main RauMa compiler written in RauMa.
 
-v0.0.8a is only the first skeleton. It proves that `rmb` can build a
-RauMa-written `rmc` binary with multiple source chunks. It does not contain the
-real lexer, parser, checker, codegen, driver, HIR, MIR, package system, or
-self-hosting logic yet.
+v0.0.8b adds the first compiler data modules: source/span shapes, token kind
+shapes, token helpers, and tiny diagnostic output helpers. It still does not
+implement lexing, parsing, checking, codegen, HIR, MIR, packages, std modules,
+or self-hosting.
 
 ## Current Source Layout
 
 ```text
 rmc/
 ├── main.rm
-└── cli/
-    ├── help.rm
-    └── version.rm
+├── cli/
+│   ├── help.rm
+│   └── version.rm
+├── source/
+│   ├── span.rm
+│   └── source.rm
+├── lex/
+│   └── token.rm
+└── diag/
+    └── output.rm
 ```
 
-`rmc/main.rm` imports internal CLI modules:
+`rmc/main.rm` imports the current internal modules:
 
 ```rauma
 use cli.help;
 use cli.version;
+use source.source;
+use lex.token;
+use diag.output;
 ```
 
-The current executable prints help from `cli.help`. `cli.version` exists as the
-initial version module, but command-line argument dispatch is not implemented
-yet because the current bootstrap codegen does not support `main(args)`.
+The executable prints help and a small module readiness section. Command-line
+argument dispatch is not implemented yet because the current bootstrap codegen
+does not support `main(args)`.
 
 ## Building With rmb
 
@@ -40,11 +50,11 @@ make
 ./build/debug/native/bin/main
 ```
 
-The binary path is still entry-stem based in v0.0.7/v0.0.8a, so
-`rmc/main.rm` builds to `rmb/build/debug/native/bin/main`.
+The binary path is still entry-stem based, so `rmc/main.rm` builds to
+`rmb/build/debug/native/bin/main`.
 
 ## Later v0.0.8 Work
 
-Later v0.0.8 steps will add RauMa-written source/span/token modules, then the
-lexer, parser foundation, and checker/codegen bridge. The self-host fixed point
-remains a separate v0.0.9 milestone.
+v0.0.8c should add the RauMa-written lexer. Parser foundation,
+checker/codegen bridge work, and the self-host fixed point remain later
+milestones.

@@ -1,6 +1,14 @@
 use cli.help;
 use cli.version;
+use source.source;
+use lex.token;
+use diag.output;
 
 fn main() {
     cli.help.print_help();
+    print("\n");
+    print("rmc modules:\n");
+    source.source.print_source_label();
+    lex.token.print_token_label();
+    diag.output.print_diag_label();
 }

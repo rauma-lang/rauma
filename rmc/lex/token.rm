@@ -1,0 +1,92 @@
+use source.span;
+
+pub enum TokenKind {
+    Eof;
+    Invalid;
+
+    Ident;
+    Int;
+    String;
+
+    KwFn;
+    KwPub;
+    KwStruct;
+    KwEnum;
+    KwUse;
+    KwReturn;
+    KwIf;
+    KwElse;
+    KwWhile;
+    KwFor;
+    KwMatch;
+    KwCase;
+    KwConst;
+    KwDefer;
+    KwTrue;
+    KwFalse;
+    KwNone;
+
+    LParen;
+    RParen;
+    LBrace;
+    RBrace;
+    LBracket;
+    RBracket;
+
+    Comma;
+    Dot;
+    Semi;
+    Colon;
+
+    Question;
+    Bang;
+    BangBang;
+
+    Plus;
+    Minus;
+    Star;
+    Slash;
+    Percent;
+
+    Eq;
+    EqEq;
+    BangEq;
+
+    Lt;
+    Gt;
+    LtEq;
+    GtEq;
+
+    AndAnd;
+    OrOr;
+
+    PlusEq;
+    MinusEq;
+    StarEq;
+    SlashEq;
+    ColonEq;
+
+    Amp;
+}
+
+pub struct Token {
+    kind int;
+    text str;
+    span source.span.Span;
+}
+
+pub fn print_token_label() {
+    print("token module ready\n");
+}
+
+pub fn eof_kind() int {
+    return 0;
+}
+
+pub fn ident_kind() int {
+    return 2;
+}
+
+pub fn string_kind() int {
+    return 4;
+}

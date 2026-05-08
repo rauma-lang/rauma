@@ -1,0 +1,11 @@
+pub struct Span {
+    file str;
+    start int;
+    end int;
+    line int;
+    col int;
+}
+
+pub fn print_span_label() {
+    print("span module ready\n");
+}

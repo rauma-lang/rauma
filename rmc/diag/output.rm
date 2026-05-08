@@ -1,0 +1,7 @@
+pub fn note(message str) {
+    print(message);
+}
+
+pub fn print_diag_label() {
+    print("diag module ready\n");
+}

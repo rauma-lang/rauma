@@ -31,6 +31,17 @@ modules, and prints version/help text through a binary built by `rmb`.
 The self-host fixed point is still v0.0.9. Until then, `rmb` remains the
 bootstrap compiler and source of truth for compiling the early `rmc` code.
 
+### v0.0.8b: Compiler Data Modules
+
+v0.0.8b adds the first compiler data modules in RauMa:
+
+- source/span data shapes
+- token kind and token data shapes
+- minimal diagnostic output helpers
+
+This still does not include a lexer. The RauMa-written lexer starts in
+v0.0.8c, and the self-host fixed point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1
