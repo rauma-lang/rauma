@@ -1,0 +1,113 @@
+use source.source;
+use lex.token;
+use lex.lexer;
+
+pub fn run_stream_smoke() {
+    print("token stream ready\n");
+}
+
+pub fn current_kind(src str, i int) int {
+    return lex.lexer.next_kind(src, i);
+}
+
+pub fn current_start(src str, i int) int {
+    return lex.lexer.next_start(src, i);
+}
+
+pub fn current_end(src str, i int) int {
+    return lex.lexer.next_end(src, i);
+}
+
+pub fn advance(src str, i int) int {
+    return current_end(src, i);
+}
+
+pub fn expect_kind(src str, i int, expected int) int {
+    kind := current_kind(src, i);
+    if (kind != expected) {
+        return 0;
+    }
+    return advance(src, i);
+}
+
+pub fn expect_ident_main(src str, i int) int {
+    start := current_start(src, i);
+    end := current_end(src, i);
+    kind := current_kind(src, i);
+    if (kind != lex.token.kind_ident()) {
+        return 0;
+    }
+    if (lex.lexer.token_is_ident_main(src, start, end)) {
+        return end;
+    }
+    return 0;
+}
+
+pub fn expect_ident_print(src str, i int) int {
+    start := current_start(src, i);
+    end := current_end(src, i);
+    kind := current_kind(src, i);
+    if (kind != lex.token.kind_ident()) {
+        return 0;
+    }
+    if (lex.lexer.token_is_ident_print(src, start, end)) {
+        return end;
+    }
+    return 0;
+}
+
+pub fn parse_demo_with_stream() bool {
+    src := source.source.demo_text();
+    i := 0;
+
+    i = expect_kind(src, i, lex.token.kind_kw_fn());
+    if (i == 0) {
+        return false;
+    }
+    i = expect_ident_main(src, i);
+    if (i == 0) {
+        return false;
+    }
+    i = expect_kind(src, i, lex.token.kind_l_paren());
+    if (i == 0) {
+        return false;
+    }
+    i = expect_kind(src, i, lex.token.kind_r_paren());
+    if (i == 0) {
+        return false;
+    }
+    i = expect_kind(src, i, lex.token.kind_l_brace());
+    if (i == 0) {
+        return false;
+    }
+    i = expect_ident_print(src, i);
+    if (i == 0) {
+        return false;
+    }
+    i = expect_kind(src, i, lex.token.kind_l_paren());
+    if (i == 0) {
+        return false;
+    }
+    i = expect_kind(src, i, lex.token.kind_string());
+    if (i == 0) {
+        return false;
+    }
+    i = expect_kind(src, i, lex.token.kind_r_paren());
+    if (i == 0) {
+        return false;
+    }
+    i = expect_kind(src, i, lex.token.kind_semi());
+    if (i == 0) {
+        return false;
+    }
+    i = expect_kind(src, i, lex.token.kind_r_brace());
+    if (i == 0) {
+        return false;
+    }
+    i = expect_kind(src, i, lex.token.kind_eof());
+    if (i == 0) {
+        return false;
+    }
+
+    return true;
+}

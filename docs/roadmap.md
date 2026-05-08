@@ -56,7 +56,7 @@
 - v0.0.8c rmc lexer smoke ✓ DONE
 - v0.0.8d rmc real string scanner ✓ DONE
 - v0.0.8e rmc parser foundation ✓ DONE
-- v0.0.8f rmc token stream
+- v0.0.8f rmc token stream ✓ DONE
 - v0.0.8g rmc real parser over tokens
 - v0.0.8h rmc checker/codegen bridge
 - Port compiler from C to RauMa

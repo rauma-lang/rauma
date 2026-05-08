@@ -44,6 +44,15 @@ pub fn is_ident_continue(b int) bool {
     return false;
 }
 
+pub fn next_start(text str, start int) int {
+    len := str_len(text);
+    i := start;
+    while (i < len && is_space(str_byte(text, i))) {
+        i += 1;
+    }
+    return i;
+}
+
 pub fn is_fn_keyword(text str, start int, end int) bool {
     if (end - start != 2) {
         return false;
@@ -77,11 +86,113 @@ pub fn is_print_ident(text str, start int, end int) bool {
     return false;
 }
 
-pub fn scan_ident(text str, start int, len int) int {
+pub fn token_is_ident_main(text str, start int, end int) bool {
+    return is_main_ident(text, start, end);
+}
+
+pub fn token_is_ident_print(text str, start int, end int) bool {
+    return is_print_ident(text, start, end);
+}
+
+pub fn scan_ident_end(text str, start int, len int) int {
     i := start;
     while (i < len && is_ident_continue(str_byte(text, i))) {
         i += 1;
     }
+    return i;
+}
+
+pub fn scan_string_end(text str, start int, len int) int {
+    i := start + 1;
+    while (i < len) {
+        b := str_byte(text, i);
+        if (b == 92) {
+            i += 2;
+        } else {
+            if (b == 34) {
+                return i + 1;
+            }
+            i += 1;
+        }
+    }
+    return i;
+}
+
+pub fn punct_kind(text str, start int, len int) int {
+    b := str_byte(text, start);
+    if (b == 40) {
+        return lex.token.kind_l_paren();
+    }
+    if (b == 41) {
+        return lex.token.kind_r_paren();
+    }
+    if (b == 123) {
+        return lex.token.kind_l_brace();
+    }
+    if (b == 125) {
+        return lex.token.kind_r_brace();
+    }
+    if (b == 59) {
+        return lex.token.kind_semi();
+    }
+    if (b == 44) {
+        return lex.token.kind_comma();
+    }
+    if (b == 43) {
+        return lex.token.kind_plus();
+    }
+    if (b == 61) {
+        return lex.token.kind_eq();
+    }
+    if (b == 58 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        return lex.token.kind_colon_eq();
+    }
+    return lex.token.kind_invalid();
+}
+
+pub fn next_kind(text str, start int) int {
+    len := str_len(text);
+    pos := next_start(text, start);
+    if (pos >= len) {
+        return lex.token.kind_eof();
+    }
+
+    b := str_byte(text, pos);
+    if (is_alpha(b)) {
+        end := scan_ident_end(text, pos, len);
+        if (is_fn_keyword(text, pos, end)) {
+            return lex.token.kind_kw_fn();
+        }
+        return lex.token.kind_ident();
+    }
+    if (b == 34) {
+        return lex.token.kind_string();
+    }
+    return punct_kind(text, pos, len);
+}
+
+pub fn next_end(text str, start int) int {
+    len := str_len(text);
+    pos := next_start(text, start);
+    if (pos >= len) {
+        return pos;
+    }
+
+    b := str_byte(text, pos);
+    if (is_alpha(b)) {
+        return scan_ident_end(text, pos, len);
+    }
+    if (b == 34) {
+        return scan_string_end(text, pos, len);
+    }
+    if (b == 58 && pos + 1 < len && str_byte(text, pos + 1) == 61) {
+        return pos + 2;
+    }
+    return pos + 1;
+}
+
+pub fn scan_ident(text str, start int, len int) int {
+    i := scan_ident_end(text, start, len);
 
     if (is_fn_keyword(text, start, i)) {
         lex.token.print_token(lex.token.kind_kw_fn(), "fn");
@@ -101,18 +212,10 @@ pub fn scan_ident(text str, start int, len int) int {
 }
 
 pub fn scan_string(text str, start int, len int) int {
-    i := start + 1;
-    while (i < len) {
-        b := str_byte(text, i);
-        if (b == 92) {
-            i += 2;
-        } else {
-            if (b == 34) {
-                lex.token.print_token(lex.token.kind_string(), "\"hi\\n\"");
-                return i + 1;
-            }
-            i += 1;
-        }
+    i := scan_string_end(text, start, len);
+    if (i <= len && i > start + 1 && str_byte(text, i - 1) == 34) {
+        lex.token.print_token(lex.token.kind_string(), "\"hi\\n\"");
+        return i;
     }
     lex.token.print_token(lex.token.kind_invalid(), "<string>");
     return i;

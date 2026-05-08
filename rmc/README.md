@@ -4,9 +4,9 @@
 
 `rmc` is the future main RauMa compiler written in RauMa.
 
-v0.0.8e adds a minimal parser foundation over the same hardcoded demo source.
-The parser uses byte-level source scanning with `str_len` and `str_byte`,
-recognizes only the demo grammar, and prints a stable parser summary.
+v0.0.8f adds a token stream abstraction between the scanner and parser. The
+lexer still scans the hardcoded demo source byte by byte, but the parser now
+consumes stream helpers instead of calling `str_byte` directly.
 
 `rmc` still does not implement file IO, CLI args, token arrays, full parsing,
 checking, codegen, HIR, MIR, packages, std modules, or self-hosting.
@@ -24,7 +24,8 @@ rmc/
 │   └── source.rm
 ├── lex/
 │   ├── token.rm
-│   └── lexer.rm
+│   ├── lexer.rm
+│   └── stream.rm
 ├── ast/
 │   └── ast.rm
 ├── parse/
@@ -41,15 +42,16 @@ use cli.version;
 use source.source;
 use lex.token;
 use lex.lexer;
+use lex.stream;
 use ast.ast;
 use parse.parser;
 use diag.output;
 ```
 
 The executable prints help, module readiness, lexer smoke tokens, and a parser
-summary scanned from `source.source.demo_text()`. Command-line argument
-dispatch is not implemented yet because the current bootstrap codegen does not
-support `main(args)`.
+summary produced through `lex.stream` over `source.source.demo_text()`.
+Command-line argument dispatch is not implemented yet because the current
+bootstrap codegen does not support `main(args)`.
 
 ## Building With rmb
 
@@ -66,6 +68,6 @@ The binary path is still entry-stem based, so `rmc/main.rm` builds to
 
 ## Later v0.0.8 Work
 
-v0.0.8f should introduce a token stream abstraction. File-driven lexing,
+v0.0.8g should grow a more real parser over stream tokens. File-driven lexing,
 full parser work, checker/codegen bridge work, and the self-host fixed point
 remain later milestones.

@@ -4,7 +4,7 @@
 
 RauMa uses a multi-stage compiler architecture designed for incremental development and self-hosting.
 
-### Bootstrap pipeline status (v0.0.8e)
+### Bootstrap pipeline status (v0.0.8f)
 
 The full pipeline (Resolver → HIR → MIR → multi-backend) is the long-term design.
 The v0.0.7 bootstrap compiler `rmb` deliberately skips most of these stages and
@@ -22,9 +22,10 @@ still emits C directly from checked AST chunks:
 - **The C backend in `rmb` is a bootstrap backend** — small, boring, and
   table-driven from the AST. It will eventually be replaced (or sit alongside)
   the richer pipeline once `rmc` takes over.
-- **v0.0.8e adds an early `rmc` parser module.** `rmc/parse/parser.rm`
-  recognizes only the hardcoded demo source and prints a parser summary. The
-  binary still does not compile arbitrary RauMa files.
+- **v0.0.8f adds an `rmc` token stream module.** `rmc/parse/parser.rm`
+  consumes stream helpers instead of scanning source bytes directly. The binary
+  still recognizes only the hardcoded demo source and does not compile arbitrary
+  RauMa files.
 
 ## Compilation Pipeline
 
@@ -178,11 +179,12 @@ build/debug/native/bin/main
 - Multiple backends
 - Self-hosting
 - Active development
-- In v0.0.8e, `rmc` has a minimal CLI skeleton plus early data modules:
+- In v0.0.8f, `rmc` has a minimal CLI skeleton plus early data modules:
   `source/span`, `source/source`, `lex/token`, `lex/lexer`, `ast/ast`,
-  `parse/parser`, and `diag/output`.
-- The lexer and parser scan hardcoded source bytes, not files. Checker,
-  codegen, and self-hosting logic are still future v0.0.8/v0.0.9 work.
+  `lex/stream`, `parse/parser`, and `diag/output`.
+- The lexer scans hardcoded source bytes, and the parser consumes cursor-style
+  stream helpers. There are no token arrays, file input, checker, codegen, or
+  self-hosting logic yet.
 
 ## Self-Hosting Process
 

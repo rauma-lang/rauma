@@ -75,6 +75,15 @@ This is not a full parser and does not use a token array yet. It exists to
 prove `rmc` can host parser-shaped control flow in RauMa. The self-host fixed
 point remains v0.0.9.
 
+### v0.0.8f: Token Stream Foundation
+
+v0.0.8f separates token scanning from parser logic. `rmc/lex/lexer.rm` still
+owns byte-level scanning over the hardcoded demo source, while
+`rmc/lex/stream.rm` exposes cursor-style token expectations for the parser.
+
+This still does not allocate token arrays or read files. The self-host fixed
+point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1
