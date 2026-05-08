@@ -169,17 +169,22 @@ fn add(a, b) {
 }
 ```
 
-### Import/Export
+### Use/Export
 ```rauma
-// Import module
-import std.io;
-import math { sin, cos };
+// Local module use
+use math;
+use app.util;
 
 // Export declarations
 pub fn public_function() { ... }
 pub struct PublicStruct { ... }
 pub const PUBLIC_CONST = 42;
 ```
+
+In v0.0.7, `use foo.bar;` resolves only to a local file relative to the entry
+source directory. Dots map to path separators, so `use app.util;` resolves to
+`app/util.rm`. Global package search, `std` modules, and external package
+resolution are not implemented yet.
 
 ### Expression Syntax
 ```rauma

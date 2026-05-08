@@ -4,25 +4,61 @@
 
 RauMa uses a chunk-based build system designed for incremental compilation, parallel builds, and efficient dependency management.
 
-## v0.0.6 bootstrap layout (temporary)
+## v0.0.7 bootstrap chunk layout
 
-The chunk-based system below is the long-term design. The v0.0.6 bootstrap
-compiler `rmb` ships a minimal single-file build that maps directly onto the
-filesystem:
+The v0.0.7 bootstrap compiler `rmb` implements a small, explicit chunk build
+layout for local projects. Each `.rm` source file becomes one generated C file,
+one object file, and one textual interface file:
 
 ```
-tests/foo.rm  ->  rmb/build/foo.c  ->  rmb/build/foo
+build/debug/native/c/chunk/<source-dir>/<file-stem>/<file-stem>.c
+build/debug/native/c/chunk/<source-dir>/<file-stem>/<file-stem>.o
+build/debug/native/c/chunk/<source-dir>/<file-stem>/<file-stem>.rmi
+build/debug/native/bin/<entry-stem>
 ```
 
 `rmb build <file>`:
 1. lex / parse / type-check the input
-2. emit a portable C99/C11 file at `rmb/build/<stem>.c`
-3. invoke `gcc` to produce `rmb/build/<stem>` (or `<stem>.exe` on Windows)
+2. recursively resolve local `use` declarations from the entry file directory
+3. topologically order chunks with dependencies before dependents
+4. emit one portable C11 file and one `.rmi` per chunk
+5. compile each generated C file to an object with `gcc`
+6. link all objects into `build/debug/native/bin/<entry-stem>`
 
-There is no chunk metadata, no interface hashing, no dependency graph, no
-incremental rebuild, and no multi-file resolution yet — those are scheduled
-for **v0.0.7 Chunk Build System**, which will introduce the layout described
-below.
+For v0.0.7, `profile = debug` and `target = native` are fixed. There are no
+CLI flags for profile or target yet.
+
+### Local `use` resolution
+
+`use` is local and single-package only:
+
+```rauma
+use math;
+use app.util;
+```
+
+Given entry file `tests/project_nested/main.rm`, `use app.util;` resolves to:
+
+```
+tests/project_nested/app/util.rm
+```
+
+Rules:
+- resolve relative to the entry file directory
+- map `.` to `/`
+- append `.rm`
+- do not search global package paths
+- do not resolve `std` or external modules yet
+
+### Current non-incremental behavior
+
+v0.0.7 always rebuilds the discovered chunks for each `rmb build <file>` run.
+The `.rmi` file is a deterministic text summary of public top-level
+declarations, but it is not used for cache invalidation yet.
+
+Future incremental work should hash source files and `.rmi` interfaces, skip
+unchanged implementation chunks, and rebuild dependents only when imported
+interfaces change.
 
 ## Chunk-Based Architecture
 

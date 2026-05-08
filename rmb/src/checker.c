@@ -407,6 +407,14 @@ static ExprResult check_call(RmbChecker* c, RmbAstExpr* expr) {
         r.error_type = fn->error_type;
         return r;
     }
+    // Qualified calls such as math.add(...) are resolved by the v0.0.7 build
+    // driver/codegen layer. The checker remains file-local for now.
+    if (callee && callee->kind == RMB_AST_EXPR_FIELD) {
+        for (size_t i = 0; i < expr->call.arg_count; i++) {
+            check_expr(c, expr->call.args[i]);
+        }
+        return err_unknown();
+    }
     // Other callees: just check args and yield unknown
     for (size_t i = 0; i < expr->call.arg_count; i++) {
         check_expr(c, expr->call.args[i]);

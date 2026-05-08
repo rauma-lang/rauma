@@ -35,33 +35,36 @@
 
 ## Architecture
 
-### Components (v0.0.6)
+### Components (v0.0.7)
 1. **Source Loading**: Read `.rm` files
 2. **Lexer/Tokenizer**: Convert source to tokens with span tracking
 3. **Diagnostics**: Error reporting with source locations
 4. **Parser**: Recursive descent parser building AST with improved diagnostics
 5. **AST**: Abstract Syntax Tree representation with spans and match/enum payload support
 6. **Type Checker**: Basic type checking and inference
-7. **C Code Generator**: Emits portable C99/C11 from checked AST and invokes `gcc`
+7. **C Code Generator**: Emits portable C99/C11 from checked AST chunks
+8. **Chunk Build Driver**: Resolves simple local `use` declarations, compiles per-file C chunks, and links objects with `gcc`
 
-### Build Pipeline (v0.0.6)
+### Build Pipeline (v0.0.7)
 ```
-.rm source
+.rm entry source
     ↓
-Source Loader → RmbSource
+Build Driver → local use graph
     ↓
-Lexer → tokens (with spans)
+Source Loader / Lexer / Parser per chunk
     ↓
-Parser → AST (Abstract Syntax Tree)
+AST per chunk
     ↓
-Type Checker → typed AST view
+Type Checker per chunk
     ↓
-C Code Generator → build/<name>.c
+C Code Generator → build/debug/native/c/chunk/<source-dir>/<stem>/<stem>.c
     ↓
-gcc → build/<name> executable
+gcc -c → per-chunk .o
+    ↓
+gcc link → build/debug/native/bin/<entry-stem>
 ```
 
-## Language Support (v0.0.6)
+## Language Support (v0.0.7)
 
 ### Lexer Features
 - **Keywords**: `fn`, `pub`, `struct`, `enum`, `use`, `return`, `if`, `else`, `while`, `for`, `match`, `case`, `const`, `defer`, `true`, `false`, `none`
@@ -102,18 +105,30 @@ gcc → build/<name> executable
 - **Statements**: variable declarations (`:=`, `: T = e`), assignment (`=`, `+=`, `-=`, `*=`, `/=`), `return`, `if`/`else`, `while`, `for`
 - **Expressions**: int/string/bool literals, identifiers, calls, field access, unary (`-`, `!`, `&`, `*`), binary arithmetic and comparisons, `&&`/`||`
 
-### Build Limitations (v0.0.6)
+### Chunk Build Features (v0.0.7)
+- **File chunks**: each `.rm` file emits its own `.c`, `.o`, and `.rmi`
+- **Fixed layout**: `build/debug/native/...`
+- **Simple local `use`**: `use math;` and `use app.util;`
+- **Dependency walk**: recursively collects local dependencies from `use`
+- **Cycle/missing file diagnostics**: fails build for simple use cycles and unresolved use targets
+- **Linking**: links all chunk objects into one executable
+
+### Build Limitations (v0.0.7)
+- Local single-package `use` only
+- No global package search
+- No `std` modules
+- No full incremental rebuild or cache invalidation
+- No full module type-checking or public/private semantic enforcement
 - No error-returning function codegen (`fn ... !! E`, `?`, `!`)
 - No `match` codegen
 - No `defer` codegen
-- No module / chunk build yet (single-file builds only)
 - No optional/`else` codegen
 - No struct literal codegen
 - No HIR / MIR / optimizer / native backend
 
-### Unsupported Features (in v0.0.6)
+### Unsupported Features (in v0.0.7)
 - HIR / MIR
-- Full module resolution across files (qualified types treated as opaque names)
+- Full module resolution across files
 - Generics, traits, overloads
 - Implicit numeric conversions
 - Ownership / interference checking
@@ -145,7 +160,7 @@ The compiler executable is built at:
 rmb/build/rmb
 ```
 
-## Usage (v0.0.6)
+## Usage (v0.0.7)
 
 ```bash
 # Show help
@@ -160,18 +175,31 @@ rmb/build/rmb
 # Type-check a RauMa file
 ./build/rmb check source.rm
 
-# Build a RauMa file to executable (writes build/<name>.c and build/<name>)
+# Build a RauMa file or small local project to executable
 ./build/rmb build source.rm
 
 # Show version
 ./build/rmb version
 ```
 
-### Build output (temporary v0.0.6 layout)
+### Build output layout
 ```
-tests/foo.rm  →  build/foo.c  →  build/foo
+tests/foo.rm
+  -> build/debug/native/c/chunk/tests/foo/foo.c
+  -> build/debug/native/c/chunk/tests/foo/foo.o
+  -> build/debug/native/c/chunk/tests/foo/foo.rmi
+  -> build/debug/native/bin/foo
 ```
-The full chunk build system is planned for v0.0.7.
+
+For project builds:
+
+```rauma
+use app.util;
+```
+
+Given entry file `tests/project_nested/main.rm`, the build driver resolves that
+use to `tests/project_nested/app/util.rm`. Dots map to path separators and
+`.rm` is appended. The search is relative to the entry file directory only.
 
 ## Development
 

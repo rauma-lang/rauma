@@ -1044,11 +1044,25 @@ RmbAstItem* rmb_parse_item(RmbParser* parser) {
 
     // Use declaration
     if (parser_match(parser, RMB_TOKEN_KW_USE)) {
-        RmbToken* path = parser_consume(parser, RMB_TOKEN_IDENT, "module path");
+        RmbToken* parts[8];
+        size_t part_count = 0;
+        RmbToken* first = parser_consume(parser, RMB_TOKEN_IDENT, "module path");
+        parts[part_count++] = first;
+        while (parser_match(parser, RMB_TOKEN_DOT)) {
+            if (part_count >= 8) {
+                rmb_diag_error_at(parser_current(parser)->span, "module path is too deep");
+                parser->had_error = true;
+                break;
+            }
+            parts[part_count++] = parser_consume(parser, RMB_TOKEN_IDENT, "module path segment");
+        }
+        rmb_string path = part_count > 1
+            ? join_with_dots(parser, parts, 0, part_count)
+            : first->lexeme;
         parser_consume(parser, RMB_TOKEN_SEMI, ";");
         return rmb_ast_item_use(
             span_union(start->span,parser_current(parser)->span),
-            path->lexeme
+            path
         );
     }
 

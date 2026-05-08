@@ -1,0 +1,5 @@
+use does.not.exist;
+
+fn main() {
+    print("bad\n");
+}

@@ -1,0 +1,7 @@
+use app.util;
+
+fn main() {
+    x := app.util.value();
+    print(x);
+    print("\n");
+}

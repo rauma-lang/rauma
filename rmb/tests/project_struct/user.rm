@@ -1,0 +1,8 @@
+pub struct User {
+    id int;
+    name str;
+}
+
+pub fn get_id(user User) int {
+    return user.id;
+}

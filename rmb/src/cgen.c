@@ -1,5 +1,5 @@
 // RauMa Bootstrap Compiler - C Code Generator
-// v0.0.6: Emit portable C99/C11 from a checked RauMa AST.
+// v0.0.7: Emit portable C99/C11 from checked RauMa AST chunks.
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -9,8 +9,6 @@
 #include "rmb/diag.h"
 #include "rmb/token.h"
 #include "rmb/type.h"
-
-// ----- Internal symbol tables -----
 
 typedef struct CgVar CgVar;
 struct CgVar {
@@ -35,6 +33,7 @@ struct CgField {
 typedef struct CgStruct CgStruct;
 struct CgStruct {
     rmb_string name;
+    const char* c_name;
     CgField* fields;
     CgStruct* next;
 };
@@ -49,16 +48,17 @@ struct CgFnParam {
 typedef struct CgFn CgFn;
 struct CgFn {
     rmb_string name;
+    const char* module_path;
+    const char* c_name;
     CgFnParam* params;
     size_t param_count;
     RmbType* return_type;
     bool error_capable;
     bool is_main;
+    bool is_external;
     RmbAstItem* ast;
     CgFn* next;
 };
-
-// ----- Diagnostics -----
 
 static void cg_error(RmbCGen* g, RmbSpan span, const char* fmt, ...) {
     va_list ap;
@@ -70,7 +70,58 @@ static void cg_error(RmbCGen* g, RmbSpan span, const char* fmt, ...) {
     g->had_error = true;
 }
 
-// ----- Symbol lookup -----
+static void emit_str(RmbCGen* g, const char* s) {
+    fputs(s, g->out);
+}
+
+static void emit_fmt(RmbCGen* g, const char* fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(g->out, fmt, ap);
+    va_end(ap);
+}
+
+static void emit_rmb_string(RmbCGen* g, rmb_string s) {
+    fwrite(s.ptr, 1, s.len, g->out);
+}
+
+static void emit_c_ident_part(RmbCGen* g, const char* s) {
+    for (const char* p = s; *p; p++) {
+        char ch = *p;
+        fputc((ch == '/' || ch == '\\' || ch == '.' || ch == '-') ? '_' : ch, g->out);
+    }
+}
+
+static void emit_c_rmb_string_part(RmbCGen* g, rmb_string s) {
+    for (size_t i = 0; i < s.len; i++) {
+        char ch = s.ptr[i];
+        fputc((ch == '/' || ch == '\\' || ch == '.' || ch == '-') ? '_' : ch, g->out);
+    }
+}
+
+static char* arena_c_name(RmbCGen* g, const char* prefix, rmb_string name) {
+    size_t plen = strlen(prefix);
+    char* out = rmb_arena_alloc(g->arena, plen + 1 + name.len + 1);
+    if (!out) return NULL;
+    memcpy(out, prefix, plen);
+    out[plen] = '_';
+    for (size_t i = 0; i < name.len; i++) {
+        char ch = name.ptr[i];
+        out[plen + 1 + i] =
+            (ch == '/' || ch == '\\' || ch == '.' || ch == '-') ? '_' : ch;
+    }
+    out[plen + 1 + name.len] = '\0';
+    return out;
+}
+
+static bool str_ends_module(const char* full, const char* short_name) {
+    size_t flen = strlen(full);
+    size_t slen = strlen(short_name);
+    if (flen == slen && memcmp(full, short_name, slen) == 0) return true;
+    if (flen <= slen) return false;
+    return full[flen - slen - 1] == '.' &&
+           memcmp(full + flen - slen, short_name, slen) == 0;
+}
 
 static CgStruct* find_struct(RmbCGen* g, rmb_string name) {
     for (CgStruct* s = (CgStruct*)g->struct_table; s; s = s->next) {
@@ -81,7 +132,15 @@ static CgStruct* find_struct(RmbCGen* g, rmb_string name) {
 
 static CgFn* find_fn(RmbCGen* g, rmb_string name) {
     for (CgFn* f = (CgFn*)g->fn_table; f; f = f->next) {
-        if (rmb_string_equal(f->name, name)) return f;
+        if (!f->is_external && rmb_string_equal(f->name, name)) return f;
+    }
+    return NULL;
+}
+
+static CgFn* find_qualified_fn(RmbCGen* g, const char* module_path, rmb_string name) {
+    for (CgFn* f = (CgFn*)g->fn_table; f; f = f->next) {
+        if (!f->module_path || !rmb_string_equal(f->name, name)) continue;
+        if (str_ends_module(f->module_path, module_path)) return f;
     }
     return NULL;
 }
@@ -117,17 +176,12 @@ static void scope_add_var(RmbCGen* g, rmb_string name, RmbType* type) {
     s->vars = v;
 }
 
-// ----- Type resolution from AST type refs -----
-
 static RmbType* resolve_type_ref(RmbCGen* g, RmbAstTypeRef* ref) {
     if (!ref) return rmb_type_unknown();
     switch (ref->kind) {
         case RMB_AST_TYPE_SIMPLE: {
             RmbType* prim = rmb_type_lookup_primitive(ref->simple.name);
             if (prim) return prim;
-            if (find_struct(g, ref->simple.name)) {
-                return rmb_type_make_named(g->arena, ref->simple.name);
-            }
             return rmb_type_make_named(g->arena, ref->simple.name);
         }
         case RMB_AST_TYPE_POINTER:
@@ -156,26 +210,131 @@ static RmbType* resolve_type_ref(RmbCGen* g, RmbAstTypeRef* ref) {
             memcpy(buf + ref->qualified.module.len + 1,
                    ref->qualified.name.ptr, ref->qualified.name.len);
             buf[total] = '\0';
-            rmb_string name = { buf, total };
-            return rmb_type_make_named(g->arena, name);
+            return rmb_type_make_named(g->arena, (rmb_string){buf, total});
         }
         default:
             return rmb_type_unknown();
     }
 }
 
-// ----- Expression type inference -----
+static void emit_c_type(RmbCGen* g, RmbType* t) {
+    if (!t) { emit_str(g, "int64_t"); return; }
+    switch (t->kind) {
+        case RMB_TYPE_VOID:  emit_str(g, "void"); break;
+        case RMB_TYPE_INT:   emit_str(g, "int64_t"); break;
+        case RMB_TYPE_UINT:  emit_str(g, "uint64_t"); break;
+        case RMB_TYPE_FLOAT: emit_str(g, "double"); break;
+        case RMB_TYPE_BYTE:  emit_str(g, "uint8_t"); break;
+        case RMB_TYPE_BOOL:  emit_str(g, "bool"); break;
+        case RMB_TYPE_STR:   emit_str(g, "RmStr"); break;
+        case RMB_TYPE_NAMED: {
+            CgStruct* s = find_struct(g, t->name);
+            if (s) emit_str(g, s->c_name);
+            else emit_str(g, "int64_t");
+            break;
+        }
+        case RMB_TYPE_POINTER:
+            emit_c_type(g, t->inner);
+            emit_str(g, "*");
+            break;
+        default:
+            emit_str(g, "int64_t");
+            break;
+    }
+}
+
+static void collect_struct_from_item(RmbCGen* g, RmbAstItem* item, const char* module_prefix) {
+    rmb_string name = item->struct_item.name;
+    CgStruct* s = rmb_arena_alloc(g->arena, sizeof(CgStruct));
+    s->name = name;
+    s->c_name = arena_c_name(g, module_prefix, name);
+    s->fields = NULL;
+    s->next = (CgStruct*)g->struct_table;
+    g->struct_table = s;
+    CgField* last = NULL;
+    for (RmbAstField* f = item->struct_item.fields; f; f = f->next) {
+        CgField* fs = rmb_arena_alloc(g->arena, sizeof(CgField));
+        fs->name = f->name;
+        fs->type = resolve_type_ref(g, f->type);
+        fs->next = NULL;
+        if (!last) s->fields = fs; else last->next = fs;
+        last = fs;
+    }
+}
+
+static void collect_fn_from_item(RmbCGen* g, RmbAstItem* item, const char* module_path,
+                                 const char* module_prefix, bool is_external) {
+    rmb_string name = item->fn_item.name;
+    CgFn* f = rmb_arena_alloc(g->arena, sizeof(CgFn));
+    f->name = name;
+    f->module_path = module_path;
+    f->c_name = arena_c_name(g, module_prefix, name);
+    f->params = NULL;
+    f->param_count = 0;
+    f->return_type = item->fn_item.return_type
+        ? resolve_type_ref(g, item->fn_item.return_type)
+        : NULL;
+    f->error_capable = item->fn_item.error_type != NULL;
+    f->is_main = !is_external && g->options.is_entry &&
+        rmb_string_equal(name, rmb_string_from_cstr("main"));
+    f->is_external = is_external;
+    f->ast = item;
+    f->next = (CgFn*)g->fn_table;
+    g->fn_table = f;
+    CgFnParam* last = NULL;
+    for (RmbAstParam* p = item->fn_item.params; p; p = p->next) {
+        CgFnParam* ps = rmb_arena_alloc(g->arena, sizeof(CgFnParam));
+        ps->name = p->name;
+        ps->type = p->type ? resolve_type_ref(g, p->type) : rmb_type_unknown();
+        ps->next = NULL;
+        if (!last) f->params = ps; else last->next = ps;
+        last = ps;
+        f->param_count++;
+    }
+}
 
 static RmbType* expr_type(RmbCGen* g, RmbAstExpr* e);
+
+static bool qualified_name_from_expr(RmbCGen* g, RmbAstExpr* e, char* module,
+                                     size_t module_cap, rmb_string* name) {
+    if (!e || e->kind != RMB_AST_EXPR_FIELD) return false;
+    *name = e->field.field;
+    module[0] = '\0';
+    RmbAstExpr* cur = e->field.object;
+    while (cur && cur->kind == RMB_AST_EXPR_FIELD) {
+        char part[128];
+        size_t n = cur->field.field.len < sizeof(part) - 1 ? cur->field.field.len : sizeof(part) - 1;
+        memcpy(part, cur->field.field.ptr, n);
+        part[n] = '\0';
+        char old[256];
+        snprintf(old, sizeof(old), "%s", module);
+        snprintf(module, module_cap, "%s%s%s", part, old[0] ? "." : "", old);
+        cur = cur->field.object;
+    }
+    if (!cur || cur->kind != RMB_AST_EXPR_IDENT) return false;
+    char root[128];
+    size_t n = cur->ident.name.len < sizeof(root) - 1 ? cur->ident.name.len : sizeof(root) - 1;
+    memcpy(root, cur->ident.name.ptr, n);
+    root[n] = '\0';
+    char old[256];
+    snprintf(old, sizeof(old), "%s", module);
+    snprintf(module, module_cap, "%s%s%s", root, old[0] ? "." : "", old);
+    (void)g;
+    return true;
+}
 
 static RmbType* call_type(RmbCGen* g, RmbAstExpr* e) {
     RmbAstExpr* callee = e->call.callee;
     if (callee && callee->kind == RMB_AST_EXPR_IDENT) {
         rmb_string name = callee->ident.name;
-        if (rmb_string_equal(name, rmb_string_from_cstr("print"))) {
-            return rmb_type_void();
-        }
+        if (rmb_string_equal(name, rmb_string_from_cstr("print"))) return rmb_type_void();
         CgFn* fn = find_fn(g, name);
+        if (fn) return fn->return_type ? fn->return_type : rmb_type_void();
+    }
+    char module[256];
+    rmb_string name;
+    if (qualified_name_from_expr(g, callee, module, sizeof(module), &name)) {
+        CgFn* fn = find_qualified_fn(g, module, name);
         if (fn) return fn->return_type ? fn->return_type : rmb_type_void();
     }
     return rmb_type_unknown();
@@ -184,18 +343,13 @@ static RmbType* call_type(RmbCGen* g, RmbAstExpr* e) {
 static RmbType* expr_type(RmbCGen* g, RmbAstExpr* e) {
     if (!e) return rmb_type_unknown();
     switch (e->kind) {
-        case RMB_AST_EXPR_INT:
-            return rmb_type_int();
-        case RMB_AST_EXPR_STRING:
-            return rmb_type_str();
-        case RMB_AST_EXPR_BOOL:
-            return rmb_type_bool();
-        case RMB_AST_EXPR_NONE:
-            return rmb_type_make_optional(g->arena, rmb_type_unknown());
+        case RMB_AST_EXPR_INT: return rmb_type_int();
+        case RMB_AST_EXPR_STRING: return rmb_type_str();
+        case RMB_AST_EXPR_BOOL: return rmb_type_bool();
+        case RMB_AST_EXPR_NONE: return rmb_type_make_optional(g->arena, rmb_type_unknown());
         case RMB_AST_EXPR_IDENT: {
             CgVar* v = find_var(g, e->ident.name);
-            if (v) return v->type;
-            return rmb_type_unknown();
+            return v ? v->type : rmb_type_unknown();
         }
         case RMB_AST_EXPR_CALL:
             return call_type(g, e);
@@ -206,9 +360,7 @@ static RmbType* expr_type(RmbCGen* g, RmbAstExpr* e) {
                 CgStruct* s = find_struct(g, base->name);
                 if (s) {
                     for (CgField* f = s->fields; f; f = f->next) {
-                        if (rmb_string_equal(f->name, e->field.field)) {
-                            return f->type;
-                        }
+                        if (rmb_string_equal(f->name, e->field.field)) return f->type;
                     }
                 }
             }
@@ -216,21 +368,12 @@ static RmbType* expr_type(RmbCGen* g, RmbAstExpr* e) {
         }
         case RMB_AST_EXPR_UNARY: {
             RmbType* inner = expr_type(g, e->unary.operand);
-            switch (e->unary.op) {
-                case RMB_TOKEN_BANG:
-                    return rmb_type_bool();
-                case RMB_TOKEN_MINUS:
-                    return inner ? inner : rmb_type_int();
-                case RMB_TOKEN_STAR:
-                    if (inner && inner->kind == RMB_TYPE_POINTER) return inner->inner;
-                    return rmb_type_unknown();
-                case RMB_TOKEN_AMP:
-                    return rmb_type_make_pointer(g->arena, inner);
-                default:
-                    return inner;
-            }
+            if (e->unary.op == RMB_TOKEN_BANG) return rmb_type_bool();
+            if (e->unary.op == RMB_TOKEN_STAR && inner && inner->kind == RMB_TYPE_POINTER) return inner->inner;
+            if (e->unary.op == RMB_TOKEN_AMP) return rmb_type_make_pointer(g->arena, inner);
+            return inner ? inner : rmb_type_int();
         }
-        case RMB_AST_EXPR_BINARY: {
+        case RMB_AST_EXPR_BINARY:
             switch (e->binary.op) {
                 case RMB_TOKEN_LT:
                 case RMB_TOKEN_GT:
@@ -247,129 +390,20 @@ static RmbType* expr_type(RmbCGen* g, RmbAstExpr* e) {
                     return expr_type(g, e->binary.right);
                 }
             }
-        }
-        case RMB_AST_EXPR_ERROR_PROP:
-            return expr_type(g, e->error_prop.operand);
-        case RMB_AST_EXPR_ERROR_PANIC:
-            return expr_type(g, e->error_panic.operand);
-        case RMB_AST_EXPR_ELSE: {
-            RmbType* vt = expr_type(g, e->else_expr.value);
-            if (vt && vt->kind == RMB_TYPE_OPTIONAL) return vt->inner;
-            return vt;
-        }
-        default:
-            return rmb_type_unknown();
+        case RMB_AST_EXPR_ERROR_PROP: return expr_type(g, e->error_prop.operand);
+        case RMB_AST_EXPR_ERROR_PANIC: return expr_type(g, e->error_panic.operand);
+        case RMB_AST_EXPR_ELSE: return expr_type(g, e->else_expr.value);
+        default: return rmb_type_unknown();
     }
 }
-
-// ----- Output helpers -----
 
 static void emit_indent(RmbCGen* g) {
-    for (int i = 0; i < g->indent; i++) {
-        fputs("    ", g->out);
-    }
+    for (int i = 0; i < g->indent; i++) fputs("    ", g->out);
 }
-
-static void emit_str(RmbCGen* g, const char* s) {
-    fputs(s, g->out);
-}
-
-static void emit_fmt(RmbCGen* g, const char* fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    vfprintf(g->out, fmt, ap);
-    va_end(ap);
-}
-
-static void emit_rmb_string(RmbCGen* g, rmb_string s) {
-    fwrite(s.ptr, 1, s.len, g->out);
-}
-
-// ----- Type emission -----
-
-static void emit_c_type(RmbCGen* g, RmbType* t) {
-    if (!t) { emit_str(g, "int64_t"); return; }
-    switch (t->kind) {
-        case RMB_TYPE_VOID:    emit_str(g, "void"); break;
-        case RMB_TYPE_INT:     emit_str(g, "int64_t"); break;
-        case RMB_TYPE_UINT:    emit_str(g, "uint64_t"); break;
-        case RMB_TYPE_FLOAT:   emit_str(g, "double"); break;
-        case RMB_TYPE_BYTE:    emit_str(g, "uint8_t"); break;
-        case RMB_TYPE_BOOL:    emit_str(g, "bool"); break;
-        case RMB_TYPE_STR:     emit_str(g, "RmStr"); break;
-        case RMB_TYPE_NAMED:
-            if (find_struct(g, t->name)) {
-                emit_str(g, "Rm_");
-                emit_rmb_string(g, t->name);
-            } else {
-                emit_str(g, "int64_t"); // unknown named -> fallback
-            }
-            break;
-        case RMB_TYPE_POINTER:
-            emit_c_type(g, t->inner);
-            emit_str(g, "*");
-            break;
-        default:
-            emit_str(g, "int64_t");
-            break;
-    }
-}
-
-// ----- Symbol collection -----
-
-static void collect_struct(RmbCGen* g, RmbAstItem* item) {
-    rmb_string name = item->struct_item.name;
-    if (find_struct(g, name)) return;
-    CgStruct* s = rmb_arena_alloc(g->arena, sizeof(CgStruct));
-    s->name = name;
-    s->fields = NULL;
-    s->next = (CgStruct*)g->struct_table;
-    g->struct_table = s;
-    CgField* last = NULL;
-    for (RmbAstField* f = item->struct_item.fields; f; f = f->next) {
-        CgField* fs = rmb_arena_alloc(g->arena, sizeof(CgField));
-        fs->name = f->name;
-        fs->type = resolve_type_ref(g, f->type);
-        fs->next = NULL;
-        if (!last) s->fields = fs; else last->next = fs;
-        last = fs;
-    }
-}
-
-static void collect_fn(RmbCGen* g, RmbAstItem* item) {
-    rmb_string name = item->fn_item.name;
-    if (find_fn(g, name)) return;
-    CgFn* f = rmb_arena_alloc(g->arena, sizeof(CgFn));
-    f->name = name;
-    f->params = NULL;
-    f->param_count = 0;
-    f->return_type = item->fn_item.return_type
-        ? resolve_type_ref(g, item->fn_item.return_type)
-        : NULL;
-    f->error_capable = item->fn_item.error_type != NULL;
-    f->is_main = rmb_string_equal(name, rmb_string_from_cstr("main"));
-    f->ast = item;
-    f->next = (CgFn*)g->fn_table;
-    g->fn_table = f;
-    CgFnParam* last = NULL;
-    for (RmbAstParam* p = item->fn_item.params; p; p = p->next) {
-        CgFnParam* ps = rmb_arena_alloc(g->arena, sizeof(CgFnParam));
-        ps->name = p->name;
-        ps->type = p->type ? resolve_type_ref(g, p->type) : rmb_type_unknown();
-        ps->next = NULL;
-        if (!last) f->params = ps; else last->next = ps;
-        last = ps;
-        f->param_count++;
-    }
-}
-
-// ----- Forward declarations for emission -----
 
 static void emit_expr(RmbCGen* g, RmbAstExpr* e);
 static void emit_stmt(RmbCGen* g, RmbAstStmt* s);
 static void emit_block(RmbCGen* g, RmbAstStmt** body, size_t count);
-
-// ----- Print built-in -----
 
 static void emit_print_call(RmbCGen* g, RmbAstExpr* e) {
     if (e->call.arg_count != 1) {
@@ -378,23 +412,18 @@ static void emit_print_call(RmbCGen* g, RmbAstExpr* e) {
         return;
     }
     RmbAstExpr* arg = e->call.args[0];
-
-    // String literal short-cut.
     if (arg->kind == RMB_AST_EXPR_STRING) {
         emit_str(g, "rm_print(rm_str(");
         emit_rmb_string(g, arg->string_lit.value);
         emit_str(g, "))");
         return;
     }
-
     RmbType* t = expr_type(g, arg);
     if (!t || rmb_type_is_unknown(t)) {
-        cg_error(g, e->span,
-            "cannot determine type of print argument in codegen v0.0.6");
+        cg_error(g, e->span, "cannot determine type of print argument in codegen v0.0.7");
         emit_str(g, "0");
         return;
     }
-
     switch (t->kind) {
         case RMB_TYPE_STR:
             emit_str(g, "rm_print(");
@@ -414,42 +443,48 @@ static void emit_print_call(RmbCGen* g, RmbAstExpr* e) {
             emit_str(g, ")");
             break;
         default:
-            cg_error(g, e->span,
-                "print of this type is not supported by codegen v0.0.6");
+            cg_error(g, e->span, "print of this type is not supported by codegen v0.0.7");
             emit_str(g, "0");
             break;
     }
 }
 
-// ----- Expression emission -----
-
 static const char* binary_op_str(RmbTokenKind op) {
     switch (op) {
-        case RMB_TOKEN_PLUS:    return "+";
-        case RMB_TOKEN_MINUS:   return "-";
-        case RMB_TOKEN_STAR:    return "*";
-        case RMB_TOKEN_SLASH:   return "/";
+        case RMB_TOKEN_PLUS: return "+";
+        case RMB_TOKEN_MINUS: return "-";
+        case RMB_TOKEN_STAR: return "*";
+        case RMB_TOKEN_SLASH: return "/";
         case RMB_TOKEN_PERCENT: return "%";
-        case RMB_TOKEN_LT:      return "<";
-        case RMB_TOKEN_GT:      return ">";
-        case RMB_TOKEN_LT_EQ:   return "<=";
-        case RMB_TOKEN_GT_EQ:   return ">=";
-        case RMB_TOKEN_EQ_EQ:   return "==";
+        case RMB_TOKEN_LT: return "<";
+        case RMB_TOKEN_GT: return ">";
+        case RMB_TOKEN_LT_EQ: return "<=";
+        case RMB_TOKEN_GT_EQ: return ">=";
+        case RMB_TOKEN_EQ_EQ: return "==";
         case RMB_TOKEN_BANG_EQ: return "!=";
         case RMB_TOKEN_AND_AND: return "&&";
-        case RMB_TOKEN_OR_OR:   return "||";
-        default:                return "?";
+        case RMB_TOKEN_OR_OR: return "||";
+        default: return "?";
     }
 }
 
 static const char* unary_op_str(RmbTokenKind op) {
     switch (op) {
         case RMB_TOKEN_MINUS: return "-";
-        case RMB_TOKEN_BANG:  return "!";
-        case RMB_TOKEN_STAR:  return "*";
-        case RMB_TOKEN_AMP:   return "&";
-        default:              return "?";
+        case RMB_TOKEN_BANG: return "!";
+        case RMB_TOKEN_STAR: return "*";
+        case RMB_TOKEN_AMP: return "&";
+        default: return "?";
     }
+}
+
+static void emit_call_args(RmbCGen* g, RmbAstExpr* e) {
+    emit_str(g, "(");
+    for (size_t i = 0; i < e->call.arg_count; i++) {
+        if (i > 0) emit_str(g, ", ");
+        emit_expr(g, e->call.args[i]);
+    }
+    emit_str(g, ")");
 }
 
 static void emit_call(RmbCGen* g, RmbAstExpr* e) {
@@ -462,22 +497,29 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
         }
         CgFn* fn = find_fn(g, name);
         if (fn && fn->error_capable) {
-            cg_error(g, e->span,
-                "error-returning functions are not supported by codegen v0.0.6");
+            cg_error(g, e->span, "error-returning functions are not supported by codegen v0.0.7");
             emit_str(g, "0");
             return;
         }
-        emit_str(g, "rm_fn_");
-        emit_rmb_string(g, name);
-        emit_str(g, "(");
-        for (size_t i = 0; i < e->call.arg_count; i++) {
-            if (i > 0) emit_str(g, ", ");
-            emit_expr(g, e->call.args[i]);
-        }
-        emit_str(g, ")");
+        emit_str(g, fn ? fn->c_name : "rm_fn_unknown");
+        emit_call_args(g, e);
         return;
     }
-    cg_error(g, e->span, "call target not supported by codegen v0.0.6");
+    char module[256];
+    rmb_string name;
+    if (qualified_name_from_expr(g, callee, module, sizeof(module), &name)) {
+        CgFn* fn = find_qualified_fn(g, module, name);
+        if (!fn) {
+            cg_error(g, e->span, "unknown imported function '%s.%.*s'",
+                     module, (int)name.len, name.ptr);
+            emit_str(g, "0");
+            return;
+        }
+        emit_str(g, fn->c_name);
+        emit_call_args(g, e);
+        return;
+    }
+    cg_error(g, e->span, "call target not supported by codegen v0.0.7");
     emit_str(g, "0");
 }
 
@@ -521,27 +563,23 @@ static void emit_expr(RmbCGen* g, RmbAstExpr* e) {
             emit_str(g, ")");
             break;
         case RMB_AST_EXPR_ERROR_PROP:
-            cg_error(g, e->span,
-                "error propagation '?' is not supported by codegen v0.0.6");
+            cg_error(g, e->span, "error propagation '?' is not supported by codegen v0.0.7");
             emit_str(g, "0");
             break;
         case RMB_AST_EXPR_ERROR_PANIC:
-            cg_error(g, e->span,
-                "error panic '!' is not supported by codegen v0.0.6");
+            cg_error(g, e->span, "error panic '!' is not supported by codegen v0.0.7");
             emit_str(g, "0");
             break;
         case RMB_AST_EXPR_ELSE:
-            cg_error(g, e->span,
-                "'else' fallback expression is not supported by codegen v0.0.6");
+            cg_error(g, e->span, "'else' fallback expression is not supported by codegen v0.0.7");
             emit_str(g, "0");
             break;
         case RMB_AST_EXPR_NONE:
-            cg_error(g, e->span,
-                "'none' literal is not supported by codegen v0.0.6");
+            cg_error(g, e->span, "'none' literal is not supported by codegen v0.0.7");
             emit_str(g, "0");
             break;
         default:
-            cg_error(g, e->span, "unsupported expression in codegen v0.0.6");
+            cg_error(g, e->span, "unsupported expression in codegen v0.0.7");
             emit_str(g, "0");
             break;
     }
@@ -549,28 +587,18 @@ static void emit_expr(RmbCGen* g, RmbAstExpr* e) {
 
 static const char* assign_op_str(RmbTokenKind op) {
     switch (op) {
-        case RMB_TOKEN_EQ:       return "=";
-        case RMB_TOKEN_PLUS_EQ:  return "+=";
+        case RMB_TOKEN_EQ: return "=";
+        case RMB_TOKEN_PLUS_EQ: return "+=";
         case RMB_TOKEN_MINUS_EQ: return "-=";
-        case RMB_TOKEN_STAR_EQ:  return "*=";
+        case RMB_TOKEN_STAR_EQ: return "*=";
         case RMB_TOKEN_SLASH_EQ: return "/=";
-        default:                 return "=";
+        default: return "=";
     }
 }
 
-// ----- Statement emission -----
-
 static void emit_var_stmt(RmbCGen* g, RmbAstStmt* s) {
-    RmbType* t = NULL;
-    if (s->var.type) {
-        t = resolve_type_ref(g, s->var.type);
-    } else if (s->var.value) {
-        t = expr_type(g, s->var.value);
-    }
-    if (!t || rmb_type_is_unknown(t)) {
-        // Fall back to int64_t for untyped declarations.
-        t = rmb_type_int();
-    }
+    RmbType* t = s->var.type ? resolve_type_ref(g, s->var.type) : expr_type(g, s->var.value);
+    if (!t || rmb_type_is_unknown(t)) t = rmb_type_int();
     scope_add_var(g, s->var.name, t);
     emit_indent(g);
     emit_c_type(g, t);
@@ -599,11 +627,7 @@ static void emit_return_stmt(RmbCGen* g, RmbAstStmt* s) {
         emit_str(g, ";\n");
     } else {
         CgFn* fn = (CgFn*)g->current_fn;
-        if (fn && fn->is_main) {
-            emit_str(g, "return 0;\n");
-        } else {
-            emit_str(g, "return;\n");
-        }
+        emit_str(g, (fn && fn->is_main) ? "return 0;\n" : "return;\n");
     }
 }
 
@@ -646,11 +670,8 @@ static void emit_for_stmt(RmbCGen* g, RmbAstStmt* s) {
     if (s->for_stmt.init) emit_stmt(g, s->for_stmt.init);
     emit_indent(g);
     emit_str(g, "while (");
-    if (s->for_stmt.cond) {
-        emit_expr(g, s->for_stmt.cond);
-    } else {
-        emit_str(g, "1");
-    }
+    if (s->for_stmt.cond) emit_expr(g, s->for_stmt.cond);
+    else emit_str(g, "1");
     emit_str(g, ") {\n");
     g->indent++;
     emit_block(g, s->for_stmt.body, s->for_stmt.body_count);
@@ -671,31 +692,17 @@ static void emit_for_stmt(RmbCGen* g, RmbAstStmt* s) {
 static void emit_stmt(RmbCGen* g, RmbAstStmt* s) {
     if (!s) return;
     switch (s->kind) {
-        case RMB_AST_STMT_VAR:
-            emit_var_stmt(g, s);
-            break;
-        case RMB_AST_STMT_ASSIGN:
-            emit_assign_stmt(g, s);
-            break;
-        case RMB_AST_STMT_RETURN:
-            emit_return_stmt(g, s);
-            break;
-        case RMB_AST_STMT_IF:
-            emit_if_stmt(g, s);
-            break;
-        case RMB_AST_STMT_WHILE:
-            emit_while_stmt(g, s);
-            break;
-        case RMB_AST_STMT_FOR:
-            emit_for_stmt(g, s);
-            break;
+        case RMB_AST_STMT_VAR: emit_var_stmt(g, s); break;
+        case RMB_AST_STMT_ASSIGN: emit_assign_stmt(g, s); break;
+        case RMB_AST_STMT_RETURN: emit_return_stmt(g, s); break;
+        case RMB_AST_STMT_IF: emit_if_stmt(g, s); break;
+        case RMB_AST_STMT_WHILE: emit_while_stmt(g, s); break;
+        case RMB_AST_STMT_FOR: emit_for_stmt(g, s); break;
         case RMB_AST_STMT_MATCH:
-            cg_error(g, s->span,
-                "match is not supported by codegen v0.0.6");
+            cg_error(g, s->span, "match is not supported by codegen v0.0.7");
             break;
         case RMB_AST_STMT_DEFER:
-            cg_error(g, s->span,
-                "defer is not supported by codegen v0.0.6");
+            cg_error(g, s->span, "defer is not supported by codegen v0.0.7");
             break;
         case RMB_AST_STMT_EXPR:
             emit_indent(g);
@@ -709,17 +716,13 @@ static void emit_stmt(RmbCGen* g, RmbAstStmt* s) {
 
 static void emit_block(RmbCGen* g, RmbAstStmt** body, size_t count) {
     scope_push(g);
-    for (size_t i = 0; i < count; i++) {
-        emit_stmt(g, body[i]);
-    }
+    for (size_t i = 0; i < count; i++) emit_stmt(g, body[i]);
     scope_pop(g);
 }
 
-// ----- Top-level emission -----
-
 static void emit_struct_decl(RmbCGen* g, CgStruct* s) {
-    emit_str(g, "typedef struct Rm_");
-    emit_rmb_string(g, s->name);
+    emit_str(g, "typedef struct ");
+    emit_str(g, s->c_name);
     emit_str(g, " {\n");
     for (CgField* f = s->fields; f; f = f->next) {
         emit_str(g, "    ");
@@ -728,24 +731,20 @@ static void emit_struct_decl(RmbCGen* g, CgStruct* s) {
         emit_rmb_string(g, f->name);
         emit_str(g, ";\n");
     }
-    emit_str(g, "} Rm_");
-    emit_rmb_string(g, s->name);
+    emit_str(g, "} ");
+    emit_str(g, s->c_name);
     emit_str(g, ";\n\n");
 }
 
-static void emit_fn_signature(RmbCGen* g, CgFn* fn) {
+static void emit_fn_signature(RmbCGen* g, CgFn* fn, bool prototype) {
     if (fn->is_main) {
         emit_str(g, "int main(void)");
         return;
     }
-    emit_str(g, "static ");
-    if (fn->return_type && fn->return_type->kind != RMB_TYPE_VOID) {
-        emit_c_type(g, fn->return_type);
-    } else {
-        emit_str(g, "void");
-    }
-    emit_str(g, " rm_fn_");
-    emit_rmb_string(g, fn->name);
+    if (fn->return_type && fn->return_type->kind != RMB_TYPE_VOID) emit_c_type(g, fn->return_type);
+    else emit_str(g, "void");
+    emit_str(g, " ");
+    emit_str(g, fn->c_name);
     emit_str(g, "(");
     if (!fn->params) {
         emit_str(g, "void");
@@ -755,15 +754,17 @@ static void emit_fn_signature(RmbCGen* g, CgFn* fn) {
             if (!first) emit_str(g, ", ");
             first = false;
             emit_c_type(g, p->type);
-            emit_str(g, " ");
-            emit_rmb_string(g, p->name);
+            if (!prototype) {
+                emit_str(g, " ");
+                emit_rmb_string(g, p->name);
+            }
         }
     }
     emit_str(g, ")");
 }
 
 static void emit_fn_decl(RmbCGen* g, CgFn* fn) {
-    emit_fn_signature(g, fn);
+    emit_fn_signature(g, fn, true);
     emit_str(g, ";\n");
 }
 
@@ -774,18 +775,16 @@ static bool body_ends_with_return(RmbAstItem* item) {
 }
 
 static void emit_fn_def(RmbCGen* g, CgFn* fn) {
+    if (fn->is_external) return;
     if (fn->is_main && fn->params) {
-        cg_error(g, fn->ast->span,
-            "main arguments are not supported by codegen v0.0.6");
+        cg_error(g, fn->ast->span, "main arguments are not supported by codegen v0.0.7");
     }
     if (fn->error_capable) {
-        cg_error(g, fn->ast->span,
-            "error-returning functions are not supported by codegen v0.0.6");
+        cg_error(g, fn->ast->span, "error-returning functions are not supported by codegen v0.0.7");
         return;
     }
-
     g->current_fn = fn;
-    emit_fn_signature(g, fn);
+    emit_fn_signature(g, fn, false);
     emit_str(g, " {\n");
     g->indent++;
     scope_push(g);
@@ -805,11 +804,9 @@ static void emit_fn_def(RmbCGen* g, CgFn* fn) {
     g->current_fn = NULL;
 }
 
-// ----- Prelude -----
-
 static void emit_prelude(RmbCGen* g) {
     emit_str(g,
-        "// Generated by rmb 0.0.6 - do not edit.\n"
+        "// Generated by rmb 0.0.7 - do not edit.\n"
         "#include <stdint.h>\n"
         "#include <stddef.h>\n"
         "#include <stdbool.h>\n"
@@ -817,34 +814,38 @@ static void emit_prelude(RmbCGen* g) {
         "#include <string.h>\n"
         "#include <stdlib.h>\n"
         "\n"
+        "#if defined(__GNUC__)\n"
+        "#define RM_UNUSED __attribute__((unused))\n"
+        "#else\n"
+        "#define RM_UNUSED\n"
+        "#endif\n"
+        "\n"
         "typedef struct {\n"
         "    const char *ptr;\n"
         "    int64_t len;\n"
         "} RmStr;\n"
         "\n"
-        "static RmStr rm_str(const char *s) {\n"
+        "static RM_UNUSED RmStr rm_str(const char *s) {\n"
         "    RmStr out;\n"
         "    out.ptr = s;\n"
         "    out.len = (int64_t)strlen(s);\n"
         "    return out;\n"
         "}\n"
         "\n"
-        "static void rm_print(RmStr s) {\n"
+        "static RM_UNUSED void rm_print(RmStr s) {\n"
         "    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n"
         "}\n"
         "\n"
-        "static void rm_print_int(int64_t v) {\n"
+        "static RM_UNUSED void rm_print_int(int64_t v) {\n"
         "    printf(\"%lld\", (long long)v);\n"
         "}\n"
         "\n"
-        "static void rm_print_bool(bool b) {\n"
+        "static RM_UNUSED void rm_print_bool(bool b) {\n"
         "    if (b) fwrite(\"true\", 1, 4, stdout);\n"
         "    else fwrite(\"false\", 1, 5, stdout);\n"
         "}\n"
         "\n");
 }
-
-// ----- Public API -----
 
 void rmb_cgen_init(RmbCGen* g, rmb_arena* arena, RmbAstFile* file) {
     g->arena = arena;
@@ -856,15 +857,29 @@ void rmb_cgen_init(RmbCGen* g, rmb_arena* arena, RmbAstFile* file) {
     g->current_fn = NULL;
     g->out = NULL;
     g->indent = 0;
+    memset(&g->options, 0, sizeof(g->options));
 }
 
-bool rmb_cgen_emit_file(RmbCGen* g, const char* out_path) {
-    // Pass 1: collect structs and functions.
-    for (RmbAstItem* it = g->file->items; it; it = it->next) {
-        if (it->kind == RMB_AST_ITEM_STRUCT) collect_struct(g, it);
+bool rmb_cgen_emit_file(RmbCGen* g, const char* out_path, RmbCGenOptions options) {
+    g->options = options;
+
+    for (size_t i = 0; i < options.external_struct_count; i++) {
+        collect_struct_from_item(g, options.external_structs[i].item,
+                                 options.external_structs[i].module_prefix);
     }
     for (RmbAstItem* it = g->file->items; it; it = it->next) {
-        if (it->kind == RMB_AST_ITEM_FN) collect_fn(g, it);
+        if (it->kind == RMB_AST_ITEM_STRUCT) collect_struct_from_item(g, it, options.module_prefix);
+    }
+    for (size_t i = 0; i < options.external_fn_count; i++) {
+        collect_fn_from_item(g, options.external_fns[i].item,
+                             options.external_fns[i].module_path,
+                             options.external_fns[i].module_prefix,
+                             true);
+    }
+    for (RmbAstItem* it = g->file->items; it; it = it->next) {
+        if (it->kind == RMB_AST_ITEM_FN) {
+            collect_fn_from_item(g, it, options.module_path, options.module_prefix, false);
+        }
     }
 
     g->out = fopen(out_path, "wb");
@@ -875,24 +890,24 @@ bool rmb_cgen_emit_file(RmbCGen* g, const char* out_path) {
 
     emit_prelude(g);
 
-    // Struct typedefs.
+    emit_str(g, "/* module ");
+    emit_c_ident_part(g, options.module_path ? options.module_path : "");
+    emit_str(g, " */\n\n");
+
     for (CgStruct* s = (CgStruct*)g->struct_table; s; s = s->next) {
         emit_struct_decl(g, s);
     }
-
-    // Forward declarations for non-main functions.
     for (CgFn* fn = (CgFn*)g->fn_table; fn; fn = fn->next) {
         if (fn->is_main || fn->error_capable) continue;
         emit_fn_decl(g, fn);
     }
     emit_str(g, "\n");
-
-    // Function definitions.
     for (CgFn* fn = (CgFn*)g->fn_table; fn; fn = fn->next) {
         emit_fn_def(g, fn);
     }
 
     fclose(g->out);
     g->out = NULL;
+    (void)emit_c_rmb_string_part;
     return !g->had_error;
 }

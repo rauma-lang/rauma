@@ -1,0 +1,7 @@
+use math;
+
+fn main() {
+    x := math.add(20, 22);
+    print(x);
+    print("\n");
+}

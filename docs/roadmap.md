@@ -42,11 +42,13 @@
 - Test bootstrap compilation pipeline (hello, functions, control flow, structs)
 - Reject error-returning functions, `match`, `defer`, `?`, and `!` with clear diagnostics
 
-### v0.0.7 Chunk Build System
+### v0.0.7 Chunk Build System ✓ DONE
 - Implement file-based chunk compilation
 - Track dependencies between chunks
-- Incremental rebuilds
-- Support multiple compilation targets
+- Parse simple local `use` declarations
+- Emit per-file C, object, and `.rmi` artifacts under the fixed debug/native layout
+- Link chunk objects into one executable
+- Defer full incremental rebuilds and multiple compilation targets
 
 ### v0.0.8 Write `rmc` in RauMa
 - Port compiler from C to RauMa

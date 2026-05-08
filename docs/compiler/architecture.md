@@ -4,16 +4,19 @@
 
 RauMa uses a multi-stage compiler architecture designed for incremental development and self-hosting.
 
-### Bootstrap pipeline status (v0.0.6)
+### Bootstrap pipeline status (v0.0.7)
 
 The full pipeline (Resolver → HIR → MIR → multi-backend) is the long-term design.
-The v0.0.6 bootstrap compiler `rmb` deliberately skips most of these stages and
-emits C directly from the checked AST:
+The v0.0.7 bootstrap compiler `rmb` deliberately skips most of these stages and
+still emits C directly from checked AST chunks:
 
 ```
-.rm source → Lexer → Parser → AST → Type Checker → C Code Generator → gcc → executable
+.rm source files → Build Driver → Lexer → Parser → AST → Type Checker → C Code Generator → gcc → executable
 ```
 
+- **The build driver coordinates multiple file chunks.** It resolves simple
+  local `use` declarations, emits one `.c` and `.o` per chunk, then links all
+  objects into one executable.
 - **HIR is still planned but not implemented in `rmb`.**
 - **MIR is still planned but not implemented in `rmb`.**
 - **The C backend in `rmb` is a bootstrap backend** — small, boring, and
@@ -137,18 +140,19 @@ Linker
 ```
 src/main.rm
     ↓
-build/<profile>/<target>/c/chunk/src/main/main.c
+build/debug/native/c/chunk/src/main/main.c
     ↓
-build/<profile>/<target>/c/chunk/src/main/main.o
+build/debug/native/c/chunk/src/main/main.o
     ↓
-build/<profile>/<target>/c/chunk/src/main/main.a
+build/debug/native/bin/main
 ```
 
 ### Dependency Tracking
-- File-level dependencies
-- Interface hash for incremental builds
-- Rebuild only affected chunks
-- Parallel compilation support
+- v0.0.7 has file-level dependency discovery from simple local `use`
+  declarations.
+- `.rmi` interface summaries are emitted for every chunk.
+- Interface hashing, affected-chunk rebuilds, and parallel compilation remain
+  future work.
 
 ### Profile Support
 - **Debug**: Full debugging info, no optimizations

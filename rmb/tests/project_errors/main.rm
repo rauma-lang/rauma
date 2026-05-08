@@ -1,0 +1,5 @@
+use missing;
+
+fn main() {
+    print("bad\n");
+}

@@ -29,7 +29,8 @@ SRCS = $(SRC_DIR)/main.c \
        $(SRC_DIR)/parser.c \
        $(SRC_DIR)/type.c \
        $(SRC_DIR)/checker.c \
-       $(SRC_DIR)/cgen.c
+       $(SRC_DIR)/cgen.c \
+       $(SRC_DIR)/build.c
 
 # Object files
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
@@ -66,7 +67,7 @@ run: debug
 
 # Clean build artifacts
 clean:
-	rm -rf $(BUILD_DIR)
+	python -c "import shutil; shutil.rmtree('$(BUILD_DIR)', ignore_errors=True)"
 
 # Run tests
 test: debug
@@ -81,12 +82,7 @@ test: debug
 	@./$(TARGET) lex tests/lexer_strings.rm
 	@echo ""
 	@echo "=== Error lexer test (should fail) ==="
-	@if ./$(TARGET) lex tests/lexer_errors.rm 2>/dev/null; then \
-		echo "ERROR: Expected lexer_errors.rm to fail but it succeeded"; \
-		exit 1; \
-	else \
-		echo "SUCCESS: lexer_errors.rm failed as expected"; \
-	fi
+	@python -c "import subprocess, sys; rc=subprocess.run(['./$(TARGET)','lex','tests/lexer_errors.rm'], stderr=subprocess.DEVNULL).returncode; print('SUCCESS: lexer_errors.rm failed as expected' if rc else 'ERROR: Expected lexer_errors.rm to fail but it succeeded'); sys.exit(0 if rc else 1)"
 	@echo ""
 	@echo "=== Basic parser test ==="
 	@./$(TARGET) parse tests/parser_basic.rm
@@ -101,28 +97,13 @@ test: debug
 	@./$(TARGET) parse tests/parser_types.rm
 	@echo ""
 	@echo "=== Error parser test (should fail) ==="
-	@if ./$(TARGET) parse tests/parser_errors.rm 2>/dev/null; then \
-		echo "ERROR: Expected parser_errors.rm to fail but it succeeded"; \
-		exit 1; \
-	else \
-		echo "SUCCESS: parser_errors.rm failed as expected"; \
-	fi
+	@python -c "import subprocess, sys; rc=subprocess.run(['./$(TARGET)','parse','tests/parser_errors.rm'], stderr=subprocess.DEVNULL).returncode; print('SUCCESS: parser_errors.rm failed as expected' if rc else 'ERROR: Expected parser_errors.rm to fail but it succeeded'); sys.exit(0 if rc else 1)"
 	@echo ""
 	@echo "=== Diagnostics parser test (should fail) ==="
-	@if ./$(TARGET) parse tests/parser_diagnostics.rm 2>/dev/null; then \
-		echo "ERROR: Expected parser_diagnostics.rm to fail but it succeeded"; \
-		exit 1; \
-	else \
-		echo "SUCCESS: parser_diagnostics.rm failed as expected"; \
-	fi
+	@python -c "import subprocess, sys; rc=subprocess.run(['./$(TARGET)','parse','tests/parser_diagnostics.rm'], stderr=subprocess.DEVNULL).returncode; print('SUCCESS: parser_diagnostics.rm failed as expected' if rc else 'ERROR: Expected parser_diagnostics.rm to fail but it succeeded'); sys.exit(0 if rc else 1)"
 	@echo ""
 	@echo "=== Recovery parser test (should fail) ==="
-	@if ./$(TARGET) parse tests/parser_recovery.rm 2>/dev/null; then \
-		echo "ERROR: Expected parser_recovery.rm to fail but it succeeded"; \
-		exit 1; \
-	else \
-		echo "SUCCESS: parser_recovery.rm failed as expected (recovery demonstrated)"; \
-	fi
+	@python -c "import subprocess, sys; rc=subprocess.run(['./$(TARGET)','parse','tests/parser_recovery.rm'], stderr=subprocess.DEVNULL).returncode; print('SUCCESS: parser_recovery.rm failed as expected (recovery demonstrated)' if rc else 'ERROR: Expected parser_recovery.rm to fail but it succeeded'); sys.exit(0 if rc else 1)"
 	@echo ""
 	@echo "=== Check basic test ==="
 	@./$(TARGET) check tests/check_basic.rm
@@ -137,36 +118,41 @@ test: debug
 	@./$(TARGET) check tests/check_error_flow.rm
 	@echo ""
 	@echo "=== Check errors test (should fail) ==="
-	@if ./$(TARGET) check tests/check_errors.rm 2>/dev/null; then \
-		echo "ERROR: Expected check_errors.rm to fail but it succeeded"; \
-		exit 1; \
-	else \
-		echo "SUCCESS: check_errors.rm failed as expected"; \
-	fi
+	@python -c "import subprocess, sys; rc=subprocess.run(['./$(TARGET)','check','tests/check_errors.rm'], stderr=subprocess.DEVNULL).returncode; print('SUCCESS: check_errors.rm failed as expected' if rc else 'ERROR: Expected check_errors.rm to fail but it succeeded'); sys.exit(0 if rc else 1)"
 	@echo ""
 	@echo "=== Build hello test ==="
 	@./$(TARGET) build tests/build_hello.rm
-	@./$(BUILD_DIR)/build_hello
+	@./$(BUILD_DIR)/debug/native/bin/build_hello
 	@echo ""
 	@echo "=== Build functions test ==="
 	@./$(TARGET) build tests/build_functions.rm
-	@./$(BUILD_DIR)/build_functions
+	@./$(BUILD_DIR)/debug/native/bin/build_functions
 	@echo ""
 	@echo "=== Build if/while test ==="
 	@./$(TARGET) build tests/build_if_while.rm
-	@./$(BUILD_DIR)/build_if_while
+	@./$(BUILD_DIR)/debug/native/bin/build_if_while
 	@echo ""
 	@echo "=== Build struct basic test ==="
 	@./$(TARGET) build tests/build_struct_basic.rm
-	@./$(BUILD_DIR)/build_struct_basic
+	@./$(BUILD_DIR)/debug/native/bin/build_struct_basic
 	@echo ""
 	@echo "=== Build errors test (should fail) ==="
-	@if ./$(TARGET) build tests/build_errors.rm 2>/dev/null; then \
-		echo "ERROR: Expected build_errors.rm to fail but it succeeded"; \
-		exit 1; \
-	else \
-		echo "SUCCESS: build_errors.rm failed as expected"; \
-	fi
+	@python -c "import subprocess, sys; rc=subprocess.run(['./$(TARGET)','build','tests/build_errors.rm'], stderr=subprocess.DEVNULL).returncode; print('SUCCESS: build_errors.rm failed as expected' if rc else 'ERROR: Expected build_errors.rm to fail but it succeeded'); sys.exit(0 if rc else 1)"
+	@echo ""
+	@echo "=== Project basic build test ==="
+	@./$(TARGET) build tests/project_basic/main.rm
+	@./$(BUILD_DIR)/debug/native/bin/main
+	@echo ""
+	@echo "=== Project struct build test ==="
+	@./$(TARGET) build tests/project_struct/main.rm
+	@./$(BUILD_DIR)/debug/native/bin/main
+	@echo ""
+	@echo "=== Project nested build test ==="
+	@./$(TARGET) build tests/project_nested/main.rm
+	@./$(BUILD_DIR)/debug/native/bin/main
+	@echo ""
+	@echo "=== Project missing-use test (should fail) ==="
+	@python -c "import subprocess, sys; rc=subprocess.run(['./$(TARGET)','build','tests/project_errors/missing.rm'], stderr=subprocess.DEVNULL).returncode; print('SUCCESS: project_errors/missing.rm failed as expected' if rc else 'ERROR: Expected project_errors/missing.rm to fail but it succeeded'); sys.exit(0 if rc else 1)"
 
 # Show help
 help:

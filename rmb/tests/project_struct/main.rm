@@ -1,0 +1,5 @@
+use user;
+
+fn main() {
+    print("struct project ok\n");
+}
