@@ -4,13 +4,12 @@
 
 `rmc` is the future main RauMa compiler written in RauMa.
 
-v0.0.8d replaces the deterministic lexer smoke placeholder with a real
-byte-level scanner over the hardcoded demo source string. The scanner uses the
-bootstrap `str_len` and `str_byte` builtins, loops over source bytes, recognizes
-the demo identifiers/keyword/string/punctuation, and prints the token stream.
+v0.0.8e adds a minimal parser foundation over the same hardcoded demo source.
+The parser uses byte-level source scanning with `str_len` and `str_byte`,
+recognizes only the demo grammar, and prints a stable parser summary.
 
-`rmc` still does not implement file IO, CLI args, parsing, checking, codegen,
-HIR, MIR, packages, std modules, or self-hosting. Parser work starts later.
+`rmc` still does not implement file IO, CLI args, token arrays, full parsing,
+checking, codegen, HIR, MIR, packages, std modules, or self-hosting.
 
 ## Current Source Layout
 
@@ -26,6 +25,10 @@ rmc/
 ├── lex/
 │   ├── token.rm
 │   └── lexer.rm
+├── ast/
+│   └── ast.rm
+├── parse/
+│   └── parser.rm
 └── diag/
     └── output.rm
 ```
@@ -38,13 +41,15 @@ use cli.version;
 use source.source;
 use lex.token;
 use lex.lexer;
+use ast.ast;
+use parse.parser;
 use diag.output;
 ```
 
-The executable prints help, a small module readiness section, and a token list
-scanned from `source.source.demo_text()`. Command-line argument dispatch is not
-implemented yet because the current bootstrap codegen does not support
-`main(args)`.
+The executable prints help, module readiness, lexer smoke tokens, and a parser
+summary scanned from `source.source.demo_text()`. Command-line argument
+dispatch is not implemented yet because the current bootstrap codegen does not
+support `main(args)`.
 
 ## Building With rmb
 
@@ -61,5 +66,6 @@ The binary path is still entry-stem based, so `rmc/main.rm` builds to
 
 ## Later v0.0.8 Work
 
-v0.0.8e should add the parser foundation. File-driven lexing, checker/codegen
-bridge work, and the self-host fixed point remain later milestones.
+v0.0.8f should introduce a token stream abstraction. File-driven lexing,
+full parser work, checker/codegen bridge work, and the self-host fixed point
+remain later milestones.

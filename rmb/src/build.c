@@ -189,7 +189,7 @@ static BuildChunk* add_chunk(BuildContext* ctx, const char* path) {
     int existing = find_chunk(ctx, path);
     if (existing >= 0) return &ctx->chunks[existing];
     if (ctx->count >= ctx->cap) {
-        size_t cap = ctx->cap ? ctx->cap * 2 : 8;
+        size_t cap = ctx->cap ? ctx->cap * 2 : 32;
         BuildChunk* chunks = realloc(ctx->chunks, cap * sizeof(BuildChunk));
         if (!chunks) return NULL;
         ctx->chunks = chunks;

@@ -60,6 +60,21 @@ scan a hardcoded source string. The `rmc` lexer now loops over bytes with
 
 The parser still starts later, and the self-host fixed point remains v0.0.9.
 
+### v0.0.8e: Parser Foundation
+
+v0.0.8e adds a minimal parser foundation in RauMa. It scans the same hardcoded
+demo source and recognizes only:
+
+```text
+fn main() {
+    print("hi\n");
+}
+```
+
+This is not a full parser and does not use a token array yet. It exists to
+prove `rmc` can host parser-shaped control flow in RauMa. The self-host fixed
+point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

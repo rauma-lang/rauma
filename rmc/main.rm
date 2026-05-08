@@ -3,6 +3,8 @@ use cli.version;
 use source.source;
 use lex.token;
 use lex.lexer;
+use ast.ast;
+use parse.parser;
 use diag.output;
 
 fn main() {
@@ -12,6 +14,9 @@ fn main() {
     source.source.print_source_label();
     lex.token.print_token_label();
     diag.output.print_diag_label();
+    ast.ast.print_ast_label();
     print("\n");
     lex.lexer.run_smoke();
+    print("\n");
+    parse.parser.run_smoke();
 }
