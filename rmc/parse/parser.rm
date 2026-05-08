@@ -1,9 +1,211 @@
 use ast.ast;
+use source.source;
+use lex.token;
 use lex.stream;
+
+pub fn parse_return_a_plus_b(src str, i int) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_return());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident_a(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident_b(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    return lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+}
+
+pub fn parse_add_fn(src str, i int) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_fn());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident_add(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident_a(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident_int(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident_b(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident_int(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident_int(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = parse_return_a_plus_b(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    return lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+}
+
+pub fn parse_var_x_add_call(src str, i int) int {
+    pos := lex.stream.expect_ident_x(src, i);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_colon_eq());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident_add(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_int_20(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_int_22(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) {
+        return 0;
+    }
+    return lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+}
+
+pub fn parse_print_sum(src str, i int) int {
+    pos := lex.stream.expect_ident_print(src, i);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_string());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) {
+        return 0;
+    }
+    return lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+}
+
+pub fn parse_print_x(src str, i int) int {
+    pos := lex.stream.expect_ident_print(src, i);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident_x(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) {
+        return 0;
+    }
+    return lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+}
+
+pub fn parse_main_fn(src str, i int) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_fn());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident_main(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) {
+        return 0;
+    }
+    pos = parse_var_x_add_call(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = parse_print_sum(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = parse_print_x(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    return lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+}
+
+pub fn parse_demo(src str) bool {
+    pos := parse_add_fn(src, 0);
+    if (pos == 0) {
+        return false;
+    }
+    pos = parse_main_fn(src, pos);
+    if (pos == 0) {
+        return false;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_eof());
+    if (pos == 0) {
+        return false;
+    }
+    return true;
+}
 
 pub fn run_smoke() {
     print("rmc parser smoke:\n");
-    ok := lex.stream.parse_demo_with_stream();
+    ok := parse_demo(source.source.demo_text());
 
     if (ok) {
         ast.ast.print_demo_summary();

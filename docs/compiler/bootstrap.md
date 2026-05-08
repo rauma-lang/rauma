@@ -84,6 +84,16 @@ owns byte-level scanning over the hardcoded demo source, while
 This still does not allocate token arrays or read files. The self-host fixed
 point remains v0.0.9.
 
+### v0.0.8g: Expanded Parser Demo
+
+v0.0.8g parses a larger hardcoded RauMa program through token stream helpers.
+The demo covers two functions, simple parameters, a return statement, a
+variable declaration, and call statements.
+
+This still does not parse arbitrary files and still has no token arrays, CLI
+input, checker, or code generator in `rmc`. The self-host fixed point remains
+v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

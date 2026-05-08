@@ -11,5 +11,5 @@ pub fn print_source_label() {
 }
 
 pub fn demo_text() str {
-    return "fn main() {\n    print(\"hi\\n\");\n}";
+    return "fn add(a int, b int) int {\n    return a + b;\n}\n\nfn main() {\n    x := add(20, 22);\n    print(\"sum\\n\");\n    print(x);\n}";
 }

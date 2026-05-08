@@ -57,8 +57,9 @@
 - v0.0.8d rmc real string scanner ✓ DONE
 - v0.0.8e rmc parser foundation ✓ DONE
 - v0.0.8f rmc token stream ✓ DONE
-- v0.0.8g rmc real parser over tokens
-- v0.0.8h rmc checker/codegen bridge
+- v0.0.8g rmc expanded parser demo ✓ DONE
+- v0.0.8h rmc file input preparation
+- v0.0.8i rmc checker/codegen bridge
 - Port compiler from C to RauMa
 - Implement self-hosting compiler core
 - Test compiler bootstrapping

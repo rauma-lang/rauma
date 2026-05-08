@@ -43,6 +43,71 @@ pub fn expect_ident_main(src str, i int) int {
     return 0;
 }
 
+pub fn expect_ident_add(src str, i int) int {
+    start := current_start(src, i);
+    end := current_end(src, i);
+    kind := current_kind(src, i);
+    if (kind != lex.token.kind_ident()) {
+        return 0;
+    }
+    if (lex.lexer.token_is_ident_add(src, start, end)) {
+        return end;
+    }
+    return 0;
+}
+
+pub fn expect_ident_a(src str, i int) int {
+    start := current_start(src, i);
+    end := current_end(src, i);
+    kind := current_kind(src, i);
+    if (kind != lex.token.kind_ident()) {
+        return 0;
+    }
+    if (lex.lexer.token_is_ident_a(src, start, end)) {
+        return end;
+    }
+    return 0;
+}
+
+pub fn expect_ident_b(src str, i int) int {
+    start := current_start(src, i);
+    end := current_end(src, i);
+    kind := current_kind(src, i);
+    if (kind != lex.token.kind_ident()) {
+        return 0;
+    }
+    if (lex.lexer.token_is_ident_b(src, start, end)) {
+        return end;
+    }
+    return 0;
+}
+
+pub fn expect_ident_int(src str, i int) int {
+    start := current_start(src, i);
+    end := current_end(src, i);
+    kind := current_kind(src, i);
+    if (kind != lex.token.kind_ident()) {
+        return 0;
+    }
+    if (lex.lexer.token_is_ident_int(src, start, end)) {
+        return end;
+    }
+    return 0;
+}
+
+pub fn expect_ident_x(src str, i int) int {
+    start := current_start(src, i);
+    end := current_end(src, i);
+    kind := current_kind(src, i);
+    if (kind != lex.token.kind_ident()) {
+        return 0;
+    }
+    if (lex.lexer.token_is_ident_x(src, start, end)) {
+        return end;
+    }
+    return 0;
+}
+
 pub fn expect_ident_print(src str, i int) int {
     start := current_start(src, i);
     end := current_end(src, i);
@@ -56,58 +121,28 @@ pub fn expect_ident_print(src str, i int) int {
     return 0;
 }
 
-pub fn parse_demo_with_stream() bool {
-    src := source.source.demo_text();
-    i := 0;
+pub fn expect_int_20(src str, i int) int {
+    start := current_start(src, i);
+    end := current_end(src, i);
+    kind := current_kind(src, i);
+    if (kind != lex.token.kind_int()) {
+        return 0;
+    }
+    if (lex.lexer.token_is_int_20(src, start, end)) {
+        return end;
+    }
+    return 0;
+}
 
-    i = expect_kind(src, i, lex.token.kind_kw_fn());
-    if (i == 0) {
-        return false;
+pub fn expect_int_22(src str, i int) int {
+    start := current_start(src, i);
+    end := current_end(src, i);
+    kind := current_kind(src, i);
+    if (kind != lex.token.kind_int()) {
+        return 0;
     }
-    i = expect_ident_main(src, i);
-    if (i == 0) {
-        return false;
+    if (lex.lexer.token_is_int_22(src, start, end)) {
+        return end;
     }
-    i = expect_kind(src, i, lex.token.kind_l_paren());
-    if (i == 0) {
-        return false;
-    }
-    i = expect_kind(src, i, lex.token.kind_r_paren());
-    if (i == 0) {
-        return false;
-    }
-    i = expect_kind(src, i, lex.token.kind_l_brace());
-    if (i == 0) {
-        return false;
-    }
-    i = expect_ident_print(src, i);
-    if (i == 0) {
-        return false;
-    }
-    i = expect_kind(src, i, lex.token.kind_l_paren());
-    if (i == 0) {
-        return false;
-    }
-    i = expect_kind(src, i, lex.token.kind_string());
-    if (i == 0) {
-        return false;
-    }
-    i = expect_kind(src, i, lex.token.kind_r_paren());
-    if (i == 0) {
-        return false;
-    }
-    i = expect_kind(src, i, lex.token.kind_semi());
-    if (i == 0) {
-        return false;
-    }
-    i = expect_kind(src, i, lex.token.kind_r_brace());
-    if (i == 0) {
-        return false;
-    }
-    i = expect_kind(src, i, lex.token.kind_eof());
-    if (i == 0) {
-        return false;
-    }
-
-    return true;
+    return 0;
 }
