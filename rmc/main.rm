@@ -1,3 +1,6 @@
+use cli.help;
+use cli.version;
+
 fn main() {
-    print("RauMa Main Compiler placeholder\n");
+    cli.help.print_help();
 }

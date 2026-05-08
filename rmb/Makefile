@@ -51,7 +51,7 @@ release: $(TARGET)
 
 # Create build directory
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+	python -c "import pathlib; pathlib.Path('$(BUILD_DIR)').mkdir(parents=True, exist_ok=True)"
 
 # Compile source files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)

@@ -1,0 +1,8 @@
+pub fn print_help() {
+    print("RauMa Main Compiler (rmc)\n");
+    print("usage: rmc <command> [options]\n");
+    print("\n");
+    print("commands:\n");
+    print("  version  print compiler version\n");
+    print("  help     print this help message\n");
+}

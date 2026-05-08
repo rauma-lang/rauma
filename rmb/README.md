@@ -244,9 +244,9 @@ use to `tests/project_nested/app/util.rm`. Dots map to path separators and
 
 ### rmc (Main Compiler)
 - Written in RauMa
-- Full language support
-- Self-hosting
-- Active development
+- v0.0.8a starts as a minimal RauMa-written skeleton under `rmc/`
+- Currently built by `rmb build ../rmc/main.rm`
+- Full language support and self-hosting are later milestones
 
 ### Tests
 - Located in `rmb/tests/`

@@ -91,6 +91,9 @@ static char* path_stem(const char* path) {
 }
 
 static char* module_from_source_path(const char* path) {
+    while (path[0] == '.' && path[1] == '.' && path[2] == '/') {
+        path += 3;
+    }
     char* out = xstrdup(path);
     if (!out) return NULL;
     char* dot = strrchr(out, '.');
@@ -99,6 +102,13 @@ static char* module_from_source_path(const char* path) {
         if (*p == '/' || *p == '\\') *p = '.';
     }
     return out;
+}
+
+static const char* artifact_source_dir(const char* dir) {
+    while (dir[0] == '.' && dir[1] == '.' && dir[2] == '/') {
+        dir += 3;
+    }
+    return dir;
 }
 
 static char* prefix_from_module(const char* module) {
@@ -276,11 +286,12 @@ static bool check_chunk(BuildChunk* chunk) {
 
 static char* chunk_artifact_path(BuildChunk* chunk, const char* ext) {
     const char* root = "build/debug/native/c/chunk";
-    size_t n = strlen(root) + 1 + strlen(chunk->dir) + 1 + strlen(chunk->stem) +
+    const char* dir = artifact_source_dir(chunk->dir);
+    size_t n = strlen(root) + 1 + strlen(dir) + 1 + strlen(chunk->stem) +
                1 + strlen(chunk->stem) + strlen(ext) + 1;
     char* out = malloc(n);
     if (!out) return NULL;
-    snprintf(out, n, "%s/%s/%s/%s%s", root, chunk->dir, chunk->stem, chunk->stem, ext);
+    snprintf(out, n, "%s/%s/%s/%s%s", root, dir, chunk->stem, chunk->stem, ext);
     return out;
 }
 

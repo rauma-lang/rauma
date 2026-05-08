@@ -51,6 +51,11 @@
 - Defer full incremental rebuilds and multiple compilation targets
 
 ### v0.0.8 Write `rmc` in RauMa
+- v0.0.8a rmc skeleton ✓ DONE
+- v0.0.8b rmc source/span/token
+- v0.0.8c rmc lexer
+- v0.0.8d rmc parser foundation
+- v0.0.8e rmc checker/codegen bridge
 - Port compiler from C to RauMa
 - Implement self-hosting compiler core
 - Test compiler bootstrapping

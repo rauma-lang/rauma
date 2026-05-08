@@ -12,6 +12,8 @@ RauMa's bootstrap process enables the compiler to build itself, ensuring the lan
 - Only implements core language subset
 - Generates C code as output
 - Stable, verified implementation
+- In v0.0.8a, still the active bootstrap compiler and the tool used to build
+  the first `rmc` skeleton.
 
 ### Stage 1: rmc1 (First RauMa Compiler)
 - Written in RauMa bootstrap subset
@@ -19,6 +21,15 @@ RauMa's bootstrap process enables the compiler to build itself, ensuring the lan
 - Implements full RauMa language
 - Can compile RauMa source to C
 - More features than rmb
+
+### v0.0.8a: Initial rmc Skeleton
+
+v0.0.8a starts `rmc` as a RauMa-written binary under `rmc/`. This binary is not
+a real compiler yet. It only establishes the source layout, imports internal
+modules, and prints version/help text through a binary built by `rmb`.
+
+The self-host fixed point is still v0.0.9. Until then, `rmb` remains the
+bootstrap compiler and source of truth for compiling the early `rmc` code.
 
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
