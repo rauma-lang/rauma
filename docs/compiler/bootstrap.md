@@ -42,6 +42,16 @@ v0.0.8b adds the first compiler data modules in RauMa:
 This still does not include a lexer. The RauMa-written lexer starts in
 v0.0.8c, and the self-host fixed point remains v0.0.9.
 
+### v0.0.8c: Lexer Smoke Module
+
+v0.0.8c adds the first `rmc` lexer module in RauMa and runs it from the
+RauMa-built `rmc` binary. The current module prints a stable token smoke
+sequence for a fixed demo input shape. It is not file-driven yet.
+
+Real file-driven lexing depends on later file input support and practical
+string indexing/scanning support in the bootstrap subset. The self-host fixed
+point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

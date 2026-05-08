@@ -53,7 +53,7 @@
 ### v0.0.8 Write `rmc` in RauMa
 - v0.0.8a rmc skeleton ✓ DONE
 - v0.0.8b rmc source/span/token ✓ DONE
-- v0.0.8c rmc lexer
+- v0.0.8c rmc lexer ✓ DONE
 - v0.0.8d rmc parser foundation
 - v0.0.8e rmc checker/codegen bridge
 - Port compiler from C to RauMa

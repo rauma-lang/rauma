@@ -9,3 +9,7 @@ pub fn print_source_label() {
     print("source module ready\n");
     source.span.print_span_label();
 }
+
+pub fn demo_text() str {
+    return "fn main() {\n    print(\"hi\\n\");\n}";
+}

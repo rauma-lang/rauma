@@ -2,6 +2,7 @@ use cli.help;
 use cli.version;
 use source.source;
 use lex.token;
+use lex.lexer;
 use diag.output;
 
 fn main() {
@@ -11,4 +12,6 @@ fn main() {
     source.source.print_source_label();
     lex.token.print_token_label();
     diag.output.print_diag_label();
+    print("\n");
+    lex.lexer.run_smoke();
 }

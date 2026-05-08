@@ -4,10 +4,13 @@
 
 `rmc` is the future main RauMa compiler written in RauMa.
 
-v0.0.8b adds the first compiler data modules: source/span shapes, token kind
-shapes, token helpers, and tiny diagnostic output helpers. It still does not
-implement lexing, parsing, checking, codegen, HIR, MIR, packages, std modules,
-or self-hosting.
+v0.0.8c adds the first `rmc` lexer module and wires a lexer smoke demo into the
+binary. The current lexer module is a deterministic smoke-output placeholder
+over the fixed demo source shape, not a real scanner yet. Real string scanning
+waits for later source/string indexing and file input support.
+
+`rmc` still does not implement file IO, CLI args, parsing, checking, codegen,
+HIR, MIR, packages, std modules, or self-hosting.
 
 ## Current Source Layout
 
@@ -21,7 +24,8 @@ rmc/
 │   ├── span.rm
 │   └── source.rm
 ├── lex/
-│   └── token.rm
+│   ├── token.rm
+│   └── lexer.rm
 └── diag/
     └── output.rm
 ```
@@ -33,12 +37,13 @@ use cli.help;
 use cli.version;
 use source.source;
 use lex.token;
+use lex.lexer;
 use diag.output;
 ```
 
-The executable prints help and a small module readiness section. Command-line
-argument dispatch is not implemented yet because the current bootstrap codegen
-does not support `main(args)`.
+The executable prints help, a small module readiness section, and a stable
+lexer smoke token list. Command-line argument dispatch is not implemented yet
+because the current bootstrap codegen does not support `main(args)`.
 
 ## Building With rmb
 
@@ -55,6 +60,5 @@ The binary path is still entry-stem based, so `rmc/main.rm` builds to
 
 ## Later v0.0.8 Work
 
-v0.0.8c should add the RauMa-written lexer. Parser foundation,
-checker/codegen bridge work, and the self-host fixed point remain later
-milestones.
+v0.0.8d should add the parser foundation. File-driven lexing, checker/codegen
+bridge work, and the self-host fixed point remain later milestones.

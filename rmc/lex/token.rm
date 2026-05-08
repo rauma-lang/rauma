@@ -79,14 +79,142 @@ pub fn print_token_label() {
     print("token module ready\n");
 }
 
-pub fn eof_kind() int {
+pub fn kind_eof() int {
     return 0;
 }
 
-pub fn ident_kind() int {
+pub fn kind_ident() int {
+    return 1;
+}
+
+pub fn kind_int() int {
     return 2;
 }
 
-pub fn string_kind() int {
+pub fn kind_string() int {
+    return 3;
+}
+
+pub fn kind_kw_fn() int {
     return 4;
+}
+
+pub fn kind_kw_return() int {
+    return 5;
+}
+
+pub fn kind_l_paren() int {
+    return 6;
+}
+
+pub fn kind_r_paren() int {
+    return 7;
+}
+
+pub fn kind_l_brace() int {
+    return 8;
+}
+
+pub fn kind_r_brace() int {
+    return 9;
+}
+
+pub fn kind_semi() int {
+    return 10;
+}
+
+pub fn kind_comma() int {
+    return 11;
+}
+
+pub fn kind_plus() int {
+    return 12;
+}
+
+pub fn kind_eq() int {
+    return 13;
+}
+
+pub fn kind_colon_eq() int {
+    return 14;
+}
+
+pub fn kind_invalid() int {
+    return 99;
+}
+
+pub fn print_kind_name(kind int) {
+    if (kind == 0) {
+        print("eof");
+        return;
+    }
+    if (kind == 1) {
+        print("ident");
+        return;
+    }
+    if (kind == 2) {
+        print("int");
+        return;
+    }
+    if (kind == 3) {
+        print("string");
+        return;
+    }
+    if (kind == 4) {
+        print("kw_fn");
+        return;
+    }
+    if (kind == 5) {
+        print("kw_return");
+        return;
+    }
+    if (kind == 6) {
+        print("l_paren");
+        return;
+    }
+    if (kind == 7) {
+        print("r_paren");
+        return;
+    }
+    if (kind == 8) {
+        print("l_brace");
+        return;
+    }
+    if (kind == 9) {
+        print("r_brace");
+        return;
+    }
+    if (kind == 10) {
+        print("semi");
+        return;
+    }
+    if (kind == 11) {
+        print("comma");
+        return;
+    }
+    if (kind == 12) {
+        print("plus");
+        return;
+    }
+    if (kind == 13) {
+        print("eq");
+        return;
+    }
+    if (kind == 14) {
+        print("colon_eq");
+        return;
+    }
+    print("invalid");
+}
+
+pub fn print_token(kind int, text str) {
+    print_kind_name(kind);
+    print(" ");
+    print(text);
+    print("\n");
+}
+
+pub fn print_eof() {
+    print_kind_name(kind_eof());
+    print("\n");
 }

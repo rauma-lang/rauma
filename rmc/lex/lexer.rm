@@ -1,0 +1,18 @@
+use source.source;
+use lex.token;
+
+pub fn run_smoke() {
+    print("rmc lexer smoke:\n");
+    lex.token.print_token(lex.token.kind_kw_fn(), "fn");
+    lex.token.print_token(lex.token.kind_ident(), "main");
+    lex.token.print_token(lex.token.kind_l_paren(), "(");
+    lex.token.print_token(lex.token.kind_r_paren(), ")");
+    lex.token.print_token(lex.token.kind_l_brace(), "{");
+    lex.token.print_token(lex.token.kind_ident(), "print");
+    lex.token.print_token(lex.token.kind_l_paren(), "(");
+    lex.token.print_token(lex.token.kind_string(), "\"hi\\n\"");
+    lex.token.print_token(lex.token.kind_r_paren(), ")");
+    lex.token.print_token(lex.token.kind_semi(), ";");
+    lex.token.print_token(lex.token.kind_r_brace(), "}");
+    lex.token.print_eof();
+}
