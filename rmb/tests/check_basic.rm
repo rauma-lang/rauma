@@ -1,0 +1,24 @@
+struct User {
+    id int;
+    name str;
+    age int?;
+}
+
+fn add(a int, b int) int {
+    return a + b;
+}
+
+fn main() {
+    x := 1;
+    y := 2;
+    z := add(x, y);
+
+    user_age: int? = none;
+    name := "Minh";
+
+    if (z > 1) {
+        print(name);
+    }
+
+    return;
+}

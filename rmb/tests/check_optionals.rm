@@ -1,0 +1,11 @@
+struct User {
+    name str?;
+}
+
+fn main() {
+    user_name: str? = none;
+    display := user_name else "anonymous";
+    forced := user_name!;
+    print(display);
+    print(forced);
+}

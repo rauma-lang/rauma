@@ -2,6 +2,18 @@
 
 RauMa uses a simple but powerful error handling system designed for clarity and safety.
 
+## v0.0.5 Bootstrap Checker Notes
+
+`rmb check` enforces the following rules:
+
+- `fn name(...) T !! E` declares an error-capable function.
+- `expr?` may only be used inside a function that itself returns an error type. Using `?` outside such a function is an error.
+- `expr?` requires `expr` to be error-capable; using `?` on plain values is an error.
+- `expr!` may unwrap an error-capable value or an optional `T?`; using it elsewhere is an error.
+- `expr else fallback` requires `expr` to be optional (`T?`) or error-capable. The fallback type must be assignable to the inner type for optionals.
+
+Unsupported (later milestones): runtime panic implementation, multiple error types per function (`!! E1 !! E2`), error type unification across calls.
+
 ## Error Type Syntax
 
 ### `!!` - Error Annotation

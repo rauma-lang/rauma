@@ -26,7 +26,9 @@ SRCS = $(SRC_DIR)/main.c \
        $(SRC_DIR)/token.c \
        $(SRC_DIR)/lexer.c \
        $(SRC_DIR)/ast.c \
-       $(SRC_DIR)/parser.c
+       $(SRC_DIR)/parser.c \
+       $(SRC_DIR)/type.c \
+       $(SRC_DIR)/checker.c
 
 # Object files
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
@@ -119,6 +121,26 @@ test: debug
 		exit 1; \
 	else \
 		echo "SUCCESS: parser_recovery.rm failed as expected (recovery demonstrated)"; \
+	fi
+	@echo ""
+	@echo "=== Check basic test ==="
+	@./$(TARGET) check tests/check_basic.rm
+	@echo ""
+	@echo "=== Check functions test ==="
+	@./$(TARGET) check tests/check_functions.rm
+	@echo ""
+	@echo "=== Check optionals test ==="
+	@./$(TARGET) check tests/check_optionals.rm
+	@echo ""
+	@echo "=== Check error flow test ==="
+	@./$(TARGET) check tests/check_error_flow.rm
+	@echo ""
+	@echo "=== Check errors test (should fail) ==="
+	@if ./$(TARGET) check tests/check_errors.rm 2>/dev/null; then \
+		echo "ERROR: Expected check_errors.rm to fail but it succeeded"; \
+		exit 1; \
+	else \
+		echo "SUCCESS: check_errors.rm failed as expected"; \
 	fi
 
 # Show help

@@ -1,0 +1,17 @@
+struct IoError {
+    message str;
+}
+
+fn read_file(path str) str !! IoError {
+    return "data";
+}
+
+fn load() str !! IoError {
+    text := read_file("app.txt")?;
+    return text;
+}
+
+fn main() {
+    text := load()!;
+    print(text);
+}

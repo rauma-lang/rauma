@@ -27,11 +27,13 @@
 - Refine AST summary output
 - Add test coverage for new syntax
 
-### v0.0.5 Type Checking
-- Implement type inference engine
-- Check function signatures
-- Validate expressions
-- Add basic type error diagnostics
+### v0.0.5 Type Checking ✓ DONE
+- Basic type representation (primitives, named, pointer, slice, array, optional)
+- Global symbol collection (functions, structs, enums)
+- Local variable scopes with simple type inference
+- Function signature and return checks
+- Error syntax `!!`, `?`, `!`, and `else` checking
+- `rmb check <file>` command
 
 ### v0.0.6 C Codegen
 - Generate C code from typed AST

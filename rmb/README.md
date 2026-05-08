@@ -35,14 +35,14 @@
 
 ## Architecture
 
-### Components (v0.0.4)
+### Components (v0.0.5)
 1. **Source Loading**: Read `.rm` files
 2. **Lexer/Tokenizer**: Convert source to tokens with span tracking
 3. **Diagnostics**: Error reporting with source locations
 4. **Parser**: Recursive descent parser building AST with improved diagnostics
 5. **AST**: Abstract Syntax Tree representation with spans and match/enum payload support
 
-### Build Pipeline (v0.0.4)
+### Build Pipeline (v0.0.5)
 ```
 .rm source
     ↓
@@ -55,7 +55,7 @@ Parser → AST (Abstract Syntax Tree)
 AST Printer → human-readable summary
 ```
 
-## Language Support (v0.0.4)
+## Language Support (v0.0.5)
 
 ### Lexer Features
 - **Keywords**: `fn`, `pub`, `struct`, `enum`, `use`, `return`, `if`, `else`, `while`, `for`, `match`, `case`, `const`, `defer`, `true`, `false`, `none`
@@ -65,7 +65,7 @@ AST Printer → human-readable summary
 - **Comments**: Line comments (`//`) and block comments (`/* */`)
 - **Operators/Punctuation**: All basic RauMa operators
 
-### Parser Features (v0.0.4)
+### Parser Features (v0.0.5)
 - **Top-level items**: `use`, `fn`, `struct`, `enum` declarations
 - **Function declarations**: Parameters, return types, error types (`!!`), body blocks
 - **Struct declarations**: Fields with types (including qualified, pointer, slice, array, optional types)
@@ -76,12 +76,24 @@ AST Printer → human-readable summary
 - **Type references**: Simple types, pointers (`*T`), slices (`[]T`), arrays (`[N]T`), optional (`T?`), qualified (`module.Type`)
 - **Improved diagnostics**: Clear error messages with source spans and recovery
 
-### Unsupported Features (in v0.0.4)
-- Type checking
-- Semantic analysis
+### Type Checker Features (v0.0.5)
+- **Primitive types**: `int`, `uint`, `float`, `byte`, `bool`, `str`, `void`
+- **Type forms**: named, pointer (`*T`), slice (`[]T`), array (`[N]T`), optional (`T?`)
+- **Symbol collection**: functions, structs, enums collected before bodies
+- **Local inference**: `name := expr` infers type from expression
+- **Explicit declaration**: `name: Type = expr` checks assignability
+- **Public function rule**: `pub fn` parameters must have explicit types
+- **Returns**: checked against declared return type or inferred
+- **Error syntax**: `!!`, `?`, `!`, and `else` validated against function context
+- **Optional handling**: `none` only assigns to optional types
+
+### Unsupported Features (in v0.0.5)
 - Code generation
-- Module resolution (beyond parsing `use` statements)
-- Symbol resolution for match cases
+- HIR / MIR
+- Full module resolution across files (qualified types treated as opaque names)
+- Generics, traits, overloads
+- Implicit numeric conversions
+- Ownership / interference checking
 
 ## Building
 
@@ -110,7 +122,7 @@ The compiler executable is built at:
 rmb/build/rmb
 ```
 
-## Usage (v0.0.4)
+## Usage (v0.0.5)
 
 ```bash
 # Show help
@@ -121,6 +133,9 @@ rmb/build/rmb
 
 # Parse a RauMa file and show AST summary
 ./build/rmb parse source.rm
+
+# Type-check a RauMa file
+./build/rmb check source.rm
 
 # Show version
 ./build/rmb version

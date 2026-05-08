@@ -1,0 +1,28 @@
+fn add(a int, b int) int {
+    return a + b;
+}
+
+fn bad_return() int {
+    return "wrong";
+}
+
+fn bad_call() {
+    x := add(1);
+}
+
+fn bad_unknown() {
+    y := missing_name;
+}
+
+fn bad_question() {
+    x := add(1, 2)?;
+}
+
+fn bad_none() {
+    x: int = none;
+}
+
+struct User {
+    name str;
+    name int;
+}

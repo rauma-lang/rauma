@@ -1,5 +1,43 @@
 # RauMa Type System
 
+## v0.0.5 Bootstrap Type Checker
+
+The bootstrap compiler `rmb` ships a minimal type checker that runs after parsing.
+Its scope:
+
+### Supported Types
+- Primitives: `int`, `uint`, `float`, `byte`, `bool`, `str`, `void`
+- Named types: structs and enums declared in the same file
+- Pointer: `*T`
+- Slice: `[]T`
+- Fixed array: `[N]T`
+- Optional: `T?`
+
+`unknown` and `never` are internal and not user-facing.
+
+### Local Inference
+- `name := expr` infers the variable type from the expression.
+- `name: Type = expr` checks the expression is assignable to `Type`.
+
+### Public Signatures
+- `pub fn` parameters must have explicit types.
+- Return types and error types may currently be omitted, but explicit types are encouraged.
+
+### Optionals
+- `T?` types accept matching `T?` values and `none`.
+- `none` cannot be assigned to a non-optional type.
+- `T` is allowed where `T?` is expected (auto-wrapping).
+
+### No Implicit Conversions
+v0.0.5 does not perform implicit conversions between numeric kinds, between `int` and `str`, between `bool` and other types, or between pointers and integers. All such conversions are errors today and will require explicit casts in later milestones.
+
+### Limitations
+- Generics, traits, overloads, and sum types are not implemented.
+- Field access type checking is partial: known struct fields resolve, but unknown bases yield `unknown` rather than errors.
+- Module-qualified names (`module.Type`) are accepted as opaque external names without resolution.
+
+---
+
 ## Type Inference by Default
 
 RauMa uses type inference for local variables and many function parameters, reducing boilerplate while maintaining type safety.

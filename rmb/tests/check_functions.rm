@@ -1,0 +1,13 @@
+fn greet(name str) {
+    print(name);
+}
+
+fn id(x int) int {
+    return x;
+}
+
+fn main() {
+    value := id(10);
+    greet("hello");
+    return;
+}
