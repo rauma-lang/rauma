@@ -80,9 +80,15 @@ a file, invoking `gcc`, and running the binary. `rmc` itself does **not**:
 - spawn processes
 - write files
 
-A future `rmc build` command (planned for v0.0.8q) will wrap this workflow
-behind a single command, and later milestones replace the bridge with `rmc`'s
-own backend / link step.
+v0.0.8q adds two temporary builtins to `rmb` that allow RauMa programs to
+write files and invoke the external C compiler (`write_file`, `cc_compile`).
+These bridge primitives are used by the `rmb/tests/build_write_file.rm` and
+`rmb/tests/build_cc_compile.rm` fixtures to verify the low‑level operations
+work.
+
+A future `rmc build` command (planned for v0.0.8r) will wrap the full
+emit‑c→write‑file→cc‑compile pipeline behind a single command, and later
+milestones replace the bridge with `rmc`’s own backend / link step.
 
 ## Chunk-Based Architecture
 

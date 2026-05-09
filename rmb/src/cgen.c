@@ -339,6 +339,8 @@ static RmbType* call_type(RmbCGen* g, RmbAstExpr* e) {
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_eq"))) return rmb_type_bool();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("args_get"))) return rmb_type_str();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("read_file"))) return rmb_type_str();
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("write_file"))) return rmb_type_bool();
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("cc_compile"))) return rmb_type_int();
         if (fn) return fn->return_type ? fn->return_type : rmb_type_void();
     }
     char module[256];
@@ -575,6 +577,32 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
             }
             emit_str(g, "rm_read_file(");
             emit_expr(g, e->call.args[0]);
+            emit_str(g, ")");
+            return;
+        }
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("write_file"))) {
+            if (e->call.arg_count != 2) {
+                cg_error(g, e->span, "write_file expects exactly 2 arguments");
+                emit_str(g, "false");
+                return;
+            }
+            emit_str(g, "rm_write_file(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ", ");
+            emit_expr(g, e->call.args[1]);
+            emit_str(g, ")");
+            return;
+        }
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("cc_compile"))) {
+            if (e->call.arg_count != 2) {
+                cg_error(g, e->span, "cc_compile expects exactly 2 arguments");
+                emit_str(g, "(int64_t)-1");
+                return;
+            }
+            emit_str(g, "rm_cc_compile(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ", ");
+            emit_expr(g, e->call.args[1]);
             emit_str(g, ")");
             return;
         }
@@ -1002,6 +1030,42 @@ static void emit_prelude(RmbCGen* g) {
         "    out.ptr = data;\n"
         "    out.len = (int64_t)got;\n"
         "    return out;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED bool rm_write_file(RmStr path, RmStr text) {\n"
+        "    char *cpath = (char*)malloc((size_t)path.len + 1);\n"
+        "    if (!cpath) return false;\n"
+        "    memcpy(cpath, path.ptr, (size_t)path.len);\n"
+        "    cpath[path.len] = '\\0';\n"
+        "    FILE *f = fopen(cpath, \"wb\");\n"
+        "    free(cpath);\n"
+        "    if (!f) return false;\n"
+        "    size_t want = (size_t)text.len;\n"
+        "    size_t written = want > 0 ? fwrite(text.ptr, 1, want, f) : 0;\n"
+        "    int close_rc = fclose(f);\n"
+        "    return written == want && close_rc == 0;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED int64_t rm_cc_compile(RmStr c_path, RmStr out_path) {\n"
+        "    char *cp = (char*)malloc((size_t)c_path.len + 1);\n"
+        "    if (!cp) return (int64_t)-1;\n"
+        "    memcpy(cp, c_path.ptr, (size_t)c_path.len);\n"
+        "    cp[c_path.len] = '\\0';\n"
+        "    char *op = (char*)malloc((size_t)out_path.len + 1);\n"
+        "    if (!op) { free(cp); return (int64_t)-1; }\n"
+        "    memcpy(op, out_path.ptr, (size_t)out_path.len);\n"
+        "    op[out_path.len] = '\\0';\n"
+        "    const char *prefix = \"gcc -std=c11 -Wall -Wextra -Werror -pedantic \";\n"
+        "    const char *between = \" -o \";\n"
+        "    size_t cmd_len = strlen(prefix) + (size_t)c_path.len + strlen(between) + (size_t)out_path.len + 1;\n"
+        "    char *cmd = (char*)malloc(cmd_len);\n"
+        "    if (!cmd) { free(cp); free(op); return (int64_t)-1; }\n"
+        "    snprintf(cmd, cmd_len, \"%s%s%s%s\", prefix, cp, between, op);\n"
+        "    int rc = system(cmd);\n"
+        "    free(cmd);\n"
+        "    free(cp);\n"
+        "    free(op);\n"
+        "    return (int64_t)rc;\n"
         "}\n"
         "\n"
         "static RM_UNUSED void rm_print(RmStr s) {\n"

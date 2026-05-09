@@ -377,9 +377,11 @@ static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name
     bool is_args_len = rmb_string_equal(name, rmb_string_from_cstr("args_len"));
     bool is_args_get = rmb_string_equal(name, rmb_string_from_cstr("args_get"));
     bool is_read_file = rmb_string_equal(name, rmb_string_from_cstr("read_file"));
+    bool is_write_file = rmb_string_equal(name, rmb_string_from_cstr("write_file"));
+    bool is_cc_compile = rmb_string_equal(name, rmb_string_from_cstr("cc_compile"));
     bool is_print_slice = rmb_string_equal(name, rmb_string_from_cstr("print_str_slice"));
     if (!is_len && !is_byte && !is_eq && !is_args_len && !is_args_get && !is_read_file &&
-        !is_print_slice) {
+        !is_write_file && !is_cc_compile && !is_print_slice) {
         return err_unknown();
     }
 
@@ -418,12 +420,18 @@ static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name
             emit_error(c, expr->call.args[i]->span,
                 "slice bounds passed to 'print_str_slice' must be int");
         }
+        if ((is_write_file || is_cc_compile) &&
+            !rmb_type_is_unknown(arg.type) && arg.type->kind != RMB_TYPE_STR) {
+            emit_error(c, expr->call.args[i]->span,
+                "arguments to '%.*s' must be str", (int)name.len, name.ptr);
+        }
     }
 
     if (is_print_slice) return err_ty(rmb_type_void());
     if (is_eq) return err_ty(rmb_type_bool());
     if (is_args_get) return err_ty(rmb_type_str());
     if (is_read_file) return err_ty(rmb_type_str());
+    if (is_write_file) return err_ty(rmb_type_bool());
     return err_ty(rmb_type_int());
 }
 
@@ -439,6 +447,8 @@ static ExprResult check_call(RmbChecker* c, RmbAstExpr* expr) {
             rmb_string_equal(name, rmb_string_from_cstr("args_len")) ||
             rmb_string_equal(name, rmb_string_from_cstr("args_get")) ||
             rmb_string_equal(name, rmb_string_from_cstr("read_file")) ||
+            rmb_string_equal(name, rmb_string_from_cstr("write_file")) ||
+            rmb_string_equal(name, rmb_string_from_cstr("cc_compile")) ||
             rmb_string_equal(name, rmb_string_from_cstr("print_str_slice")))) {
             return check_builtin(c, expr, name);
         }

@@ -75,6 +75,28 @@ args_get(args Args, index int) str
 
 `args_len` returns argc. `args_get` returns argv[index] as `str`; index 0 is
 the executable path. There is no bounds checking, no `main(argc, argv)`, and no
+
+### Temporary Bridge Builtins (v0.0.8q)
+
+Two builtins are added as **bridge-only** primitives, meant to enable `rmc`
+build command development:
+
+```rauma
+write_file(path str, text str) bool
+cc_compile(c_path str, out_path str) int
+```
+
+`write_file` writes `text` to `path`, overwriting any existing file. Returns
+`true` on success, `false` on failure (open/write/close error). No directory
+creation, no append mode, no error‑message API.
+
+`cc_compile` runs `gcc -std=c11 -Wall -Wextra -Werror -pedantic <c_path> -o <out_path>`
+via `system(3)`. Returns the process exit code (0 on success). Paths must not
+contain spaces or shell metacharacters — there is no shell escaping yet.
+
+These builtins are **not** part of the long‑term language surface; they are
+temporary helpers for the compiler bootstrap and will be removed or replaced
+once `rmc` has its own backend and process API.
 general `[]str` argument model yet.
 
 ---

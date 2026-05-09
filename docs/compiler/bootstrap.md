@@ -195,9 +195,43 @@ by the checker before any C is emitted.
 
 This proves that the C produced by the RauMa-written `rmc` can be compiled and
 executed through an external C compiler. `rmc` itself still does not invoke
-`gcc`, run processes, or write files — those remain later milestones (v0.0.8q
-adds an `rmc build` bridge that wraps this workflow). The self-host fixed
-point remains v0.0.9.
+`gcc`, run processes, or write files — those remain later milestones.
+
+### v0.0.8q: Runtime Bridge Primitives
+
+v0.0.8q adds two temporary builtin functions to the `rmb` runtime that allow
+generated RauMa programs to write files and invoke the external C compiler:
+
+- `write_file(path str, text str) bool`
+- `cc_compile(c_path str, out_path str) int`
+
+These primitives are **bridge only** — they are not part of the long‑term
+language surface and exist solely to enable `rmc`’s own build command.
+
+`write_file` copies a string’s bytes to a file path (overwrites, no append).
+`cc_compile` runs `gcc -std=c11 -Wall -Wextra -Werror -pedantic <c_path> -o <out_path>`
+through `system(3)` and returns the exit code.
+
+The fixtures `rmb/tests/build_write_file.rm` and `rmb/tests/build_cc_compile.rm`
+verify that both builtins work from compiled RauMa code:
+
+```bash
+./build/rmb build tests/build_write_file.rm
+./build/debug/native/bin/build_write_file
+```
+
+prints `write ok` and the file contents.
+
+```bash
+./build/rmb build tests/build_cc_compile.rm
+./build/debug/native/bin/build_cc_compile
+```
+
+prints `cc rc: 0` and the produced bridge binary prints `cc bridge ok`.
+
+With these primitives verified, `rmc` can implement its own `rmc build <path>`
+in v0.0.8r, wrapping the emit‑c→write‑file→cc‑compile pipeline. The self‑host
+fixed point remains v0.0.9.
 
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa

@@ -1,0 +1,12 @@
+fn main() {
+    ok := write_file("build/rauma_write_test.txt", "written by rauma\n");
+
+    if (ok) {
+        print("write ok\n");
+    } else {
+        print("write failed\n");
+    }
+
+    text := read_file("build/rauma_write_test.txt");
+    print(text);
+}

@@ -67,7 +67,8 @@
 - v0.0.8n rmc check command ✓ DONE
 - v0.0.8o rmc emit-c bridge ✓ DONE
 - v0.0.8p rmc external C compile workflow ✓ DONE
-- v0.0.8q rmc build command bridge
+- v0.0.8q runtime bridge primitives ✓ DONE
+- v0.0.8r rmc build command bridge
 - Port compiler from C to RauMa
 - Implement self-hosting compiler core
 - Test compiler bootstrapping

@@ -431,12 +431,13 @@ static RmbAstExpr* rmb_parse_factor(RmbParser* parser) {
 
 // Parse unary (!, -, *, &)
 static RmbAstExpr* rmb_parse_unary(RmbParser* parser) {
+    RmbToken* op_token = parser_current(parser);
+    RmbTokenKind op = op_token->kind;
     if (parser_match(parser, RMB_TOKEN_BANG) || parser_match(parser, RMB_TOKEN_MINUS) ||
         parser_match(parser, RMB_TOKEN_STAR) || parser_match(parser, RMB_TOKEN_AMP)) {
-        RmbTokenKind op = parser_current(parser)->kind;
         RmbAstExpr* operand = rmb_parse_unary(parser);
         return rmb_ast_expr_unary(
-            span_union(parser_current(parser)->span,operand->span),
+            span_union(op_token->span, operand->span),
             op,
             operand
         );

@@ -1,0 +1,16 @@
+fn main() {
+    c := "#include <stdio.h>\nint main(void) { printf(\"cc bridge ok\\n\"); return 0; }\n";
+
+    ok := write_file("build/rauma_cc_bridge.c", c);
+
+    if (!ok) {
+        print("write failed\n");
+        return;
+    }
+
+    rc := cc_compile("build/rauma_cc_bridge.c", "build/rauma_cc_bridge");
+
+    print("cc rc: ");
+    print(rc);
+    print("\n");
+}

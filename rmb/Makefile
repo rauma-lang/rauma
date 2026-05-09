@@ -154,6 +154,15 @@ test: debug
 	@./$(TARGET) build tests/build_print_slice.rm
 	@./$(BUILD_DIR)/debug/native/bin/build_print_slice
 	@echo ""
+	@echo "=== Build write_file test ==="
+	@./$(TARGET) build tests/build_write_file.rm
+	@./$(BUILD_DIR)/debug/native/bin/build_write_file
+	@echo ""
+	@echo "=== Build cc_compile test ==="
+	@./$(TARGET) build tests/build_cc_compile.rm
+	@./$(BUILD_DIR)/debug/native/bin/build_cc_compile
+	@./$(BUILD_DIR)/rauma_cc_bridge
+	@echo ""
 	@echo "=== Build errors test (should fail) ==="
 	@python -c "import subprocess, sys; rc=subprocess.run(['./$(TARGET)','build','tests/build_errors.rm'], stderr=subprocess.DEVNULL).returncode; print('SUCCESS: build_errors.rm failed as expected' if rc else 'ERROR: Expected build_errors.rm to fail but it succeeded'); sys.exit(0 if rc else 1)"
 	@echo ""

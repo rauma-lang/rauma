@@ -105,6 +105,7 @@ gcc link → build/debug/native/bin/<entry-stem>
 - **Built-in `print`**: emits `rm_print(rm_str(...))`, `rm_print_int`, or `rm_print_bool` depending on argument type
 - **String builtins**: `str_len(s str) int` and `str_byte(s str, index int) int` for bootstrap byte scanning
 - **CLI/string/file helpers**: `args_len(args Args) int`, `args_get(args Args, index int) str`, `str_eq(a str, b str) bool`, and `read_file(path str) str`
+- **Bridge builtins (v0.0.8q, temporary)**: `write_file(path str, text str) bool` and `cc_compile(c_path str, out_path str) int`
 - **Statements**: variable declarations (`:=`, `: T = e`), assignment (`=`, `+=`, `-=`, `*=`, `/=`), `return`, `if`/`else`, `while`, `for`
 - **Expressions**: int/string/bool literals, identifiers, calls, field access, unary (`-`, `!`, `&`, `*`), binary arithmetic and comparisons, `&&`/`||`
 
@@ -131,6 +132,24 @@ gcc link → build/debug/native/bin/<entry-stem>
 - `Args` is only a bootstrap CLI wrapper, not a general array/slice type
 - `read_file` returns empty string on failure and leaks returned buffers for now
 - No HIR / MIR / optimizer / native backend
+
+### Bridge builtins (v0.0.8q)
+
+`write_file(path str, text str) bool`
+- writes all bytes of `text` to `path`, overwriting any existing file
+- returns `true` on success, `false` on any failure (open/write/close)
+- no append mode, no directory creation, no error message API
+- path may not be null-terminated (it is copied to a temporary C string)
+
+`cc_compile(c_path str, out_path str) int`
+- temporary bridge that invokes `gcc -std=c11 -Wall -Wextra -Werror -pedantic
+  <c_path> -o <out_path>` via `system(3)`
+- returns the process exit code (0 on success)
+- expects `gcc` on `PATH`; the host platform must have a working C compiler
+- paths are concatenated into the command string with no shell escaping —
+  **paths with spaces or shell metacharacters are not supported**
+- there is no full process API and no general filesystem API yet; these two
+  primitives only exist to unblock `rmc build` (planned for v0.0.8r)
 
 ### Unsupported Features (in v0.0.7)
 - HIR / MIR
