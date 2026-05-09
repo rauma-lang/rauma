@@ -295,6 +295,20 @@ This remains bridge-style direct C emission over the token stream. It is not a
 full backend and still has no HIR/MIR, chunk layout in `rmc`, package manager,
 or self-host fixed point. v0.0.9 remains the fixed-point milestone.
 
+### v0.0.8u: Tiny Proto Self-Build Target
+
+v0.0.8u adds `examples/selfbuild/tiny.rm` and the matching
+`rmb/tests/rmc_selfbuild_tiny.rm` fixture. This proves the first proto
+self-build chain:
+
+1. `rmb` builds the RauMa-written `rmc`
+2. the generated `rmc` builds the tiny RauMa program with `rmc build`
+3. the produced executable runs and prints `tiny self-build`, `ok`, and `42`
+
+This is not the self-host fixed point. `rmc` still does not build itself, does
+not handle multi-file chunks, and does not have HIR/MIR or a full backend.
+v0.0.9 remains the fixed-point milestone.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

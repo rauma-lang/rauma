@@ -27,6 +27,11 @@ now handle simple integer comparisons, assignment, `+=`, `if`/`else`, and
 `while` for small single-file imperative programs. Multi-file/chunk builds,
 HIR/MIR, packages, structs, and self-host remain future milestones.
 
+v0.0.8u adds a tiny proto self-build target. The verified chain is `rmb` builds
+the RauMa-written `rmc`, generated `rmc` builds `examples/selfbuild/tiny.rm`,
+and the produced `build/rmc_build_out` executable runs. This is not
+self-hosting yet: `rmc` does not build itself and there is no fixed point.
+
 The pipeline is now:
 
 ```bash
@@ -165,6 +170,28 @@ make
 The binary path is still entry-stem based, so `rmc/main.rm` builds to
 `rmb/build/debug/native/bin/main`.
 
+## Proto Self-Build Chain
+
+From `rmb/`:
+
+```bash
+make
+./build/rmb build ../rmc/main.rm
+./build/debug/native/bin/main build ../examples/selfbuild/tiny.rm
+./build/rmc_build_out
+```
+
+Expected output:
+
+```text
+tiny self-build
+ok
+42
+```
+
+The test fixture `rmb/tests/rmc_selfbuild_tiny.rm` contains the same source for
+stable verification inside the bootstrap test tree.
+
 ## External Compile Workflow
 
 The `rmb/tests/rmc_emit_workflow_*.rm` fixtures verify the bridge end-to-end.
@@ -199,5 +226,5 @@ parse. On Windows, use bash (the redirection above is plain `>`), or invoke via
 
 ## Later v0.0.8 Work
 
-v0.0.8u should prepare a tiny self-build target after the current single-file
-control-flow bridge is verified. Self-host fixed point remains v0.0.9.
+v0.0.8v should expand the tiny self-build subset after this proto chain is
+verified. Self-host fixed point remains v0.0.9.

@@ -61,6 +61,10 @@ still emits C directly from checked AST chunks:
   comparisons, `if`/`else`, and `while`. The emitter is still single-file and
   scanner-driven, not a full backend.
 
+  v0.0.8u adds a proto self-build chain: `rmb` builds `rmc`, then the generated
+  `rmc` builds `examples/selfbuild/tiny.rm`, and the produced executable runs.
+  This is a tiny target proof, not self-host fixed point.
+
 ## Compilation Pipeline
 
 ```
@@ -213,7 +217,7 @@ build/debug/native/bin/main
 - Multiple backends
 - Self-hosting
 - Active development
-- In v0.0.8t, `rmc` has a minimal CLI skeleton plus early data modules:
+- In v0.0.8u, `rmc` has a minimal CLI skeleton plus early data modules:
   `source/span`, `source/source`, `lex/token`, `lex/lexer`, `ast/ast`,
   `lex/stream`, `parse/parser`, `type/checker`, `cgen/cgen`, `diag/output`,
   `cli/args`, and `cli/file`.
@@ -225,8 +229,9 @@ build/debug/native/bin/main
   are no token arrays, full type inference, name resolution, HIR/MIR, full
   backend architecture, or self-hosting logic yet. The current `build` command
   is a single-file bridge around emit-C, file write, and external C compilation.
-  It now handles a tiny imperative subset, but still has no `break`/`continue`,
-  structs, multi-file compilation, HIR/MIR, or full backend.
+  It now handles a tiny imperative subset and can build the tiny self-build
+  example, but still has no `break`/`continue`, structs, multi-file
+  compilation, HIR/MIR, fixed-point self-hosting, or full backend.
 
 ## Self-Hosting Process
 

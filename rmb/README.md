@@ -188,6 +188,27 @@ runs the resulting binaries, and checks their stdout matches the expected
 output. The failure fixture is asserted to print `check failed` without
 emitting any C.
 
+### Proto self-build verification
+
+v0.0.8u adds a tiny target buildable by the RauMa-written `rmc`:
+
+```bash
+./build/rmb build ../rmc/main.rm
+./build/debug/native/bin/main build tests/rmc_selfbuild_tiny.rm
+./build/rmc_build_out
+```
+
+Expected output:
+
+```text
+tiny self-build
+ok
+42
+```
+
+The user-facing copy lives at `examples/selfbuild/tiny.rm`. This verifies the
+chain `rmb -> rmc -> tiny program`; it is not self-host fixed point.
+
 ### Output
 The compiler executable is built at:
 ```

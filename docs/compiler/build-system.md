@@ -106,6 +106,19 @@ Current limitations remain explicit: no `break`/`continue`, no structs, no
 string variables, no multi-file rmc build, no chunk layout in `rmc`, and no
 HIR/MIR or full backend.
 
+v0.0.8u adds a tiny proto self-build target:
+
+```bash
+./build/rmb build ../rmc/main.rm
+./build/debug/native/bin/main build ../examples/selfbuild/tiny.rm
+./build/rmc_build_out
+```
+
+This still uses the same single-file bridge output path
+`build/rmc_build_out.c` / `build/rmc_build_out`. It proves that the
+RauMa-written `rmc` can build a tiny RauMa program, but it is not multi-file
+chunk building and not self-host fixed point.
+
 ## Chunk-Based Architecture
 
 ### What is a Chunk?
