@@ -227,6 +227,7 @@ static void emit_c_type(RmbCGen* g, RmbType* t) {
         case RMB_TYPE_BYTE:  emit_str(g, "uint8_t"); break;
         case RMB_TYPE_BOOL:  emit_str(g, "bool"); break;
         case RMB_TYPE_STR:   emit_str(g, "RmStr"); break;
+        case RMB_TYPE_ARGS:  emit_str(g, "RmArgs"); break;
         case RMB_TYPE_NAMED: {
             CgStruct* s = find_struct(g, t->name);
             if (s) emit_str(g, s->c_name);
@@ -329,9 +330,12 @@ static RmbType* call_type(RmbCGen* g, RmbAstExpr* e) {
         rmb_string name = callee->ident.name;
         if (rmb_string_equal(name, rmb_string_from_cstr("print"))) return rmb_type_void();
         if (rmb_string_equal(name, rmb_string_from_cstr("str_len")) ||
-            rmb_string_equal(name, rmb_string_from_cstr("str_byte"))) {
+            rmb_string_equal(name, rmb_string_from_cstr("str_byte")) ||
+            rmb_string_equal(name, rmb_string_from_cstr("args_len"))) {
             return rmb_type_int();
         }
+        if (rmb_string_equal(name, rmb_string_from_cstr("str_eq"))) return rmb_type_bool();
+        if (rmb_string_equal(name, rmb_string_from_cstr("args_get"))) return rmb_type_str();
         CgFn* fn = find_fn(g, name);
         if (fn) return fn->return_type ? fn->return_type : rmb_type_void();
     }
@@ -517,6 +521,43 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
                 return;
             }
             emit_str(g, "rm_str_byte(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ", ");
+            emit_expr(g, e->call.args[1]);
+            emit_str(g, ")");
+            return;
+        }
+        if (rmb_string_equal(name, rmb_string_from_cstr("str_eq"))) {
+            if (e->call.arg_count != 2) {
+                cg_error(g, e->span, "str_eq expects exactly 2 arguments");
+                emit_str(g, "false");
+                return;
+            }
+            emit_str(g, "rm_str_eq(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ", ");
+            emit_expr(g, e->call.args[1]);
+            emit_str(g, ")");
+            return;
+        }
+        if (rmb_string_equal(name, rmb_string_from_cstr("args_len"))) {
+            if (e->call.arg_count != 1) {
+                cg_error(g, e->span, "args_len expects exactly 1 argument");
+                emit_str(g, "0");
+                return;
+            }
+            emit_str(g, "rm_args_len(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ")");
+            return;
+        }
+        if (rmb_string_equal(name, rmb_string_from_cstr("args_get"))) {
+            if (e->call.arg_count != 2) {
+                cg_error(g, e->span, "args_get expects exactly 2 arguments");
+                emit_str(g, "rm_str(\"\")");
+                return;
+            }
+            emit_str(g, "rm_args_get(");
             emit_expr(g, e->call.args[0]);
             emit_str(g, ", ");
             emit_expr(g, e->call.args[1]);
@@ -766,7 +807,12 @@ static void emit_struct_decl(RmbCGen* g, CgStruct* s) {
 
 static void emit_fn_signature(RmbCGen* g, CgFn* fn, bool prototype) {
     if (fn->is_main) {
-        emit_str(g, "int main(void)");
+        if (fn->param_count == 1 && fn->params && fn->params->type &&
+            fn->params->type->kind == RMB_TYPE_ARGS) {
+            emit_str(g, "int main(int argc, char **argv)");
+        } else {
+            emit_str(g, "int main(void)");
+        }
         return;
     }
     if (fn->return_type && fn->return_type->kind != RMB_TYPE_VOID) emit_c_type(g, fn->return_type);
@@ -804,8 +850,10 @@ static bool body_ends_with_return(RmbAstItem* item) {
 
 static void emit_fn_def(RmbCGen* g, CgFn* fn) {
     if (fn->is_external) return;
-    if (fn->is_main && fn->params) {
-        cg_error(g, fn->ast->span, "main arguments are not supported by codegen v0.0.7");
+    bool main_has_args = fn->is_main && fn->param_count == 1 && fn->params &&
+        fn->params->type && fn->params->type->kind == RMB_TYPE_ARGS;
+    if (fn->is_main && fn->params && !main_has_args) {
+        cg_error(g, fn->ast->span, "main only supports zero parameters or one Args parameter");
     }
     if (fn->error_capable) {
         cg_error(g, fn->ast->span, "error-returning functions are not supported by codegen v0.0.7");
@@ -816,6 +864,18 @@ static void emit_fn_def(RmbCGen* g, CgFn* fn) {
     emit_str(g, " {\n");
     g->indent++;
     scope_push(g);
+    if (main_has_args) {
+        emit_indent(g);
+        emit_str(g, "RmArgs ");
+        emit_rmb_string(g, fn->params->name);
+        emit_str(g, ";\n");
+        emit_indent(g);
+        emit_rmb_string(g, fn->params->name);
+        emit_str(g, ".argc = argc;\n");
+        emit_indent(g);
+        emit_rmb_string(g, fn->params->name);
+        emit_str(g, ".argv = argv;\n");
+    }
     for (CgFnParam* p = fn->params; p; p = p->next) {
         scope_add_var(g, p->name, p->type);
     }
@@ -853,6 +913,11 @@ static void emit_prelude(RmbCGen* g) {
         "    int64_t len;\n"
         "} RmStr;\n"
         "\n"
+        "typedef struct {\n"
+        "    int argc;\n"
+        "    char **argv;\n"
+        "} RmArgs;\n"
+        "\n"
         "static RM_UNUSED RmStr rm_str(const char *s) {\n"
         "    RmStr out;\n"
         "    out.ptr = s;\n"
@@ -866,6 +931,19 @@ static void emit_prelude(RmbCGen* g) {
         "\n"
         "static RM_UNUSED int64_t rm_str_byte(RmStr s, int64_t index) {\n"
         "    return (int64_t)((unsigned char)s.ptr[index]);\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED bool rm_str_eq(RmStr a, RmStr b) {\n"
+        "    if (a.len != b.len) return false;\n"
+        "    return memcmp(a.ptr, b.ptr, (size_t)a.len) == 0;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED int64_t rm_args_len(RmArgs args) {\n"
+        "    return (int64_t)args.argc;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED RmStr rm_args_get(RmArgs args, int64_t index) {\n"
+        "    return rm_str(args.argv[index]);\n"
         "}\n"
         "\n"
         "static RM_UNUSED void rm_print(RmStr s) {\n"

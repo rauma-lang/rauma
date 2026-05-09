@@ -35,7 +35,7 @@
 
 ## Architecture
 
-### Components (v0.0.7)
+### Components (v0.0.8h)
 1. **Source Loading**: Read `.rm` files
 2. **Lexer/Tokenizer**: Convert source to tokens with span tracking
 3. **Diagnostics**: Error reporting with source locations
@@ -45,7 +45,7 @@
 7. **C Code Generator**: Emits portable C99/C11 from checked AST chunks
 8. **Chunk Build Driver**: Resolves simple local `use` declarations, compiles per-file C chunks, and links objects with `gcc`
 
-### Build Pipeline (v0.0.7)
+### Build Pipeline (v0.0.8h)
 ```
 .rm entry source
     ↓
@@ -64,7 +64,7 @@ gcc -c → per-chunk .o
 gcc link → build/debug/native/bin/<entry-stem>
 ```
 
-## Language Support (v0.0.7)
+## Language Support (v0.0.8h)
 
 ### Lexer Features
 - **Keywords**: `fn`, `pub`, `struct`, `enum`, `use`, `return`, `if`, `else`, `while`, `for`, `match`, `case`, `const`, `defer`, `true`, `false`, `none`
@@ -87,6 +87,7 @@ gcc link → build/debug/native/bin/<entry-stem>
 
 ### Type Checker Features (v0.0.5)
 - **Primitive types**: `int`, `uint`, `float`, `byte`, `bool`, `str`, `void`
+- **Opaque CLI type**: `Args` for `fn main(args Args)` only
 - **Type forms**: named, pointer (`*T`), slice (`[]T`), array (`[N]T`), optional (`T?`)
 - **Symbol collection**: functions, structs, enums collected before bodies
 - **Local inference**: `name := expr` infers type from expression
@@ -103,6 +104,7 @@ gcc link → build/debug/native/bin/<entry-stem>
 - **Functions**: prefixed `rm_fn_<name>`; `main` becomes the C entry point
 - **Built-in `print`**: emits `rm_print(rm_str(...))`, `rm_print_int`, or `rm_print_bool` depending on argument type
 - **String builtins**: `str_len(s str) int` and `str_byte(s str, index int) int` for bootstrap byte scanning
+- **CLI/string helpers**: `args_len(args Args) int`, `args_get(args Args, index int) str`, and `str_eq(a str, b str) bool`
 - **Statements**: variable declarations (`:=`, `: T = e`), assignment (`=`, `+=`, `-=`, `*=`, `/=`), `return`, `if`/`else`, `while`, `for`
 - **Expressions**: int/string/bool literals, identifiers, calls, field access, unary (`-`, `!`, `&`, `*`), binary arithmetic and comparisons, `&&`/`||`
 
@@ -126,6 +128,7 @@ gcc link → build/debug/native/bin/<entry-stem>
 - No optional/`else` codegen
 - No struct literal codegen
 - String builtins are byte-level only; no Unicode, no char type, no `s[i]` syntax
+- `Args` is only a bootstrap CLI wrapper, not a general array/slice type
 - No HIR / MIR / optimizer / native backend
 
 ### Unsupported Features (in v0.0.7)
@@ -162,7 +165,7 @@ The compiler executable is built at:
 rmb/build/rmb
 ```
 
-## Usage (v0.0.7)
+## Usage (v0.0.8h)
 
 ```bash
 # Show help
@@ -247,6 +250,7 @@ use to `tests/project_nested/app/util.rm`. Dots map to path separators and
 ### rmc (Main Compiler)
 - Written in RauMa
 - v0.0.8a starts as a minimal RauMa-written skeleton under `rmc/`
+- v0.0.8h adds `Args`-based command dispatch for help/version/demo commands
 - Currently built by `rmb build ../rmc/main.rm`
 - Full language support and self-hosting are later milestones
 

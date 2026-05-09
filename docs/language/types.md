@@ -38,16 +38,39 @@ v0.0.5 does not perform implicit conversions between numeric kinds, between `int
 
 ### Temporary String Builtins (v0.0.8d)
 
-The bootstrap compiler recognizes two temporary byte-level string builtins:
+The bootstrap compiler recognizes temporary byte-level string builtins:
 
 ```rauma
 str_len(value str) int
 str_byte(value str, index int) int
+str_eq(a str, b str) bool
 ```
 
 `str_len` returns the string length in bytes. `str_byte` returns the byte value
-at a zero-based index. These are ASCII/byte helpers for bootstrap compiler
-work; there is no Unicode handling, no `char` type, and no `s[i]` syntax yet.
+at a zero-based index. `str_eq` compares byte length and byte contents. These
+are ASCII/byte helpers for bootstrap compiler work; there is no Unicode
+handling, no `char` type, and no `s[i]` syntax yet.
+
+### Temporary Args Builtins (v0.0.8h)
+
+`Args` is an opaque bootstrap-only command-line argument wrapper accepted by:
+
+```rauma
+fn main(args Args) {
+    count := args_len(args);
+}
+```
+
+Builtins:
+
+```rauma
+args_len(args Args) int
+args_get(args Args, index int) str
+```
+
+`args_len` returns argc. `args_get` returns argv[index] as `str`; index 0 is
+the executable path. There is no bounds checking, no `main(argc, argv)`, and no
+general `[]str` argument model yet.
 
 ---
 

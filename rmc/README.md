@@ -4,12 +4,11 @@
 
 `rmc` is the future main RauMa compiler written in RauMa.
 
-v0.0.8g expands the parser demo to a larger hardcoded program with two
-functions, parameters, a return statement, a variable declaration, and call
-statements. The lexer still scans the hardcoded source byte by byte, and the
-parser consumes token stream helpers instead of calling `str_byte` directly.
+v0.0.8h adds command dispatch through the bootstrap `Args` type. The `rmc`
+binary now supports help, version, lexer demo, and parser demo commands while
+the demo source remains hardcoded.
 
-`rmc` still does not implement file IO, CLI args, token arrays, full AST
+`rmc` still does not implement file IO, token arrays, full AST
 allocation, checking, codegen, HIR, MIR, packages, std modules, or self-hosting.
 
 ## Current Source Layout
@@ -18,6 +17,7 @@ allocation, checking, codegen, HIR, MIR, packages, std modules, or self-hosting.
 rmc/
 ├── main.rm
 ├── cli/
+│   ├── args.rm
 │   ├── help.rm
 │   └── version.rm
 ├── source/
@@ -40,20 +40,21 @@ rmc/
 ```rauma
 use cli.help;
 use cli.version;
-use source.source;
-use lex.token;
+use cli.args;
 use lex.lexer;
-use lex.stream;
-use ast.ast;
 use parse.parser;
-use diag.output;
 ```
 
-The executable prints help, module readiness, lexer smoke tokens, and a parser
-summary produced through `lex.stream` over the larger
-`source.source.demo_text()` program.
-Command-line argument dispatch is not implemented yet because the current
-bootstrap codegen does not support `main(args)`.
+The executable dispatches commands through `fn main(args Args)`:
+
+```text
+help        print this help message
+version     print compiler version
+demo-lex    run hardcoded lexer demo
+demo-parse  run hardcoded parser demo
+```
+
+The lexer and parser demos still run against `source.source.demo_text()`.
 
 ## Building With rmb
 
@@ -70,6 +71,6 @@ The binary path is still entry-stem based, so `rmc/main.rm` builds to
 
 ## Later v0.0.8 Work
 
-v0.0.8h should prepare file input and CLI dispatch. File-driven lexing,
+v0.0.8i should prepare file input. File-driven lexing,
 full parser work, checker/codegen bridge work, and the self-host fixed point
 remain later milestones.

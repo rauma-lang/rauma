@@ -18,6 +18,7 @@ static RmbType g_float   = { RMB_TYPE_FLOAT,   {"float",   5}, NULL, 0, false, N
 static RmbType g_byte    = { RMB_TYPE_BYTE,    {"byte",    4}, NULL, 0, false, NULL };
 static RmbType g_bool    = { RMB_TYPE_BOOL,    {"bool",    4}, NULL, 0, false, NULL };
 static RmbType g_str     = { RMB_TYPE_STR,     {"str",     3}, NULL, 0, false, NULL };
+static RmbType g_args    = { RMB_TYPE_ARGS,    {"Args",    4}, NULL, 0, false, NULL };
 
 RmbType* rmb_type_unknown(void) { return &g_unknown; }
 RmbType* rmb_type_never(void)   { return &g_never; }
@@ -28,6 +29,7 @@ RmbType* rmb_type_float(void)   { return &g_float; }
 RmbType* rmb_type_byte(void)    { return &g_byte; }
 RmbType* rmb_type_bool(void)    { return &g_bool; }
 RmbType* rmb_type_str(void)     { return &g_str; }
+RmbType* rmb_type_args(void)    { return &g_args; }
 
 static RmbType* alloc_type(rmb_arena* arena) {
     RmbType* t = rmb_arena_alloc(arena, sizeof(RmbType));
@@ -93,6 +95,7 @@ RmbType* rmb_type_lookup_primitive(rmb_string name) {
     if (name_eq(name, "byte", 4))  return rmb_type_byte();
     if (name_eq(name, "bool", 4))  return rmb_type_bool();
     if (name_eq(name, "str", 3))   return rmb_type_str();
+    if (name_eq(name, "Args", 4))  return rmb_type_args();
     if (name_eq(name, "void", 4))  return rmb_type_void();
     return NULL;
 }
@@ -108,6 +111,7 @@ const char* rmb_type_kind_name(RmbTypeKind kind) {
         case RMB_TYPE_BYTE:     return "byte";
         case RMB_TYPE_BOOL:     return "bool";
         case RMB_TYPE_STR:      return "str";
+        case RMB_TYPE_ARGS:     return "Args";
         case RMB_TYPE_NAMED:    return "named";
         case RMB_TYPE_POINTER:  return "pointer";
         case RMB_TYPE_SLICE:    return "slice";
@@ -133,6 +137,7 @@ void rmb_type_print(RmbType* type) {
         case RMB_TYPE_BYTE:
         case RMB_TYPE_BOOL:
         case RMB_TYPE_STR:
+        case RMB_TYPE_ARGS:
             printf("%s", rmb_type_kind_name(type->kind));
             break;
         case RMB_TYPE_NAMED:

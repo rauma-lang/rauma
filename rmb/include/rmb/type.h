@@ -18,6 +18,7 @@ typedef enum RmbTypeKind {
     RMB_TYPE_BYTE,
     RMB_TYPE_BOOL,
     RMB_TYPE_STR,
+    RMB_TYPE_ARGS,
     RMB_TYPE_NAMED,
     RMB_TYPE_POINTER,
     RMB_TYPE_SLICE,
@@ -47,6 +48,7 @@ RmbType* rmb_type_float(void);
 RmbType* rmb_type_byte(void);
 RmbType* rmb_type_bool(void);
 RmbType* rmb_type_str(void);
+RmbType* rmb_type_args(void);
 
 // Constructors using arena
 RmbType* rmb_type_make_named(rmb_arena* arena, rmb_string name);

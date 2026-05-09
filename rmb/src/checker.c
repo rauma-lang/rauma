@@ -370,12 +370,15 @@ static bool type_is_known_kind(RmbType* type, RmbTypeKind kind) {
     return !rmb_type_is_unknown(type) && type->kind == kind;
 }
 
-static ExprResult check_string_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name) {
+static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name) {
     bool is_len = rmb_string_equal(name, rmb_string_from_cstr("str_len"));
     bool is_byte = rmb_string_equal(name, rmb_string_from_cstr("str_byte"));
-    if (!is_len && !is_byte) return err_unknown();
+    bool is_eq = rmb_string_equal(name, rmb_string_from_cstr("str_eq"));
+    bool is_args_len = rmb_string_equal(name, rmb_string_from_cstr("args_len"));
+    bool is_args_get = rmb_string_equal(name, rmb_string_from_cstr("args_get"));
+    if (!is_len && !is_byte && !is_eq && !is_args_len && !is_args_get) return err_unknown();
 
-    size_t expected = is_len ? 1 : 2;
+    size_t expected = (is_len || is_args_len) ? 1 : 2;
     if (expr->call.arg_count != expected) {
         emit_error(c, expr->span,
             "builtin '%.*s' expects %zu arguments, got %zu",
@@ -384,16 +387,32 @@ static ExprResult check_string_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_stri
 
     for (size_t i = 0; i < expr->call.arg_count; i++) {
         ExprResult arg = check_expr(c, expr->call.args[i]);
-        if (i == 0 && !rmb_type_is_unknown(arg.type) && arg.type->kind != RMB_TYPE_STR) {
+        if ((is_len || is_byte) && i == 0 &&
+            !rmb_type_is_unknown(arg.type) && arg.type->kind != RMB_TYPE_STR) {
             emit_error(c, expr->call.args[i]->span,
                 "first argument to '%.*s' must be str", (int)name.len, name.ptr);
+        }
+        if (is_eq && !rmb_type_is_unknown(arg.type) && arg.type->kind != RMB_TYPE_STR) {
+            emit_error(c, expr->call.args[i]->span,
+                "arguments to 'str_eq' must be str");
         }
         if (is_byte && i == 1 && !type_is_known_kind(arg.type, RMB_TYPE_INT)) {
             emit_error(c, expr->call.args[i]->span,
                 "second argument to 'str_byte' must be int");
         }
+        if ((is_args_len || is_args_get) && i == 0 &&
+            !rmb_type_is_unknown(arg.type) && arg.type->kind != RMB_TYPE_ARGS) {
+            emit_error(c, expr->call.args[i]->span,
+                "first argument to '%.*s' must be Args", (int)name.len, name.ptr);
+        }
+        if (is_args_get && i == 1 && !type_is_known_kind(arg.type, RMB_TYPE_INT)) {
+            emit_error(c, expr->call.args[i]->span,
+                "second argument to 'args_get' must be int");
+        }
     }
 
+    if (is_eq) return err_ty(rmb_type_bool());
+    if (is_args_get) return err_ty(rmb_type_str());
     return err_ty(rmb_type_int());
 }
 
@@ -403,8 +422,11 @@ static ExprResult check_call(RmbChecker* c, RmbAstExpr* expr) {
     if (callee && callee->kind == RMB_AST_EXPR_IDENT) {
         rmb_string name = callee->ident.name;
         if (rmb_string_equal(name, rmb_string_from_cstr("str_len")) ||
-            rmb_string_equal(name, rmb_string_from_cstr("str_byte"))) {
-            return check_string_builtin(c, expr, name);
+            rmb_string_equal(name, rmb_string_from_cstr("str_byte")) ||
+            rmb_string_equal(name, rmb_string_from_cstr("str_eq")) ||
+            rmb_string_equal(name, rmb_string_from_cstr("args_len")) ||
+            rmb_string_equal(name, rmb_string_from_cstr("args_get"))) {
+            return check_builtin(c, expr, name);
         }
         RmbFnSymbol* fn = find_fn(c, name);
         // Check args first regardless

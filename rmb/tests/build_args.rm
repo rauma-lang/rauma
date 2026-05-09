@@ -1,0 +1,15 @@
+fn main(args Args) {
+    count := args_len(args);
+
+    if (count > 1) {
+        cmd := args_get(args, 1);
+
+        if (str_eq(cmd, "version")) {
+            print("args ok\n");
+        } else {
+            print("unknown\n");
+        }
+    } else {
+        print("no args\n");
+    }
+}

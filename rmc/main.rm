@@ -1,24 +1,36 @@
 use cli.help;
 use cli.version;
-use source.source;
-use lex.token;
+use cli.args;
 use lex.lexer;
-use lex.stream;
-use ast.ast;
 use parse.parser;
-use diag.output;
 
-fn main() {
-    cli.help.print_help();
-    print("\n");
-    print("rmc modules:\n");
-    source.source.print_source_label();
-    lex.token.print_token_label();
-    diag.output.print_diag_label();
-    ast.ast.print_ast_label();
-    lex.stream.run_stream_smoke();
-    print("\n");
-    lex.lexer.run_smoke();
-    print("\n");
-    parse.parser.run_smoke();
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        cli.help.print_help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "help")) {
+        cli.help.print_help();
+        return;
+    }
+
+    if (str_eq(cmd, "version")) {
+        cli.version.print_version();
+        return;
+    }
+
+    if (str_eq(cmd, "demo-lex")) {
+        lex.lexer.run_smoke();
+        return;
+    }
+
+    if (str_eq(cmd, "demo-parse")) {
+        parse.parser.run_smoke();
+        return;
+    }
+
+    cli.args.print_unknown();
 }

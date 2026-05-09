@@ -94,6 +94,20 @@ This still does not parse arbitrary files and still has no token arrays, CLI
 input, checker, or code generator in `rmc`. The self-host fixed point remains
 v0.0.9.
 
+### v0.0.8h: CLI Dispatch
+
+v0.0.8h adds minimal generated-binary argument support to `rmb` through an
+opaque `Args` type and the `args_len`, `args_get`, and `str_eq` builtins.
+`rmc` uses that support for command dispatch:
+
+- `help`
+- `version`
+- `demo-lex`
+- `demo-parse`
+
+The lexer and parser demos still use hardcoded source text. File input, real
+compiler commands, and the self-host fixed point remain later work.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

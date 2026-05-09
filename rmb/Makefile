@@ -140,6 +140,12 @@ test: debug
 	@./$(TARGET) build tests/build_string_ops.rm
 	@./$(BUILD_DIR)/debug/native/bin/build_string_ops
 	@echo ""
+	@echo "=== Build args test ==="
+	@./$(TARGET) build tests/build_args.rm
+	@./$(BUILD_DIR)/debug/native/bin/build_args
+	@./$(BUILD_DIR)/debug/native/bin/build_args version
+	@./$(BUILD_DIR)/debug/native/bin/build_args wat
+	@echo ""
 	@echo "=== Build errors test (should fail) ==="
 	@python -c "import subprocess, sys; rc=subprocess.run(['./$(TARGET)','build','tests/build_errors.rm'], stderr=subprocess.DEVNULL).returncode; print('SUCCESS: build_errors.rm failed as expected' if rc else 'ERROR: Expected build_errors.rm to fail but it succeeded'); sys.exit(0 if rc else 1)"
 	@echo ""
