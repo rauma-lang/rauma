@@ -176,6 +176,29 @@ shapes.
 This is bridge output, not the full backend. `rmc` still does not compile or
 link generated C by itself, and the self-host fixed point remains v0.0.9.
 
+### v0.0.8p: External C Compile Workflow
+
+v0.0.8p formalizes and tests the external compile pipeline that consumes the
+output of `rmc emit-c`:
+
+```bash
+rmc emit-c input.rm > out.c
+gcc -std=c11 -Wall -Wextra -Werror -pedantic out.c -o out
+./out
+```
+
+The fixtures `rmb/tests/rmc_emit_workflow_hello.rm`,
+`rmb/tests/rmc_emit_workflow_add.rm`, and
+`rmb/tests/rmc_emit_workflow_fail.rm` exercise the bridge end-to-end. Hello
+prints `hello from rmc`, add prints `42`, and the failure fixture is rejected
+by the checker before any C is emitted.
+
+This proves that the C produced by the RauMa-written `rmc` can be compiled and
+executed through an external C compiler. `rmc` itself still does not invoke
+`gcc`, run processes, or write files — those remain later milestones (v0.0.8q
+adds an `rmc build` bridge that wraps this workflow). The self-host fixed
+point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

@@ -12,26 +12,6 @@ pub fn expect_ident_text(src str, i int, text str) int {
     return 0;
 }
 
-pub fn expect_int_text(src str, i int, text str) int {
-    if (lex.stream.current_kind(src, i) != lex.token.kind_int()) {
-        return 0;
-    }
-    if (lex.stream.token_text_eq(src, lex.stream.token_start(src, i), lex.stream.token_end(src, i), text)) {
-        return lex.stream.advance(src, i);
-    }
-    return 0;
-}
-
-pub fn expect_string_text(src str, i int, text str) int {
-    if (lex.stream.current_kind(src, i) != lex.token.kind_string()) {
-        return 0;
-    }
-    if (lex.stream.token_text_eq(src, lex.stream.token_start(src, i), lex.stream.token_end(src, i), text)) {
-        return lex.stream.advance(src, i);
-    }
-    return 0;
-}
-
 pub fn can_emit_hello(src str) bool {
     pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
     if (pos == 0) { return false; }
@@ -47,7 +27,7 @@ pub fn can_emit_hello(src str) bool {
     if (pos == 0) { return false; }
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
     if (pos == 0) { return false; }
-    pos = expect_string_text(src, pos, "\"hello\\n\"");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_string());
     if (pos == 0) { return false; }
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
     if (pos == 0) { return false; }
@@ -112,11 +92,11 @@ pub fn can_emit_add(src str) bool {
     if (pos == 0) { return false; }
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
     if (pos == 0) { return false; }
-    pos = expect_int_text(src, pos, "20");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
     if (pos == 0) { return false; }
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
     if (pos == 0) { return false; }
-    pos = expect_int_text(src, pos, "22");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
     if (pos == 0) { return false; }
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
     if (pos == 0) { return false; }
@@ -136,7 +116,7 @@ pub fn can_emit_add(src str) bool {
     if (pos == 0) { return false; }
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
     if (pos == 0) { return false; }
-    pos = expect_string_text(src, pos, "\"\\n\"");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_string());
     if (pos == 0) { return false; }
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
     if (pos == 0) { return false; }
@@ -173,24 +153,91 @@ pub fn emit_header() {
     print("\n");
 }
 
-pub fn emit_hello() {
+pub fn emit_hello(src str) {
+    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
+    pos = expect_ident_text(src, pos, "main");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    pos = expect_ident_text(src, pos, "print");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+
+    s_start := lex.stream.token_start(src, pos);
+    s_end := lex.stream.token_end(src, pos);
+
     emit_header();
     print("int main(void) {\n");
-    print("    rm_print(rm_str(\"hello\\n\"));\n");
+    print("    rm_print(rm_str(");
+    lex.stream.print_token_text(src, s_start, s_end);
+    print("));\n");
     print("    return 0;\n");
     print("}\n");
 }
 
-pub fn emit_add() {
+pub fn emit_add(src str) {
+    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
+    pos = expect_ident_text(src, pos, "add");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    pos = expect_ident_text(src, pos, "a");
+    pos = expect_ident_text(src, pos, "int");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+    pos = expect_ident_text(src, pos, "b");
+    pos = expect_ident_text(src, pos, "int");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = expect_ident_text(src, pos, "int");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_return());
+    pos = expect_ident_text(src, pos, "a");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
+    pos = expect_ident_text(src, pos, "b");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+    pos = expect_ident_text(src, pos, "main");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    pos = expect_ident_text(src, pos, "x");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_colon_eq());
+    pos = expect_ident_text(src, pos, "add");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+
+    n_start := lex.stream.token_start(src, pos);
+    n_end := lex.stream.token_end(src, pos);
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+
+    m_start := lex.stream.token_start(src, pos);
+    m_end := lex.stream.token_end(src, pos);
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    pos = expect_ident_text(src, pos, "print");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    pos = expect_ident_text(src, pos, "x");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    pos = expect_ident_text(src, pos, "print");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+
+    s_start := lex.stream.token_start(src, pos);
+    s_end := lex.stream.token_end(src, pos);
+
     emit_header();
     print("static int64_t rm_fn_add(int64_t a, int64_t b) {\n");
     print("    return a + b;\n");
     print("}\n");
     print("\n");
     print("int main(void) {\n");
-    print("    int64_t x = rm_fn_add(20, 22);\n");
+    print("    int64_t x = rm_fn_add(");
+    lex.stream.print_token_text(src, n_start, n_end);
+    print(", ");
+    lex.stream.print_token_text(src, m_start, m_end);
+    print(");\n");
     print("    printf(\"%lld\", (long long)x);\n");
-    print("    rm_print(rm_str(\"\\n\"));\n");
+    print("    rm_print(rm_str(");
+    lex.stream.print_token_text(src, s_start, s_end);
+    print("));\n");
     print("    return 0;\n");
     print("}\n");
 }
@@ -202,12 +249,12 @@ pub fn run_file(text str) {
     }
 
     if (can_emit_hello(text)) {
-        emit_hello();
+        emit_hello(text);
         return;
     }
 
     if (can_emit_add(text)) {
-        emit_add();
+        emit_add(text);
         return;
     }
 

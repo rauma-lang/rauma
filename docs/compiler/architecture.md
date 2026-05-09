@@ -4,7 +4,7 @@
 
 RauMa uses a multi-stage compiler architecture designed for incremental development and self-hosting.
 
-### Bootstrap pipeline status (v0.0.8o)
+### Bootstrap pipeline status (v0.0.8p)
 
 The full pipeline (Resolver → HIR → MIR → multi-backend) is the long-term design.
 The v0.0.7 bootstrap compiler `rmb` deliberately skips most of these stages and
@@ -25,6 +25,22 @@ still emits C directly from checked AST chunks:
 - **v0.0.8o adds an `rmc emit-c <path>` bridge.** It reuses parser/checker
   helpers and emits C text for tiny recognized source shapes. This is not the
   full backend and `rmc` still does not compile or link file contents.
+- **v0.0.8p verifies the external compile workflow that consumes
+  `rmc emit-c` output:**
+
+  ```
+  .rm source → rmc emit-c → C text on stdout
+            ↘ user/Makefile redirects to a .c file
+                                     ↓
+                              external gcc
+                                     ↓
+                                  executable
+  ```
+
+  `rmc` has no build, link, or process-execution stage of its own yet — the
+  external pipeline above is intentionally the only way to turn rmc-emitted
+  C into a binary at this milestone. v0.0.8q will wrap that pipeline behind
+  an `rmc build` command.
 
 ## Compilation Pipeline
 

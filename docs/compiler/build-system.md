@@ -60,6 +60,30 @@ Future incremental work should hash source files and `.rmi` interfaces, skip
 unchanged implementation chunks, and rebuild dependents only when imported
 interfaces change.
 
+## v0.0.8p external rmc compile workflow (temporary)
+
+`rmc` does not yet have its own build/link stage. While the RauMa-written
+compiler is being grown, the milestone-level pipeline is **temporary** and
+goes through an external C compiler:
+
+```bash
+rmc emit-c input.rm > out.c
+gcc -std=c11 -Wall -Wextra -Werror -pedantic out.c -o out
+./out
+```
+
+`rmc` only produces C text on stdout. The user (or a Makefile target such as
+`rmb/`'s `test-rmc-emit-workflow`) is responsible for capturing that output to
+a file, invoking `gcc`, and running the binary. `rmc` itself does **not**:
+
+- invoke `gcc` or any other tool
+- spawn processes
+- write files
+
+A future `rmc build` command (planned for v0.0.8q) will wrap this workflow
+behind a single command, and later milestones replace the bridge with `rmc`'s
+own backend / link step.
+
 ## Chunk-Based Architecture
 
 ### What is a Chunk?

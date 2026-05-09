@@ -156,9 +156,18 @@ make clean
 # Run tests (when implemented)
 make test
 
+# Verify the rmc emit-c -> gcc -> run pipeline (also runs from `make test`)
+make test-rmc-emit-workflow
+
 # Run the compiler
 make run
 ```
+
+`test-rmc-emit-workflow` builds `rmb`, builds `rmc` via `rmb`, runs `rmc emit-c`
+on the `rmc_emit_workflow_*.rm` fixtures, compiles the emitted C with `gcc`,
+runs the resulting binaries, and checks their stdout matches the expected
+output. The failure fixture is asserted to print `check failed` without
+emitting any C.
 
 ### Output
 The compiler executable is built at:
