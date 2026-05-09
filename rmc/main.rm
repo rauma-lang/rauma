@@ -4,6 +4,7 @@ use cli.args;
 use cli.file;
 use lex.lexer;
 use parse.parser;
+use type.checker;
 
 fn main(args Args) {
     if (args_len(args) <= 1) {
@@ -71,6 +72,22 @@ fn main(args Args) {
         }
 
         parse.parser.run_file(text);
+        return;
+    }
+
+    if (str_eq(cmd, "check")) {
+        if (args_len(args) < 3) {
+            print("usage: rmc check <path>\n");
+            return;
+        }
+
+        text := read_file(args_get(args, 2));
+        if (str_len(text) == 0) {
+            print("empty or unreadable file\n");
+            return;
+        }
+
+        type.checker.run_file(args_get(args, 2), text);
         return;
     }
 

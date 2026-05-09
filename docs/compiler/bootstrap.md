@@ -157,6 +157,16 @@ The parser still uses cursor-style stream access and summary output. It still
 does not build a heap AST, typecheck, or codegen file contents, and the
 self-host fixed point remains v0.0.9.
 
+### v0.0.8n: Lightweight Check Command
+
+v0.0.8n adds `rmc check <path>`. The command reads a file, validates that the
+supported subset parses, counts functions, and checks that functions with an
+explicit return type contain a return statement.
+
+This is not full type checking. There is no type inference, name resolution,
+symbol table, HIR/MIR, or code generation in `rmc` yet. The self-host fixed
+point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

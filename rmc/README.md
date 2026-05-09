@@ -4,13 +4,12 @@
 
 `rmc` is the future main RauMa compiler written in RauMa.
 
-v0.0.8m improves token text handling. `rmc parse <path>` reads a RauMa source
-file with `read_file`, parses the current small subset through token stream
-helpers, and prints function, parameter, local, type, and call names directly
-from source token spans.
+v0.0.8n adds a lightweight file-driven checker. `rmc check <path>` reads a
+RauMa source file with `read_file`, reuses the parser foundation, and performs
+small structural checks for the supported subset.
 
-`rmc` still does not allocate a full AST, check, codegen, implement HIR/MIR,
-packages, std modules, or self-host.
+`rmc` still does not allocate a full AST, infer types, resolve names, codegen,
+implement HIR/MIR, packages, std modules, or self-host.
 
 ## Current Source Layout
 
@@ -33,6 +32,8 @@ rmc/
 │   └── ast.rm
 ├── parse/
 │   └── parser.rm
+├── type/
+│   └── checker.rm
 └── diag/
     └── output.rm
 ```
@@ -46,6 +47,7 @@ use cli.args;
 use cli.file;
 use lex.lexer;
 use parse.parser;
+use type.checker;
 ```
 
 The executable dispatches commands through `fn main(args Args)`:
@@ -58,13 +60,16 @@ demo-parse  run hardcoded parser demo
 demo-file   read a file and print basic info
 lex         lex a RauMa source file
 parse       parse a RauMa source file
+check       check a RauMa source file
 ```
 
 `demo-file <path>` only reads bytes and prints `file bytes` plus `first byte`.
 `lex <path>` tokenizes the file contents only. `parse <path>` parses only the
-current small subset and prints a summary using names from the source text; it
-does not typecheck or generate code. The lexer and parser demos still run
-against `source.source.demo_text()`.
+current small subset and prints a summary using names from the source text.
+`check <path>` performs lightweight structural validation only: parse success,
+non-empty function set, and missing-return checks for functions with explicit
+return types. It does not perform type inference, name resolution, or codegen.
+The lexer and parser demos still run against `source.source.demo_text()`.
 
 The parser subset currently covers:
 
@@ -98,5 +103,5 @@ The binary path is still entry-stem based, so `rmc/main.rm` builds to
 
 ## Later v0.0.8 Work
 
-v0.0.8n should start the checker/codegen bridge. The self-host fixed point
+v0.0.8o should start the emit-C bridge. The self-host fixed point
 remains a later milestone.
