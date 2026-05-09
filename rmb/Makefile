@@ -190,10 +190,10 @@ test-rmc-emit-workflow: debug
 	@./$(TARGET) build ../rmc/main.rm
 	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(RMC_BIN)','emit-c','tests/rmc_emit_workflow_hello.rm']); open('$(BUILD_DIR)/rmc_emit_workflow_hello.c','wb').write(out)"
 	@$(CC) -std=c11 -Wall -Wextra -Werror -pedantic $(BUILD_DIR)/rmc_emit_workflow_hello.c -o $(BUILD_DIR)/rmc_emit_workflow_hello
-	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(BUILD_DIR)/rmc_emit_workflow_hello']).decode(); want='hello from rmc\n'; print('SUCCESS: hello workflow output matches' if out==want else 'ERROR: hello got %r want %r' % (out,want)); sys.exit(0 if out==want else 1)"
+	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(BUILD_DIR)/rmc_emit_workflow_hello']).decode().replace('\r\n','\n'); want='hello from rmc\n'; print('SUCCESS: hello workflow output matches' if out==want else 'ERROR: hello got %r want %r' % (out,want)); sys.exit(0 if out==want else 1)"
 	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(RMC_BIN)','emit-c','tests/rmc_emit_workflow_add.rm']); open('$(BUILD_DIR)/rmc_emit_workflow_add.c','wb').write(out)"
 	@$(CC) -std=c11 -Wall -Wextra -Werror -pedantic $(BUILD_DIR)/rmc_emit_workflow_add.c -o $(BUILD_DIR)/rmc_emit_workflow_add
-	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(BUILD_DIR)/rmc_emit_workflow_add']).decode(); want='42\n'; print('SUCCESS: add workflow output matches' if out==want else 'ERROR: add got %r want %r' % (out,want)); sys.exit(0 if out==want else 1)"
+	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(BUILD_DIR)/rmc_emit_workflow_add']).decode().replace('\r\n','\n'); want='42\n'; print('SUCCESS: add workflow output matches' if out==want else 'ERROR: add got %r want %r' % (out,want)); sys.exit(0 if out==want else 1)"
 	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(RMC_BIN)','emit-c','tests/rmc_emit_workflow_fail.rm']).decode(); ok=('check failed' in out); print('SUCCESS: fail workflow rejected as expected' if ok else 'ERROR: fail workflow output: %r' % out); sys.exit(0 if ok else 1)"
 
 # Show help

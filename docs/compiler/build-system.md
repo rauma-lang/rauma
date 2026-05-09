@@ -88,6 +88,19 @@ work.
 
 v0.0.8r adds `rmc build <path>`, which wraps the full emit‑c→write‑file→cc‑compile pipeline behind a single command. The command writes generated C to `build/rmc_build_out.c`, compiles it to `build/rmc_build_out`, and reports success. This is still a bridge, not `rmc`’s own backend / link step. Later milestones replace the bridge with `rmc`’s own build system.
 
+v0.0.8s expands that bridge subset while keeping it single-file only. Current
+`rmc build` support is limited to:
+
+- direct string literal prints from `main`
+- local int variables initialized from int literals or simple calls
+- printing local int variables
+- simple int functions with zero, one, or two int parameters
+- return literals, return identifiers, and binary `+` returns
+
+Current limitations remain explicit: no `if`/`while`, no structs, no string
+variables, no multi-file rmc build, no chunk layout in `rmc`, and no HIR/MIR or
+full backend.
+
 ## Chunk-Based Architecture
 
 ### What is a Chunk?

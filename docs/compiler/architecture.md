@@ -4,7 +4,7 @@
 
 RauMa uses a multi-stage compiler architecture designed for incremental development and self-hosting.
 
-### Bootstrap pipeline status (v0.0.8q)
+### Bootstrap pipeline status (v0.0.8s)
 
 The full pipeline (Resolver → HIR → MIR → multi-backend) is the long-term design.
 The v0.0.7 bootstrap compiler `rmb` deliberately skips most of these stages and
@@ -50,6 +50,12 @@ still emits C directly from checked AST chunks:
   writes to `build/rmc_build_out.c`, compiles to `build/rmc_build_out`, and reports
   success. This is still a bridge using the external C compiler, not the full
   backend.
+
+  v0.0.8s expands that bridge emitter beyond two fixed templates. The
+  RauMa-written `rmc` can now emit/build several simple single-file programs
+  involving int locals, int returns, simple function calls, and int prints.
+  This is still direct bridge output from token stream scans, not HIR/MIR or a
+  full backend.
 
 ## Compilation Pipeline
 
@@ -203,7 +209,7 @@ build/debug/native/bin/main
 - Multiple backends
 - Self-hosting
 - Active development
-- In v0.0.8o, `rmc` has a minimal CLI skeleton plus early data modules:
+- In v0.0.8s, `rmc` has a minimal CLI skeleton plus early data modules:
   `source/span`, `source/source`, `lex/token`, `lex/lexer`, `ast/ast`,
   `lex/stream`, `parse/parser`, `type/checker`, `cgen/cgen`, `diag/output`,
   `cli/args`, and `cli/file`.
@@ -213,7 +219,8 @@ build/debug/native/bin/main
   variable, and call statement shapes. Token text helpers print names from
   source spans, but AST storage is still minimal and summary-oriented. There
   are no token arrays, full type inference, name resolution, HIR/MIR, full
-  backend architecture, or self-hosting logic yet.
+  backend architecture, or self-hosting logic yet. The current `build` command
+  is a single-file bridge around emit-C, file write, and external C compilation.
 
 ## Self-Hosting Process
 

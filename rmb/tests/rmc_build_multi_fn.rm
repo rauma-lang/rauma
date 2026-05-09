@@ -1,0 +1,19 @@
+fn one() int {
+    return 1;
+}
+
+fn two() int {
+    return 2;
+}
+
+fn add(a int, b int) int {
+    return a + b;
+}
+
+fn main() {
+    a := one();
+    b := two();
+    x := add(a, b);
+    print(x);
+    print("\n");
+}

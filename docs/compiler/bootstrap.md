@@ -265,6 +265,21 @@ rmc build tests/rmc_build_error.rm
 relying on the external C compiler only for the final compilation step.
 The self‑host fixed point remains v0.0.9.
 
+### v0.0.8s: Expanded rmc Build Subset
+
+v0.0.8s expands the single-file `rmc build` bridge. The RauMa-written emitter
+now handles a small family of simple integer/function programs:
+
+- printing arbitrary string literals directly from `main`
+- local int variables initialized from int literals or simple calls
+- printing int locals
+- int functions with zero, one, or two int parameters
+- return literals, return identifiers, and `a + b` return expressions
+
+This is still bridge-style code generation. `rmc` does not have HIR/MIR, a full
+backend, multi-file chunk builds, or the self-host fixed point yet. v0.0.9
+remains the fixed-point milestone.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

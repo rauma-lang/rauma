@@ -1,0 +1,9 @@
+fn answer() int {
+    return 42;
+}
+
+fn main() {
+    x := answer();
+    print(x);
+    print("\n");
+}

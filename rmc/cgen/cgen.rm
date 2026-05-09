@@ -2,6 +2,14 @@ use lex.token;
 use lex.stream;
 use type.checker;
 
+pub fn fail_text() str {
+    return "#fail";
+}
+
+pub fn is_fail_text(text str) bool {
+    return str_eq(text, fail_text());
+}
+
 pub fn expect_ident_text(src str, i int, text str) int {
     if (lex.stream.current_kind(src, i) != lex.token.kind_ident()) {
         return 0;
@@ -12,340 +20,616 @@ pub fn expect_ident_text(src str, i int, text str) int {
     return 0;
 }
 
-pub fn can_emit_hello(src str) bool {
-    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "main");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "print");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_string());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_eof());
-    return pos != 0;
+pub fn token_text(src str, i int) str {
+    return lex.stream.token_text_slice(src, lex.stream.token_start(src, i), lex.stream.token_end(src, i));
 }
 
-pub fn can_emit_add(src str) bool {
-    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "add");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "a");
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "int");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "b");
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "int");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "int");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_return());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "a");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "b");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "main");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "x");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_colon_eq());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "add");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "print");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "x");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    if (pos == 0) { return false; }
-    pos = expect_ident_text(src, pos, "print");
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_string());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
-    if (pos == 0) { return false; }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_eof());
-    return pos != 0;
+pub fn emit_header_to_string() str {
+    return "#include <stdint.h>\n#include <stddef.h>\n#include <stdbool.h>\n#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    const char *ptr;\n    int64_t len;\n} RmStr;\n\nstatic RmStr rm_str(const char *s) {\n    RmStr out;\n    out.ptr = s;\n    out.len = (int64_t)strlen(s);\n    return out;\n}\n\nstatic void rm_print(RmStr s) {\n    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n}\n\n";
 }
 
-pub fn emit_header() {
-    print("#include <stdint.h>\n");
-    print("#include <stddef.h>\n");
-    print("#include <stdbool.h>\n");
-    print("#include <stdio.h>\n");
-    print("#include <string.h>\n");
-    print("\n");
-    print("typedef struct {\n");
-    print("    const char *ptr;\n");
-    print("    int64_t len;\n");
-    print("} RmStr;\n");
-    print("\n");
-    print("static RmStr rm_str(const char *s) {\n");
-    print("    RmStr out;\n");
-    print("    out.ptr = s;\n");
-    print("    out.len = (int64_t)strlen(s);\n");
-    print("    return out;\n");
-    print("}\n");
-    print("\n");
-    print("static void rm_print(RmStr s) {\n");
-    print("    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n");
-    print("}\n");
-    print("\n");
+pub fn parse_primary_end(src str, i int) int {
+    kind := lex.stream.current_kind(src, i);
+
+    if (kind == lex.token.kind_int()) {
+        return lex.stream.advance(src, i);
+    }
+
+    if (kind == lex.token.kind_string()) {
+        return lex.stream.advance(src, i);
+    }
+
+    if (kind == lex.token.kind_ident()) {
+        next := lex.stream.advance(src, i);
+        if (lex.stream.current_kind(src, next) == lex.token.kind_l_paren()) {
+            return parse_call_end(src, i);
+        }
+        return next;
+    }
+
+    return 0;
 }
 
-pub fn emit_hello(src str) {
-    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
-    pos = expect_ident_text(src, pos, "main");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
-    pos = expect_ident_text(src, pos, "print");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+pub fn parse_expr_end(src str, i int) int {
+    pos := parse_primary_end(src, i);
+    if (pos == 0) {
+        return 0;
+    }
 
-    s_start := lex.stream.token_start(src, pos);
-    s_end := lex.stream.token_end(src, pos);
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_plus()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
+        if (pos == 0) {
+            return 0;
+        }
+        pos = parse_primary_end(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+    }
 
-    emit_header();
-    print("int main(void) {\n");
-    print("    rm_print(rm_str(");
-    lex.stream.print_token_text(src, s_start, s_end);
-    print("));\n");
-    print("    return 0;\n");
-    print("}\n");
+    return pos;
 }
 
-pub fn emit_add(src str) {
-    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
-    pos = expect_ident_text(src, pos, "add");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    pos = expect_ident_text(src, pos, "a");
-    pos = expect_ident_text(src, pos, "int");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
-    pos = expect_ident_text(src, pos, "b");
-    pos = expect_ident_text(src, pos, "int");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = expect_ident_text(src, pos, "int");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_return());
-    pos = expect_ident_text(src, pos, "a");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
-    pos = expect_ident_text(src, pos, "b");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
-    pos = expect_ident_text(src, pos, "main");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
-    pos = expect_ident_text(src, pos, "x");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_colon_eq());
-    pos = expect_ident_text(src, pos, "add");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+pub fn parse_call_end(src str, i int) int {
+    pos := lex.stream.expect_ident(src, i);
+    if (pos == 0) {
+        return 0;
+    }
 
-    n_start := lex.stream.token_start(src, pos);
-    n_end := lex.stream.token_end(src, pos);
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
-
-    m_start := lex.stream.token_start(src, pos);
-    m_end := lex.stream.token_end(src, pos);
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    pos = expect_ident_text(src, pos, "print");
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    pos = expect_ident_text(src, pos, "x");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    pos = expect_ident_text(src, pos, "print");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return 0;
+    }
 
-    s_start := lex.stream.token_start(src, pos);
-    s_end := lex.stream.token_end(src, pos);
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
+        return lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    }
 
-    emit_header();
-    print("static int64_t rm_fn_add(int64_t a, int64_t b) {\n");
-    print("    return a + b;\n");
-    print("}\n");
-    print("\n");
-    print("int main(void) {\n");
-    print("    int64_t x = rm_fn_add(");
-    lex.stream.print_token_text(src, n_start, n_end);
-    print(", ");
-    lex.stream.print_token_text(src, m_start, m_end);
-    print(");\n");
-    print("    printf(\"%lld\", (long long)x);\n");
-    print("    rm_print(rm_str(");
-    lex.stream.print_token_text(src, s_start, s_end);
-    print("));\n");
-    print("    return 0;\n");
-    print("}\n");
+    while (true) {
+        pos = parse_expr_end(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_comma()) {
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+            if (pos == 0) {
+                return 0;
+            }
+        } else {
+            return lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+        }
+    }
+
+    return 0;
 }
 
-pub fn emit_hello_to_string(src str) str {
-    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
-    pos = expect_ident_text(src, pos, "main");
+pub fn emit_call_args_to_c(src str, i int) str {
+    pos := i;
+    out := "";
+    first := true;
+
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
+        return out;
+    }
+
+    while (true) {
+        expr := emit_expr_to_c(src, pos);
+        if (str_len(expr) == 0) {
+            return fail_text();
+        }
+
+        if (first == false) {
+            out = str_concat(out, ", ");
+        }
+        out = str_concat(out, expr);
+        first = false;
+
+        pos = parse_expr_end(src, pos);
+        if (pos == 0) {
+            return fail_text();
+        }
+
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_comma()) {
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+            if (pos == 0) {
+                return fail_text();
+            }
+        } else {
+            if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
+                return out;
+            }
+            return fail_text();
+        }
+    }
+
+    return fail_text();
+}
+
+pub fn emit_call_to_c(src str, i int) str {
+    if (lex.stream.current_kind(src, i) != lex.token.kind_ident()) {
+        return "";
+    }
+
+    name := token_text(src, i);
+    pos := lex.stream.advance(src, i);
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
-    pos = expect_ident_text(src, pos, "print");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return "";
+    }
 
-    s_start := lex.stream.token_start(src, pos);
-    s_end := lex.stream.token_end(src, pos);
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_string());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_eof());
+    args := emit_call_args_to_c(src, pos);
+    if (is_fail_text(args)) {
+        return "";
+    }
 
-    header := "#include <stdint.h>\n#include <stddef.h>\n#include <stdbool.h>\n#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    const char *ptr;\n    int64_t len;\n} RmStr;\n\nstatic RmStr rm_str(const char *s) {\n    RmStr out;\n    out.ptr = s;\n    out.len = (int64_t)strlen(s);\n    return out;\n}\n\nstatic void rm_print(RmStr s) {\n    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n}\n\n";
-    main_start := "int main(void) {\n    rm_print(rm_str(";
-    main_end := "));\n    return 0;\n}\n";
-    lit := lex.stream.token_text_slice(src, s_start, s_end);
-
-    out := str_concat(header, main_start);
-    out = str_concat(out, lit);
-    out = str_concat(out, main_end);
+    out := "rm_fn_";
+    out = str_concat(out, name);
+    out = str_concat(out, "(");
+    out = str_concat(out, args);
+    out = str_concat(out, ")");
     return out;
 }
 
-pub fn token_text_slice(src str, start int, end int) str {
-    return lex.stream.token_text_slice(src, start, end);
+pub fn emit_primary_to_c(src str, i int) str {
+    kind := lex.stream.current_kind(src, i);
+
+    if (kind == lex.token.kind_int()) {
+        return token_text(src, i);
+    }
+
+    if (kind == lex.token.kind_string()) {
+        return token_text(src, i);
+    }
+
+    if (kind == lex.token.kind_ident()) {
+        next := lex.stream.advance(src, i);
+        if (lex.stream.current_kind(src, next) == lex.token.kind_l_paren()) {
+            return emit_call_to_c(src, i);
+        }
+        return token_text(src, i);
+    }
+
+    return "";
 }
 
-pub fn emit_add_to_string(src str) str {
-    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
-    pos = expect_ident_text(src, pos, "add");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    pos = expect_ident_text(src, pos, "a");
-    pos = expect_ident_text(src, pos, "int");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
-    pos = expect_ident_text(src, pos, "b");
-    pos = expect_ident_text(src, pos, "int");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = expect_ident_text(src, pos, "int");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_return());
-    pos = expect_ident_text(src, pos, "a");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
-    pos = expect_ident_text(src, pos, "b");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
-    pos = expect_ident_text(src, pos, "main");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
-    pos = expect_ident_text(src, pos, "x");
+pub fn emit_expr_to_c(src str, i int) str {
+    left := emit_primary_to_c(src, i);
+    if (str_len(left) == 0) {
+        return "";
+    }
+
+    pos := parse_primary_end(src, i);
+    if (pos == 0) {
+        return "";
+    }
+
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_plus()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
+        if (pos == 0) {
+            return "";
+        }
+        right := emit_primary_to_c(src, pos);
+        if (str_len(right) == 0) {
+            return "";
+        }
+
+        out := left;
+        out = str_concat(out, " + ");
+        out = str_concat(out, right);
+        return out;
+    }
+
+    return left;
+}
+
+pub fn parse_stmt_end(src str, i int) int {
+    kind := lex.stream.current_kind(src, i);
+
+    if (kind == lex.token.kind_kw_return()) {
+        pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_return());
+        if (pos == 0) {
+            return 0;
+        }
+        pos = parse_expr_end(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+        return lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    }
+
+    if (kind == lex.token.kind_ident()) {
+        next := lex.stream.advance(src, i);
+
+        if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
+            pos := lex.stream.expect_kind(src, next, lex.token.kind_colon_eq());
+            if (pos == 0) {
+                return 0;
+            }
+            pos = parse_expr_end(src, pos);
+            if (pos == 0) {
+                return 0;
+            }
+            return lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+        }
+
+        if (lex.stream.current_kind(src, next) == lex.token.kind_l_paren()) {
+            pos := parse_call_end(src, i);
+            if (pos == 0) {
+                return 0;
+            }
+            return lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+        }
+    }
+
+    return 0;
+}
+
+pub fn emit_return_stmt_to_c(src str, i int) str {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_return());
+    if (pos == 0) {
+        return "";
+    }
+
+    expr := emit_expr_to_c(src, pos);
+    if (str_len(expr) == 0) {
+        return "";
+    }
+
+    out := "    return ";
+    out = str_concat(out, expr);
+    out = str_concat(out, ";\n");
+    return out;
+}
+
+pub fn emit_var_stmt_to_c(src str, i int) str {
+    name := token_text(src, i);
+    pos := lex.stream.expect_ident(src, i);
+    if (pos == 0) {
+        return "";
+    }
+
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_colon_eq());
-    pos = expect_ident_text(src, pos, "add");
+    if (pos == 0) {
+        return "";
+    }
+
+    expr := emit_expr_to_c(src, pos);
+    if (str_len(expr) == 0) {
+        return "";
+    }
+
+    out := "    int64_t ";
+    out = str_concat(out, name);
+    out = str_concat(out, " = ");
+    out = str_concat(out, expr);
+    out = str_concat(out, ";\n");
+    return out;
+}
+
+pub fn emit_call_stmt_to_c(src str, i int) str {
+    name := token_text(src, i);
+    pos := lex.stream.expect_ident(src, i);
+    if (pos == 0) {
+        return "";
+    }
+
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return "";
+    }
 
-    n_start := lex.stream.token_start(src, pos);
-    n_end := lex.stream.token_end(src, pos);
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+    if (str_eq(name, "print")) {
+        arg_kind := lex.stream.current_kind(src, pos);
+        expr := emit_expr_to_c(src, pos);
+        if (str_len(expr) == 0) {
+            return "";
+        }
 
-    m_start := lex.stream.token_start(src, pos);
-    m_end := lex.stream.token_end(src, pos);
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    pos = expect_ident_text(src, pos, "print");
+        if (arg_kind == lex.token.kind_string()) {
+            out := "    rm_print(rm_str(";
+            out = str_concat(out, expr);
+            out = str_concat(out, "));\n");
+            return out;
+        }
+
+        out := "    printf(\"%lld\", (long long)";
+        out = str_concat(out, expr);
+        out = str_concat(out, ");\n");
+        return out;
+    }
+
+    args := emit_call_args_to_c(src, pos);
+    if (is_fail_text(args)) {
+        return "";
+    }
+
+    out := "    rm_fn_";
+    out = str_concat(out, name);
+    out = str_concat(out, "(");
+    out = str_concat(out, args);
+    out = str_concat(out, ");\n");
+    return out;
+}
+
+pub fn emit_stmt_to_c(src str, i int) str {
+    kind := lex.stream.current_kind(src, i);
+
+    if (kind == lex.token.kind_kw_return()) {
+        return emit_return_stmt_to_c(src, i);
+    }
+
+    if (kind == lex.token.kind_ident()) {
+        next := lex.stream.advance(src, i);
+        if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
+            return emit_var_stmt_to_c(src, i);
+        }
+        if (lex.stream.current_kind(src, next) == lex.token.kind_l_paren()) {
+            return emit_call_stmt_to_c(src, i);
+        }
+    }
+
+    return "";
+}
+
+pub fn emit_block_to_c(src str, i int) str {
+    pos := i;
+    out := "";
+
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
+            return "";
+        }
+
+        stmt := emit_stmt_to_c(src, pos);
+        if (str_len(stmt) == 0) {
+            return "";
+        }
+
+        out = str_concat(out, stmt);
+        pos = parse_stmt_end(src, pos);
+        if (pos == 0) {
+            return "";
+        }
+    }
+
+    return out;
+}
+
+pub fn params_end(src str, i int) int {
+    pos := i;
+
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
+        return lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    }
+
+    while (true) {
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return 0;
+        }
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return 0;
+        }
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_comma()) {
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+            if (pos == 0) {
+                return 0;
+            }
+        } else {
+            return lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+        }
+    }
+
+    return 0;
+}
+
+pub fn emit_params_to_c(src str, i int) str {
+    pos := i;
+    out := "";
+    first := true;
+
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
+        return "void";
+    }
+
+    while (true) {
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return fail_text();
+        }
+        name := token_text(src, pos);
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return fail_text();
+        }
+
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return fail_text();
+        }
+        type_name := token_text(src, pos);
+        if (str_eq(type_name, "int") == false) {
+            return fail_text();
+        }
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return fail_text();
+        }
+
+        if (first == false) {
+            out = str_concat(out, ", ");
+        }
+        out = str_concat(out, "int64_t ");
+        out = str_concat(out, name);
+        first = false;
+
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_comma()) {
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+            if (pos == 0) {
+                return fail_text();
+            }
+        } else {
+            if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
+                return out;
+            }
+            return fail_text();
+        }
+    }
+
+    return fail_text();
+}
+
+pub fn fn_end(src str, i int) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_fn());
+    if (pos == 0) {
+        return 0;
+    }
+
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
-    pos = expect_ident_text(src, pos, "x");
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    pos = expect_ident_text(src, pos, "print");
+    if (pos == 0) {
+        return 0;
+    }
+
+    pos = params_end(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_ident()) {
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) {
+        return 0;
+    }
+
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
+            return 0;
+        }
+        pos = parse_stmt_end(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+    }
+
+    return lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+}
+
+pub fn emit_fn_to_c(src str, i int) str {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_fn());
+    if (pos == 0) {
+        return "";
+    }
+
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return "";
+    }
+    name := token_text(src, pos);
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return "";
+    }
+
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return "";
+    }
 
-    s_start := lex.stream.token_start(src, pos);
-    s_end := lex.stream.token_end(src, pos);
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_string());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_eof());
+    param_start := pos;
+    params := emit_params_to_c(src, param_start);
+    if (is_fail_text(params)) {
+        return "";
+    }
 
-    header := "#include <stdint.h>\n#include <stddef.h>\n#include <stdbool.h>\n#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    const char *ptr;\n    int64_t len;\n} RmStr;\n\nstatic RmStr rm_str(const char *s) {\n    RmStr out;\n    out.ptr = s;\n    out.len = (int64_t)strlen(s);\n    return out;\n}\n\nstatic void rm_print(RmStr s) {\n    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n}\n\n";
-    add_start := "static int64_t rm_fn_add(int64_t a, int64_t b) {\n    return a + b;\n}\n\n";
-    main_start := "int main(void) {\n    int64_t x = rm_fn_add(";
-    main_mid := ", ";
-    main_mid2 := ");\n    printf(\"%lld\", (long long)x);\n    rm_print(rm_str(";
-    main_end := "));\n    return 0;\n}\n";
-    n_lit := lex.stream.token_text_slice(src, n_start, n_end);
-    m_lit := lex.stream.token_text_slice(src, m_start, m_end);
-    s_lit := lex.stream.token_text_slice(src, s_start, s_end);
+    pos = params_end(src, pos);
+    if (pos == 0) {
+        return "";
+    }
 
-    out := str_concat(header, add_start);
-    out = str_concat(out, main_start);
-    out = str_concat(out, n_lit);
-    out = str_concat(out, main_mid);
-    out = str_concat(out, m_lit);
-    out = str_concat(out, main_mid2);
-    out = str_concat(out, s_lit);
-    out = str_concat(out, main_end);
+    has_return := false;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_ident()) {
+        return_type := token_text(src, pos);
+        if (str_eq(return_type, "int") == false) {
+            return "";
+        }
+        has_return = true;
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return "";
+        }
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) {
+        return "";
+    }
+
+    body := emit_block_to_c(src, pos);
+    if (str_len(body) == 0 && lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        return "";
+    }
+
+    if (str_eq(name, "main")) {
+        if (has_return) {
+            return "";
+        }
+
+        out := "int main(void) {\n";
+        out = str_concat(out, body);
+        out = str_concat(out, "    return 0;\n");
+        out = str_concat(out, "}\n");
+        return out;
+    }
+
+    if (has_return == false) {
+        return "";
+    }
+
+    out := "static int64_t rm_fn_";
+    out = str_concat(out, name);
+    out = str_concat(out, "(");
+    out = str_concat(out, params);
+    out = str_concat(out, ") {\n");
+    out = str_concat(out, body);
+    out = str_concat(out, "}\n\n");
+    return out;
+}
+
+pub fn emit_program_to_string(src str) str {
+    pos := 0;
+    out := emit_header_to_string();
+
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        f := emit_fn_to_c(src, pos);
+        if (str_len(f) == 0) {
+            return "";
+        }
+        out = str_concat(out, f);
+
+        pos = fn_end(src, pos);
+        if (pos == 0) {
+            return "";
+        }
+    }
+
     return out;
 }
 
@@ -354,21 +638,18 @@ pub fn emit_to_string(text str) str {
         return "";
     }
 
-    if (can_emit_hello(text)) {
-        return emit_hello_to_string(text);
-    }
-
-    if (can_emit_add(text)) {
-        return emit_add_to_string(text);
-    }
-
-    return "";
+    return emit_program_to_string(text);
 }
 
 pub fn run_file(text str) {
+    if (!type.checker.can_check(text)) {
+        print("emit failed: check failed\n");
+        return;
+    }
+
     c := emit_to_string(text);
     if (str_len(c) == 0) {
-        print("emit failed: check failed\n");
+        print("emit failed: unsupported source\n");
         return;
     }
     print(c);

@@ -16,9 +16,12 @@ processes, or write files.
 v0.0.8r adds an `rmc build <path>` bridge that wraps the emit-c → external-cc step
 behind a single command. The command reads the file, checks it, emits C, writes
 it to `build/rmc_build_out.c`, compiles it to `build/rmc_build_out` (or `.exe`
-on Windows), and prints the result. The bridge only supports the tiny recognized
-source shapes; multi‑file/chunk builds, HIR/MIR, packages, and self‑host remain
-future milestones.
+on Windows), and prints the result.
+
+v0.0.8s expands that bridge subset. `rmc emit-c` and `rmc build` now recognize
+several simple single-file integer/function patterns instead of only two fixed
+templates. Multi-file/chunk builds, HIR/MIR, packages, control flow, structs,
+and self-host remain future milestones.
 
 The pipeline is now:
 
@@ -104,30 +107,20 @@ return types. `emit-c <path>` emits C to stdout only for tiny recognized
 checked shapes. It does not compile or link generated C. The lexer and parser
 demos still run against `source.source.demo_text()`.
 
-The recognized shapes for `emit-c` in v0.0.8p are:
+The supported `rmc build` / `rmc emit-c` subset in v0.0.8s includes:
 
-```rauma
-fn main() {
-    print(<string-literal>);
-}
-```
+- direct `print("<string literal>")` in `main`
+- local int variables initialized from int literals or simple function calls
+- printing local int variables
+- int functions with zero, one, or two int parameters
+- `return <int literal>`
+- `return <identifier>`
+- `return <identifier> + <identifier>`
+- simple calls with int literals, identifiers, or zero-argument calls as args
 
-and
-
-```rauma
-fn add(a int, b int) int {
-    return a + b;
-}
-
-fn main() {
-    x := add(<int-literal>, <int-literal>);
-    print(x);
-    print(<string-literal>);
-}
-```
-
-The literal text is copied verbatim into the emitted C, so the runtime output
-of the compiled binary reflects the source.
+The bridge still emits C directly from cursor scans over the source text. It is
+not a full backend, does not store a heap AST, and does not support `if`,
+`while`, structs, string variables, multi-file builds, or chunk layout in `rmc`.
 
 The parser subset currently covers:
 
@@ -193,5 +186,6 @@ parse. On Windows, use bash (the redirection above is plain `>`), or invoke via
 
 ## Later v0.0.8 Work
 
-v0.0.8s will expand the subset of programs that `rmc build` can handle.
-Self-host fixed point remains v0.0.9.
+v0.0.8t should add the first control-flow build subset (`if`/`while`) after the
+current single-file int/function bridge is verified. Self-host fixed point
+remains v0.0.9.

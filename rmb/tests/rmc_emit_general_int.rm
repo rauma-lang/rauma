@@ -1,0 +1,5 @@
+fn main() {
+    value := 999;
+    print(value);
+    print("\n");
+}

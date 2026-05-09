@@ -1038,7 +1038,8 @@ static void emit_prelude(RmbCGen* g) {
         "static RM_UNUSED RmStr rm_args_get(RmArgs args, int64_t index) {\n"
         "    return rm_str(args.argv[index]);\n"
         "}\n"
-        "\n"
+        "\n");
+    emit_str(g,
         "static RM_UNUSED RmStr rm_read_file(RmStr path) {\n"
         "    char *cpath = (char*)malloc((size_t)path.len + 1);\n"
         "    if (!cpath) return rm_str(\"\");\n"
@@ -1087,7 +1088,8 @@ static void emit_prelude(RmbCGen* g) {
         "    out.len = a.len + b.len;\n"
         "    return out;\n"
         "}\n"
-        "\n"
+        "\n");
+    emit_str(g,
         "static RM_UNUSED RmStr rm_str_from_slice(RmStr s, int64_t start, int64_t end) {\n"
         "    if (start < 0) start = 0;\n"
         "    if (end < start) return rm_str(\"\");\n"

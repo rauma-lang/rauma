@@ -1,0 +1,9 @@
+fn id(x int) int {
+    return x;
+}
+
+fn main() {
+    y := id(77);
+    print(y);
+    print("\n");
+}
