@@ -86,9 +86,7 @@ These bridge primitives are used by the `rmb/tests/build_write_file.rm` and
 `rmb/tests/build_cc_compile.rm` fixtures to verify the low‑level operations
 work.
 
-A future `rmc build` command (planned for v0.0.8r) will wrap the full
-emit‑c→write‑file→cc‑compile pipeline behind a single command, and later
-milestones replace the bridge with `rmc`’s own backend / link step.
+v0.0.8r adds `rmc build <path>`, which wraps the full emit‑c→write‑file→cc‑compile pipeline behind a single command. The command writes generated C to `build/rmc_build_out.c`, compiles it to `build/rmc_build_out`, and reports success. This is still a bridge, not `rmc`’s own backend / link step. Later milestones replace the bridge with `rmc`’s own build system.
 
 ## Chunk-Based Architecture
 

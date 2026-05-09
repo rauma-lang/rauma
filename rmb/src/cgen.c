@@ -341,6 +341,8 @@ static RmbType* call_type(RmbCGen* g, RmbAstExpr* e) {
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("read_file"))) return rmb_type_str();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("write_file"))) return rmb_type_bool();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("cc_compile"))) return rmb_type_int();
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_concat"))) return rmb_type_str();
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_from_slice"))) return rmb_type_str();
         if (fn) return fn->return_type ? fn->return_type : rmb_type_void();
     }
     char module[256];
@@ -603,6 +605,34 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
             emit_expr(g, e->call.args[0]);
             emit_str(g, ", ");
             emit_expr(g, e->call.args[1]);
+            emit_str(g, ")");
+            return;
+        }
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_concat"))) {
+            if (e->call.arg_count != 2) {
+                cg_error(g, e->span, "str_concat expects exactly 2 arguments");
+                emit_str(g, "rm_str(\"\")");
+                return;
+            }
+            emit_str(g, "rm_str_concat(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ", ");
+            emit_expr(g, e->call.args[1]);
+            emit_str(g, ")");
+            return;
+        }
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_from_slice"))) {
+            if (e->call.arg_count != 3) {
+                cg_error(g, e->span, "str_from_slice expects exactly 3 arguments");
+                emit_str(g, "rm_str(\"\")");
+                return;
+            }
+            emit_str(g, "rm_str_from_slice(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ", ");
+            emit_expr(g, e->call.args[1]);
+            emit_str(g, ", ");
+            emit_expr(g, e->call.args[2]);
             emit_str(g, ")");
             return;
         }
@@ -1044,6 +1074,33 @@ static void emit_prelude(RmbCGen* g) {
         "    size_t written = want > 0 ? fwrite(text.ptr, 1, want, f) : 0;\n"
         "    int close_rc = fclose(f);\n"
         "    return written == want && close_rc == 0;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED RmStr rm_str_concat(RmStr a, RmStr b) {\n"
+        "    char *buf = (char*)malloc((size_t)a.len + (size_t)b.len + 1);\n"
+        "    if (!buf) return rm_str(\"\");\n"
+        "    memcpy(buf, a.ptr, (size_t)a.len);\n"
+        "    memcpy(buf + a.len, b.ptr, (size_t)b.len);\n"
+        "    buf[a.len + b.len] = '\\0';\n"
+        "    RmStr out;\n"
+        "    out.ptr = buf;\n"
+        "    out.len = a.len + b.len;\n"
+        "    return out;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED RmStr rm_str_from_slice(RmStr s, int64_t start, int64_t end) {\n"
+        "    if (start < 0) start = 0;\n"
+        "    if (end < start) return rm_str(\"\");\n"
+        "    if (end > s.len) end = s.len;\n"
+        "    int64_t len = end - start;\n"
+        "    char *buf = (char*)malloc((size_t)len + 1);\n"
+        "    if (!buf) return rm_str(\"\");\n"
+        "    memcpy(buf, s.ptr + start, (size_t)len);\n"
+        "    buf[len] = '\\0';\n"
+        "    RmStr out;\n"
+        "    out.ptr = buf;\n"
+        "    out.len = len;\n"
+        "    return out;\n"
         "}\n"
         "\n"
         "static RM_UNUSED int64_t rm_cc_compile(RmStr c_path, RmStr out_path) {\n"

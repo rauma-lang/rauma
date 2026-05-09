@@ -242,21 +242,134 @@ pub fn emit_add(src str) {
     print("}\n");
 }
 
-pub fn run_file(text str) {
-    if (type.checker.can_check(text) == false) {
-        print("emit failed: check failed\n");
-        return;
+pub fn emit_hello_to_string(src str) str {
+    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
+    pos = expect_ident_text(src, pos, "main");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    pos = expect_ident_text(src, pos, "print");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+
+    s_start := lex.stream.token_start(src, pos);
+    s_end := lex.stream.token_end(src, pos);
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_string());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_eof());
+
+    header := "#include <stdint.h>\n#include <stddef.h>\n#include <stdbool.h>\n#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    const char *ptr;\n    int64_t len;\n} RmStr;\n\nstatic RmStr rm_str(const char *s) {\n    RmStr out;\n    out.ptr = s;\n    out.len = (int64_t)strlen(s);\n    return out;\n}\n\nstatic void rm_print(RmStr s) {\n    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n}\n\n";
+    main_start := "int main(void) {\n    rm_print(rm_str(";
+    main_end := "));\n    return 0;\n}\n";
+    lit := lex.stream.token_text_slice(src, s_start, s_end);
+
+    out := str_concat(header, main_start);
+    out = str_concat(out, lit);
+    out = str_concat(out, main_end);
+    return out;
+}
+
+pub fn token_text_slice(src str, start int, end int) str {
+    return lex.stream.token_text_slice(src, start, end);
+}
+
+pub fn emit_add_to_string(src str) str {
+    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
+    pos = expect_ident_text(src, pos, "add");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    pos = expect_ident_text(src, pos, "a");
+    pos = expect_ident_text(src, pos, "int");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+    pos = expect_ident_text(src, pos, "b");
+    pos = expect_ident_text(src, pos, "int");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = expect_ident_text(src, pos, "int");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_return());
+    pos = expect_ident_text(src, pos, "a");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
+    pos = expect_ident_text(src, pos, "b");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+    pos = expect_ident_text(src, pos, "main");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    pos = expect_ident_text(src, pos, "x");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_colon_eq());
+    pos = expect_ident_text(src, pos, "add");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+
+    n_start := lex.stream.token_start(src, pos);
+    n_end := lex.stream.token_end(src, pos);
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+
+    m_start := lex.stream.token_start(src, pos);
+    m_end := lex.stream.token_end(src, pos);
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_int());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    pos = expect_ident_text(src, pos, "print");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    pos = expect_ident_text(src, pos, "x");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    pos = expect_ident_text(src, pos, "print");
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+
+    s_start := lex.stream.token_start(src, pos);
+    s_end := lex.stream.token_end(src, pos);
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_string());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_eof());
+
+    header := "#include <stdint.h>\n#include <stddef.h>\n#include <stdbool.h>\n#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    const char *ptr;\n    int64_t len;\n} RmStr;\n\nstatic RmStr rm_str(const char *s) {\n    RmStr out;\n    out.ptr = s;\n    out.len = (int64_t)strlen(s);\n    return out;\n}\n\nstatic void rm_print(RmStr s) {\n    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n}\n\n";
+    add_start := "static int64_t rm_fn_add(int64_t a, int64_t b) {\n    return a + b;\n}\n\n";
+    main_start := "int main(void) {\n    int64_t x = rm_fn_add(";
+    main_mid := ", ";
+    main_mid2 := ");\n    printf(\"%lld\", (long long)x);\n    rm_print(rm_str(";
+    main_end := "));\n    return 0;\n}\n";
+    n_lit := lex.stream.token_text_slice(src, n_start, n_end);
+    m_lit := lex.stream.token_text_slice(src, m_start, m_end);
+    s_lit := lex.stream.token_text_slice(src, s_start, s_end);
+
+    out := str_concat(header, add_start);
+    out = str_concat(out, main_start);
+    out = str_concat(out, n_lit);
+    out = str_concat(out, main_mid);
+    out = str_concat(out, m_lit);
+    out = str_concat(out, main_mid2);
+    out = str_concat(out, s_lit);
+    out = str_concat(out, main_end);
+    return out;
+}
+
+pub fn emit_to_string(text str) str {
+    if (!type.checker.can_check(text)) {
+        return "";
     }
 
     if (can_emit_hello(text)) {
-        emit_hello(text);
-        return;
+        return emit_hello_to_string(text);
     }
 
     if (can_emit_add(text)) {
-        emit_add(text);
-        return;
+        return emit_add_to_string(text);
     }
 
-    print("emit failed: unsupported source\n");
+    return "";
+}
+
+pub fn run_file(text str) {
+    c := emit_to_string(text);
+    if (str_len(c) == 0) {
+        print("emit failed: check failed\n");
+        return;
+    }
+    print(c);
 }

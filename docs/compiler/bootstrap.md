@@ -233,6 +233,38 @@ With these primitives verified, `rmc` can implement its own `rmc build <path>`
 in v0.0.8r, wrapping the emit‑c→write‑file→cc‑compile pipeline. The self‑host
 fixed point remains v0.0.9.
 
+### v0.0.8r: rmc Build Command Bridge
+
+v0.0.8r adds `rmc build <path>`. The command:
+
+1. Reads file contents with `read_file`
+2. Runs the lightweight checker (`can_check`)
+3. Emits C for supported source shapes (`emit_to_string`)
+4. Writes the C to `build/rmc_build_out.c` using `write_file`
+5. Compiles it to `build/rmc_build_out` using `cc_compile`
+6. Reports success or failure
+
+The bridge only handles the tiny recognized source shapes (hello‑print and add‑function‑call).
+It does not implement multi‑file builds, chunk layout, HIR/MIR, or the full backend.
+
+Example:
+
+```bash
+rmc build tests/rmc_build_hello.rm
+# prints: build ok: build/rmc_build_out
+./build/rmc_build_out          # prints: hello from rmc build
+
+rmc build tests/rmc_build_add.rm
+./build/rmc_build_out          # prints: 42
+
+rmc build tests/rmc_build_error.rm
+# prints: build failed: check failed
+```
+
+`rmc` now provides a single command that goes from source to executable,
+relying on the external C compiler only for the final compilation step.
+The self‑host fixed point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

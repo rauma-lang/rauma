@@ -11,7 +11,23 @@ tiny recognized source shapes.
 v0.0.8p formalizes the **external compile workflow**: `rmc emit-c` writes C to
 stdout, and an external C compiler (e.g. `gcc`) is responsible for turning that
 C into an executable. `rmc` itself still does **not** invoke `gcc`, run
-processes, or write files. The pipeline is:
+processes, or write files.
+
+v0.0.8r adds an `rmc build <path>` bridge that wraps the emit-c → external-cc step
+behind a single command. The command reads the file, checks it, emits C, writes
+it to `build/rmc_build_out.c`, compiles it to `build/rmc_build_out` (or `.exe`
+on Windows), and prints the result. The bridge only supports the tiny recognized
+source shapes; multi‑file/chunk builds, HIR/MIR, packages, and self‑host remain
+future milestones.
+
+The pipeline is now:
+
+```bash
+rmc build input.rm        # writes build/rmc_build_out.c, compiles it, prints status
+./build/rmc_build_out     # runs the produced executable
+```
+
+Or for manual control:
 
 ```bash
 rmc emit-c input.rm > out.c
@@ -20,8 +36,7 @@ gcc -std=c11 -Wall -Wextra -Werror -pedantic out.c -o out
 ```
 
 `rmc` still does not allocate a full AST, infer types, resolve names, do full
-codegen, compile or link generated C, implement HIR/MIR, packages, std modules,
-or self-host.
+codegen, implement HIR/MIR, packages, std modules, or self-host.
 
 ## Current Source Layout
 
@@ -77,6 +92,7 @@ lex         lex a RauMa source file
 parse       parse a RauMa source file
 check       check a RauMa source file
 emit-c      emit C for a RauMa source file
+build       build a RauMa source file (emit-c + write C + compile)
 ```
 
 `demo-file <path>` only reads bytes and prints `file bytes` plus `first byte`.
@@ -177,5 +193,5 @@ parse. On Windows, use bash (the redirection above is plain `>`), or invoke via
 
 ## Later v0.0.8 Work
 
-v0.0.8q will add an `rmc build` bridge that wraps the emit-c → external-cc step
-behind a single command. Self-host fixed point remains v0.0.9.
+v0.0.8s will expand the subset of programs that `rmc build` can handle.
+Self-host fixed point remains v0.0.9.

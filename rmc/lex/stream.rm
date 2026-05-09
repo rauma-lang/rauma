@@ -30,6 +30,17 @@ pub fn print_token_text(src str, start int, end int) {
     print_str_slice(src, start, end);
 }
 
+pub fn token_text_slice(src str, start int, end int) str {
+    len := end - start;
+    if (len <= 0) {
+        return "";
+    }
+    // Build string via concatenation of each char? Not possible without dynamic memory.
+    // Use a temporary builtin for now; we'll add str_from_slice builtin.
+    // For v0.0.8r, assume we have str_from_slice builtin.
+    return str_from_slice(src, start, end);
+}
+
 pub fn print_ident_at(src str, i int) {
     print_token_text(src, token_start(src, i), token_end(src, i));
 }

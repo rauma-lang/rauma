@@ -6,6 +6,7 @@ use lex.lexer;
 use parse.parser;
 use type.checker;
 use cgen.cgen;
+use build.build;
 
 fn main(args Args) {
     if (args_len(args) <= 1) {
@@ -105,6 +106,18 @@ fn main(args Args) {
         }
 
         cgen.cgen.run_file(text);
+        return;
+    }
+
+    if (str_eq(cmd, "build")) {
+        if (args_len(args) < 3) {
+            print("usage: rmc build <path>\n");
+            return;
+        }
+
+        text := read_file(args_get(args, 2));
+        // text length check done inside build
+        build.build.run_file(args_get(args, 2), text);
         return;
     }
 

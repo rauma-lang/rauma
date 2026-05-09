@@ -44,7 +44,12 @@ still emits C directly from checked AST chunks:
   v0.0.8q adds two temporary bridge builtins to `rmb`'s runtime (`write_file`,
   `cc_compile`). These allow compiled RauMa programs to write files and invoke
   `gcc` via `system(3)`. They are **bridge‑only** and exist to enable `rmc`’s
-  own `rmc build` command, planned for v0.0.8r.
+  own `rmc build` command.
+
+  v0.0.8r implements `rmc build <path>`, which reads a file, checks it, emits C,
+  writes to `build/rmc_build_out.c`, compiles to `build/rmc_build_out`, and reports
+  success. This is still a bridge using the external C compiler, not the full
+  backend.
 
 ## Compilation Pipeline
 

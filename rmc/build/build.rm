@@ -1,0 +1,45 @@
+use type.checker;
+use cgen.cgen;
+
+pub fn run_file(path str, text str) {
+    // path currently unused; keep for compatibility
+    dummy := str_len(path);
+    dummy = dummy;
+
+    if (str_len(text) == 0) {
+        print("empty or unreadable file\n");
+        return;
+    }
+
+    if (!type.checker.can_check(text)) {
+        print("build failed: check failed\n");
+        return;
+    }
+
+    c := cgen.cgen.emit_to_string(text);
+
+    if (str_len(c) == 0) {
+        print("build failed: unsupported source\n");
+        return;
+    }
+
+    c_path := "build/rmc_build_out.c";
+    out_path := "build/rmc_build_out";
+
+    ok := write_file(c_path, c);
+
+    if (!ok) {
+        print("build failed: write failed\n");
+        return;
+    }
+
+    rc := cc_compile(c_path, out_path);
+
+    if (rc == 0) {
+        print("build ok: ");
+        print(out_path);
+        print("\n");
+    } else {
+        print("build failed: cc failed\n");
+    }
+}

@@ -12,4 +12,5 @@ pub fn print_help() {
     print("  parse       parse a RauMa source file\n");
     print("  check       check a RauMa source file\n");
     print("  emit-c      emit C for a RauMa source file\n");
+    print("  build       build a RauMa source file\n");
 }
