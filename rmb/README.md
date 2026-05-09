@@ -223,6 +223,17 @@ The user-facing copy lives at `examples/selfbuild/tool.rm`. It exercises
 same single-file bridge build path. This is still proto self-build, not `rmc`
 building itself.
 
+v0.0.8x adds a readiness probe and audit:
+
+```bash
+./build/debug/native/bin/main build tests/rmc_readiness_probe.rm
+./build/rmc_build_out run
+```
+
+The expected probe output is `probe ok` followed by `15`. The audit lives at
+`docs/compiler/self-build-readiness.md` and lists the remaining gaps before
+`rmc` can build meaningful parts of itself.
+
 ### Output
 The compiler executable is built at:
 ```

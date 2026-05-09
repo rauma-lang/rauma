@@ -144,6 +144,14 @@ helpers, and regression fixtures cover the supported Args, math, control-flow,
 and compound-assignment shapes. The build output path remains
 `build/rmc_build_out.c` / `build/rmc_build_out`.
 
+v0.0.8x adds `rmb/tests/rmc_readiness_probe.rm`, which exercises the current
+bridge subset near its useful limit: Args dispatch, a helper function, a loop,
+nested `if` checks, `str_eq`, and int output. The self-build readiness audit in
+`docs/compiler/self-build-readiness.md` identifies multi-file `use` resolution,
+chunk layout, structured AST storage, broader codegen, and real type checking
+as the main build-system blockers before `rmc` can build meaningful parts of
+itself.
+
 ## Chunk-Based Architecture
 
 ### What is a Chunk?

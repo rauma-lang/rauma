@@ -44,6 +44,11 @@ wrappers are now split into smaller helpers, and new regression fixtures cover
 Args dispatch, simple math calls, control flow, and `+=` emission so the bridge
 subset is less fragile.
 
+v0.0.8x audits self-build readiness in
+`docs/compiler/self-build-readiness.md`. The current verified chain is still
+`rmb` builds `rmc`, then `rmc` builds tiny/tool/probe single-file targets. `rmc`
+does not build itself yet.
+
 The pipeline is now:
 
 ```bash
@@ -256,5 +261,5 @@ parse. On Windows, use bash (the redirection above is plain `>`), or invoke via
 
 ## Later v0.0.8 Work
 
-v0.0.8x should audit self-build readiness after bridge consolidation is
-verified. Self-host fixed point remains v0.0.9.
+v0.0.8y should create a standalone `rmc-mini.rm` target after the readiness
+audit is verified. Self-host fixed point remains v0.0.9.

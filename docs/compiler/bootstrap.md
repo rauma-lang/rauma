@@ -340,6 +340,20 @@ self-host fixed point, does not make `rmc` build itself, and still has no
 multi-file chunk graph, HIR/MIR, or full backend. v0.0.9 remains the
 fixed-point milestone.
 
+### v0.0.8x: Self-Build Readiness Audit
+
+v0.0.8x audits the current `rmc/` RauMa source tree against the supported
+single-file `rmc build` bridge subset. The audit is recorded in
+`docs/compiler/self-build-readiness.md`.
+
+This milestone also adds `rmb/tests/rmc_readiness_probe.rm`, a single-file
+probe that exercises Args dispatch, a loop, nested conditionals, helper calls,
+and integer output while staying inside the verified bridge subset.
+
+This remains an audit and probe milestone only. `rmc` still does not build
+itself, does not have multi-file chunk builds, and does not have HIR/MIR or a
+full backend. v0.0.9 remains the fixed-point milestone.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

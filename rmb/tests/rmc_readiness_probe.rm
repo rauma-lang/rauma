@@ -1,0 +1,36 @@
+fn compute(limit int) int {
+    i := 0;
+    total := 0;
+
+    while (i < limit) {
+        total = total + i;
+        i += 1;
+    }
+
+    return total;
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        print("probe missing\n");
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "run")) {
+        total := compute(6);
+
+        if (total == 15) {
+            print("probe ok\n");
+        } else {
+            print("probe bad\n");
+        }
+
+        print(total);
+        print("\n");
+        return;
+    }
+
+    print("probe unknown\n");
+}
