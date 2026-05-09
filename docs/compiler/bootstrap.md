@@ -309,6 +309,25 @@ This is not the self-host fixed point. `rmc` still does not build itself, does
 not handle multi-file chunks, and does not have HIR/MIR or a full backend.
 v0.0.9 remains the fixed-point milestone.
 
+### v0.0.8v: Self-Build CLI Tool Target
+
+v0.0.8v adds `examples/selfbuild/tool.rm` and the matching
+`rmb/tests/rmc_selfbuild_tool.rm` fixture. The target is still single-file, but
+it looks more like compiler tooling: it uses `fn main(args Args)`,
+`args_len`, `args_get`, `str_eq`, helper functions, loops, conditionals, and
+command dispatch.
+
+The verified chain is:
+
+1. `rmb` builds the RauMa-written `rmc`
+2. the generated `rmc` builds the CLI tool with `rmc build`
+3. the produced executable handles no-arg help, `version`, `score`, and an
+   unknown command
+
+This is proto self-build only. `rmc` still does not build itself, does not have
+multi-file chunk builds, and does not have HIR/MIR or a full backend.
+v0.0.9 remains the fixed-point milestone.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

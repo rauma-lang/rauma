@@ -209,6 +209,20 @@ ok
 The user-facing copy lives at `examples/selfbuild/tiny.rm`. This verifies the
 chain `rmb -> rmc -> tiny program`; it is not self-host fixed point.
 
+v0.0.8v adds a larger CLI-tool target buildable by the RauMa-written `rmc`:
+
+```bash
+./build/rmb build ../rmc/main.rm
+./build/debug/native/bin/main build tests/rmc_selfbuild_tool.rm
+./build/rmc_build_out version
+./build/rmc_build_out score
+```
+
+The user-facing copy lives at `examples/selfbuild/tool.rm`. It exercises
+`Args`, command dispatch, helper functions, loops, and conditionals through the
+same single-file bridge build path. This is still proto self-build, not `rmc`
+building itself.
+
 ### Output
 The compiler executable is built at:
 ```

@@ -119,6 +119,20 @@ This still uses the same single-file bridge output path
 RauMa-written `rmc` can build a tiny RauMa program, but it is not multi-file
 chunk building and not self-host fixed point.
 
+v0.0.8v adds a larger proto self-build CLI tool target:
+
+```bash
+./build/rmb build ../rmc/main.rm
+./build/debug/native/bin/main build ../examples/selfbuild/tool.rm
+./build/rmc_build_out version
+./build/rmc_build_out score
+```
+
+The generated tool uses `Args` command dispatch, helper functions, loops, and
+conditionals, but it still flows through the same single-file bridge output
+path. There is still no `rmc` chunk layout, multi-file build graph, package
+manager, HIR/MIR, or fixed-point self-hosting.
+
 ## Chunk-Based Architecture
 
 ### What is a Chunk?

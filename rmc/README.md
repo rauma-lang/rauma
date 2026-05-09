@@ -32,6 +32,13 @@ the RauMa-written `rmc`, generated `rmc` builds `examples/selfbuild/tiny.rm`,
 and the produced `build/rmc_build_out` executable runs. This is not
 self-hosting yet: `rmc` does not build itself and there is no fixed point.
 
+v0.0.8v adds a larger single-file CLI tool target at
+`examples/selfbuild/tool.rm`. The same chain now proves `rmb` builds `rmc`,
+`rmc build` compiles a compiler-tool-like RauMa program, and the produced tool
+binary handles `version`, `score`, no-arg help, and unknown-command dispatch.
+This extends the bridge subset with the minimal `Args`, `args_len`, `args_get`,
+`str_eq`, void helper, and `return;` shapes needed by the target.
+
 The pipeline is now:
 
 ```bash
@@ -226,5 +233,6 @@ parse. On Windows, use bash (the redirection above is plain `>`), or invoke via
 
 ## Later v0.0.8 Work
 
-v0.0.8v should expand the tiny self-build subset after this proto chain is
-verified. Self-host fixed point remains v0.0.9.
+v0.0.8w should consolidate the current `rmc build` subset and reduce
+template-specific build logic after the self-build CLI tool target is verified.
+Self-host fixed point remains v0.0.9.

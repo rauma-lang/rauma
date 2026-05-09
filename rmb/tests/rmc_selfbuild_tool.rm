@@ -1,0 +1,57 @@
+fn version() {
+    print("rauma-tool 0.0.8v\n");
+}
+
+fn score(limit int) int {
+    i := 0;
+    total := 0;
+
+    while (i < limit) {
+        total = total + i;
+        i += 1;
+    }
+
+    return total;
+}
+
+fn run_score() {
+    total := score(5);
+    answer := total + 32;
+
+    if (answer == 42) {
+        print("score ok\n");
+    } else {
+        print("score bad\n");
+    }
+
+    print(answer);
+    print("\n");
+}
+
+fn help() {
+    print("usage: tool <command>\n");
+    print("commands:\n");
+    print("  version\n");
+    print("  score\n");
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "version")) {
+        version();
+        return;
+    }
+
+    if (str_eq(cmd, "score")) {
+        run_score();
+        return;
+    }
+
+    print("unknown command\n");
+}

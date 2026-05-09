@@ -72,7 +72,8 @@
 - v0.0.8s rmc build subset expansion ✓ DONE
 - v0.0.8t rmc control-flow build subset ✓ DONE
 - v0.0.8u tiny self-build target ✓ DONE
-- v0.0.8v rmc self-build subset expansion
+- v0.0.8v self-build CLI tool target ✓ DONE
+- v0.0.8w rmc subset consolidation
 - Port compiler from C to RauMa
 - Implement self-hosting compiler core
 - Test compiler bootstrapping

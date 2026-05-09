@@ -79,6 +79,10 @@ pub fn parse_condition(src str, i int) int {
         return 0;
     }
 
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
+        return lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    }
+
     if (is_compare_kind(lex.stream.current_kind(src, pos)) == false) {
         return 0;
     }
@@ -160,6 +164,19 @@ pub fn parse_return_stmt(src str, i int, emit bool) int {
     pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_return());
     if (pos == 0) {
         return 0;
+    }
+
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_semi()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+        if (pos == 0) {
+            return 0;
+        }
+
+        if (emit) {
+            print("  stmt return\n");
+        }
+
+        return pos;
     }
 
     pos = parse_primary(src, pos);

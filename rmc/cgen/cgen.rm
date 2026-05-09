@@ -25,7 +25,7 @@ pub fn token_text(src str, i int) str {
 }
 
 pub fn emit_header_to_string() str {
-    return "#include <stdint.h>\n#include <stddef.h>\n#include <stdbool.h>\n#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    const char *ptr;\n    int64_t len;\n} RmStr;\n\nstatic RmStr rm_str(const char *s) {\n    RmStr out;\n    out.ptr = s;\n    out.len = (int64_t)strlen(s);\n    return out;\n}\n\nstatic void rm_print(RmStr s) {\n    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n}\n\n";
+    return "#include <stdint.h>\n#include <stddef.h>\n#include <stdbool.h>\n#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    const char *ptr;\n    int64_t len;\n} RmStr;\n\ntypedef struct {\n    int argc;\n    char **argv;\n} RmArgs;\n\nstatic RmStr rm_str(const char *s) {\n    RmStr out;\n    out.ptr = s;\n    out.len = (int64_t)strlen(s);\n    return out;\n}\n\nstatic bool rm_str_eq(RmStr a, RmStr b) {\n    if (a.len != b.len) return false;\n    return memcmp(a.ptr, b.ptr, (size_t)a.len) == 0;\n}\n\nstatic int64_t rm_args_len(RmArgs args) {\n    return (int64_t)args.argc;\n}\n\nstatic RmStr rm_args_get(RmArgs args, int64_t index) {\n    return rm_str(args.argv[index]);\n}\n\nstatic void rm_print(RmStr s) {\n    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n}\n\n";
 }
 
 pub fn parse_primary_end(src str, i int) int {
@@ -146,12 +146,79 @@ pub fn emit_call_args_to_c(src str, i int) str {
     return fail_text();
 }
 
+pub fn is_call_named(src str, i int, name str) bool {
+    if (lex.stream.current_kind(src, i) != lex.token.kind_ident()) {
+        return false;
+    }
+    if (lex.stream.token_text_eq(src, lex.stream.token_start(src, i), lex.stream.token_end(src, i), name) == false) {
+        return false;
+    }
+
+    next := lex.stream.advance(src, i);
+    return lex.stream.current_kind(src, next) == lex.token.kind_l_paren();
+}
+
+pub fn emit_str_eq_call_to_c(src str, i int) str {
+    pos := lex.stream.expect_ident(src, i);
+    if (pos == 0) {
+        return "";
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return "";
+    }
+
+    left := emit_expr_to_c(src, pos);
+    if (str_len(left) == 0) {
+        return "";
+    }
+    pos = parse_expr_end(src, pos);
+    if (pos == 0) {
+        return "";
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+    if (pos == 0) {
+        return "";
+    }
+
+    right_kind := lex.stream.current_kind(src, pos);
+    right := emit_expr_to_c(src, pos);
+    if (str_len(right) == 0) {
+        return "";
+    }
+    pos = parse_expr_end(src, pos);
+    if (pos == 0) {
+        return "";
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) {
+        return "";
+    }
+
+    out := "rm_str_eq(";
+    out = str_concat(out, left);
+    out = str_concat(out, ", ");
+    if (right_kind == lex.token.kind_string()) {
+        out = str_concat(out, "rm_str(");
+        out = str_concat(out, right);
+        out = str_concat(out, ")");
+    } else {
+        out = str_concat(out, right);
+    }
+    out = str_concat(out, ")");
+    return out;
+}
+
 pub fn emit_call_to_c(src str, i int) str {
     if (lex.stream.current_kind(src, i) != lex.token.kind_ident()) {
         return "";
     }
 
     name := token_text(src, i);
+    if (str_eq(name, "str_eq")) {
+        return emit_str_eq_call_to_c(src, i);
+    }
+
     pos := lex.stream.advance(src, i);
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
     if (pos == 0) {
@@ -161,6 +228,20 @@ pub fn emit_call_to_c(src str, i int) str {
     args := emit_call_args_to_c(src, pos);
     if (is_fail_text(args)) {
         return "";
+    }
+
+    if (str_eq(name, "args_len")) {
+        out := "rm_args_len(";
+        out = str_concat(out, args);
+        out = str_concat(out, ")");
+        return out;
+    }
+
+    if (str_eq(name, "args_get")) {
+        out := "rm_args_get(";
+        out = str_concat(out, args);
+        out = str_concat(out, ")");
+        return out;
     }
 
     out := "rm_fn_";
@@ -256,6 +337,10 @@ pub fn parse_condition_end(src str, i int) int {
         return 0;
     }
 
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
+        return lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    }
+
     if (is_compare_kind(lex.stream.current_kind(src, pos)) == false) {
         return 0;
     }
@@ -288,6 +373,10 @@ pub fn emit_condition_to_c(src str, i int) str {
         return "";
     }
 
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
+        return left;
+    }
+
     if (is_compare_kind(lex.stream.current_kind(src, pos)) == false) {
         return "";
     }
@@ -317,6 +406,9 @@ pub fn parse_stmt_end(src str, i int) int {
         pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_return());
         if (pos == 0) {
             return 0;
+        }
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_semi()) {
+            return lex.stream.expect_kind(src, pos, lex.token.kind_semi());
         }
         pos = parse_expr_end(src, pos);
         if (pos == 0) {
@@ -453,6 +545,10 @@ pub fn emit_return_stmt_to_c(src str, i int) str {
         return "";
     }
 
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_semi()) {
+        return "    return 0;\n";
+    }
+
     expr := emit_expr_to_c(src, pos);
     if (str_len(expr) == 0) {
         return "";
@@ -481,7 +577,12 @@ pub fn emit_var_stmt_to_c(src str, i int) str {
         return "";
     }
 
-    out := "    int64_t ";
+    out := "    ";
+    if (is_call_named(src, pos, "args_get")) {
+        out = str_concat(out, "RmStr ");
+    } else {
+        out = str_concat(out, "int64_t ");
+    }
     out = str_concat(out, name);
     out = str_concat(out, " = ");
     out = str_concat(out, expr);
@@ -790,9 +891,6 @@ pub fn emit_params_to_c(src str, i int) str {
             return fail_text();
         }
         type_name := token_text(src, pos);
-        if (str_eq(type_name, "int") == false) {
-            return fail_text();
-        }
         pos = lex.stream.expect_ident(src, pos);
         if (pos == 0) {
             return fail_text();
@@ -801,7 +899,14 @@ pub fn emit_params_to_c(src str, i int) str {
         if (first == false) {
             out = str_concat(out, ", ");
         }
-        out = str_concat(out, "int64_t ");
+        if (str_eq(type_name, "Args")) {
+            out = str_concat(out, "RmArgs ");
+        } else {
+            if (str_eq(type_name, "int") == false) {
+                return fail_text();
+            }
+            out = str_concat(out, "int64_t ");
+        }
         out = str_concat(out, name);
         first = false;
 
@@ -819,6 +924,33 @@ pub fn emit_params_to_c(src str, i int) str {
     }
 
     return fail_text();
+}
+
+pub fn params_are_main_args(src str, i int) bool {
+    pos := i;
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return false;
+    }
+    if (lex.stream.token_text_eq(src, lex.stream.token_start(src, pos), lex.stream.token_end(src, pos), "args") == false) {
+        return false;
+    }
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return false;
+    }
+
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return false;
+    }
+    if (lex.stream.token_text_eq(src, lex.stream.token_start(src, pos), lex.stream.token_end(src, pos), "Args") == false) {
+        return false;
+    }
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return false;
+    }
+
+    return lex.stream.current_kind(src, pos) == lex.token.kind_r_paren();
 }
 
 pub fn fn_end(src str, i int) int {
@@ -888,6 +1020,10 @@ pub fn emit_fn_to_c(src str, i int) str {
     }
 
     param_start := pos;
+    main_args := false;
+    if (str_eq(name, "main")) {
+        main_args = params_are_main_args(src, param_start);
+    }
     params := emit_params_to_c(src, param_start);
     if (is_fail_text(params)) {
         return "";
@@ -926,18 +1062,30 @@ pub fn emit_fn_to_c(src str, i int) str {
             return "";
         }
 
-        out := "int main(void) {\n";
+        out := "";
+        if (main_args) {
+            out = str_concat(out, "int main(int argc, char **argv) {\n");
+            out = str_concat(out, "    RmArgs args;\n");
+            out = str_concat(out, "    args.argc = argc;\n");
+            out = str_concat(out, "    args.argv = argv;\n");
+        } else {
+            out = str_concat(out, "int main(void) {\n");
+        }
+        out = str_concat(out, "    (void)rm_str_eq;\n");
+        out = str_concat(out, "    (void)rm_args_len;\n");
+        out = str_concat(out, "    (void)rm_args_get;\n");
         out = str_concat(out, body);
         out = str_concat(out, "    return 0;\n");
         out = str_concat(out, "}\n");
         return out;
     }
 
-    if (has_return == false) {
-        return "";
+    out := "";
+    if (has_return) {
+        out = str_concat(out, "static int64_t rm_fn_");
+    } else {
+        out = str_concat(out, "static void rm_fn_");
     }
-
-    out := "static int64_t rm_fn_";
     out = str_concat(out, name);
     out = str_concat(out, "(");
     out = str_concat(out, params);
