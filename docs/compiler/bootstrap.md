@@ -108,6 +108,17 @@ opaque `Args` type and the `args_len`, `args_get`, and `str_eq` builtins.
 The lexer and parser demos still use hardcoded source text. File input, real
 compiler commands, and the self-host fixed point remain later work.
 
+### v0.0.8i: File Input Smoke
+
+v0.0.8i adds a temporary `read_file(path str) str` builtin to generated RauMa
+programs. It reads a whole file into a string and returns an empty string on
+failure. Returned buffers are intentionally leaked for now because `rmc` does
+not have a proper allocator or error model yet.
+
+`rmc demo-file <path>` uses this builtin to print file byte length and first
+byte. It still does not lex or parse file contents. The self-host fixed point
+remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

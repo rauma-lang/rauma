@@ -376,9 +376,12 @@ static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name
     bool is_eq = rmb_string_equal(name, rmb_string_from_cstr("str_eq"));
     bool is_args_len = rmb_string_equal(name, rmb_string_from_cstr("args_len"));
     bool is_args_get = rmb_string_equal(name, rmb_string_from_cstr("args_get"));
-    if (!is_len && !is_byte && !is_eq && !is_args_len && !is_args_get) return err_unknown();
+    bool is_read_file = rmb_string_equal(name, rmb_string_from_cstr("read_file"));
+    if (!is_len && !is_byte && !is_eq && !is_args_len && !is_args_get && !is_read_file) {
+        return err_unknown();
+    }
 
-    size_t expected = (is_len || is_args_len) ? 1 : 2;
+    size_t expected = (is_len || is_args_len || is_read_file) ? 1 : 2;
     if (expr->call.arg_count != expected) {
         emit_error(c, expr->span,
             "builtin '%.*s' expects %zu arguments, got %zu",
@@ -387,7 +390,7 @@ static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name
 
     for (size_t i = 0; i < expr->call.arg_count; i++) {
         ExprResult arg = check_expr(c, expr->call.args[i]);
-        if ((is_len || is_byte) && i == 0 &&
+        if ((is_len || is_byte || is_read_file) && i == 0 &&
             !rmb_type_is_unknown(arg.type) && arg.type->kind != RMB_TYPE_STR) {
             emit_error(c, expr->call.args[i]->span,
                 "first argument to '%.*s' must be str", (int)name.len, name.ptr);
@@ -413,6 +416,7 @@ static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name
 
     if (is_eq) return err_ty(rmb_type_bool());
     if (is_args_get) return err_ty(rmb_type_str());
+    if (is_read_file) return err_ty(rmb_type_str());
     return err_ty(rmb_type_int());
 }
 
@@ -421,14 +425,15 @@ static ExprResult check_call(RmbChecker* c, RmbAstExpr* expr) {
     // Identifier callee -> function lookup
     if (callee && callee->kind == RMB_AST_EXPR_IDENT) {
         rmb_string name = callee->ident.name;
-        if (rmb_string_equal(name, rmb_string_from_cstr("str_len")) ||
+        RmbFnSymbol* fn = find_fn(c, name);
+        if (!fn && (rmb_string_equal(name, rmb_string_from_cstr("str_len")) ||
             rmb_string_equal(name, rmb_string_from_cstr("str_byte")) ||
             rmb_string_equal(name, rmb_string_from_cstr("str_eq")) ||
             rmb_string_equal(name, rmb_string_from_cstr("args_len")) ||
-            rmb_string_equal(name, rmb_string_from_cstr("args_get"))) {
+            rmb_string_equal(name, rmb_string_from_cstr("args_get")) ||
+            rmb_string_equal(name, rmb_string_from_cstr("read_file")))) {
             return check_builtin(c, expr, name);
         }
-        RmbFnSymbol* fn = find_fn(c, name);
         // Check args first regardless
         for (size_t i = 0; i < expr->call.arg_count; i++) {
             check_expr(c, expr->call.args[i]);

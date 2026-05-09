@@ -4,11 +4,11 @@
 
 `rmc` is the future main RauMa compiler written in RauMa.
 
-v0.0.8h adds command dispatch through the bootstrap `Args` type. The `rmc`
-binary now supports help, version, lexer demo, and parser demo commands while
-the demo source remains hardcoded.
+v0.0.8i adds a file input smoke command through the temporary `read_file`
+builtin. The `rmc` binary can now read a file and print basic byte information,
+but it still does not lex or parse file contents.
 
-`rmc` still does not implement file IO, token arrays, full AST
+`rmc` still does not implement full file-driven lexing, token arrays, full AST
 allocation, checking, codegen, HIR, MIR, packages, std modules, or self-hosting.
 
 ## Current Source Layout
@@ -18,6 +18,7 @@ rmc/
 ├── main.rm
 ├── cli/
 │   ├── args.rm
+│   ├── file.rm
 │   ├── help.rm
 │   └── version.rm
 ├── source/
@@ -41,6 +42,7 @@ rmc/
 use cli.help;
 use cli.version;
 use cli.args;
+use cli.file;
 use lex.lexer;
 use parse.parser;
 ```
@@ -52,8 +54,10 @@ help        print this help message
 version     print compiler version
 demo-lex    run hardcoded lexer demo
 demo-parse  run hardcoded parser demo
+demo-file   read a file and print basic info
 ```
 
+`demo-file <path>` only reads bytes and prints `file bytes` plus `first byte`.
 The lexer and parser demos still run against `source.source.demo_text()`.
 
 ## Building With rmb
@@ -71,6 +75,6 @@ The binary path is still entry-stem based, so `rmc/main.rm` builds to
 
 ## Later v0.0.8 Work
 
-v0.0.8i should prepare file input. File-driven lexing,
-full parser work, checker/codegen bridge work, and the self-host fixed point
-remain later milestones.
+v0.0.8j should add a real lex-file demo command. Full parser work,
+checker/codegen bridge work, and the self-host fixed point remain later
+milestones.

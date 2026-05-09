@@ -1,0 +1,9 @@
+fn main() {
+    text := read_file("tests/file_input.txt");
+
+    print(str_len(text));
+    print("\n");
+
+    print(str_byte(text, 0));
+    print("\n");
+}

@@ -1,6 +1,7 @@
 use cli.help;
 use cli.version;
 use cli.args;
+use cli.file;
 use lex.lexer;
 use parse.parser;
 
@@ -29,6 +30,15 @@ fn main(args Args) {
 
     if (str_eq(cmd, "demo-parse")) {
         parse.parser.run_smoke();
+        return;
+    }
+
+    if (str_eq(cmd, "demo-file")) {
+        if (args_len(args) < 3) {
+            cli.file.print_file_usage();
+            return;
+        }
+        cli.file.print_file_info(args_get(args, 2));
         return;
     }
 

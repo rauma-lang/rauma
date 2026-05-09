@@ -328,15 +328,16 @@ static RmbType* call_type(RmbCGen* g, RmbAstExpr* e) {
     RmbAstExpr* callee = e->call.callee;
     if (callee && callee->kind == RMB_AST_EXPR_IDENT) {
         rmb_string name = callee->ident.name;
+        CgFn* fn = find_fn(g, name);
         if (rmb_string_equal(name, rmb_string_from_cstr("print"))) return rmb_type_void();
-        if (rmb_string_equal(name, rmb_string_from_cstr("str_len")) ||
+        if (!fn && (rmb_string_equal(name, rmb_string_from_cstr("str_len")) ||
             rmb_string_equal(name, rmb_string_from_cstr("str_byte")) ||
-            rmb_string_equal(name, rmb_string_from_cstr("args_len"))) {
+            rmb_string_equal(name, rmb_string_from_cstr("args_len")))) {
             return rmb_type_int();
         }
-        if (rmb_string_equal(name, rmb_string_from_cstr("str_eq"))) return rmb_type_bool();
-        if (rmb_string_equal(name, rmb_string_from_cstr("args_get"))) return rmb_type_str();
-        CgFn* fn = find_fn(g, name);
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_eq"))) return rmb_type_bool();
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("args_get"))) return rmb_type_str();
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("read_file"))) return rmb_type_str();
         if (fn) return fn->return_type ? fn->return_type : rmb_type_void();
     }
     char module[256];
@@ -499,11 +500,12 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
     RmbAstExpr* callee = e->call.callee;
     if (callee && callee->kind == RMB_AST_EXPR_IDENT) {
         rmb_string name = callee->ident.name;
+        CgFn* fn = find_fn(g, name);
         if (rmb_string_equal(name, rmb_string_from_cstr("print"))) {
             emit_print_call(g, e);
             return;
         }
-        if (rmb_string_equal(name, rmb_string_from_cstr("str_len"))) {
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_len"))) {
             if (e->call.arg_count != 1) {
                 cg_error(g, e->span, "str_len expects exactly 1 argument");
                 emit_str(g, "0");
@@ -514,7 +516,7 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
             emit_str(g, ")");
             return;
         }
-        if (rmb_string_equal(name, rmb_string_from_cstr("str_byte"))) {
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_byte"))) {
             if (e->call.arg_count != 2) {
                 cg_error(g, e->span, "str_byte expects exactly 2 arguments");
                 emit_str(g, "0");
@@ -527,7 +529,7 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
             emit_str(g, ")");
             return;
         }
-        if (rmb_string_equal(name, rmb_string_from_cstr("str_eq"))) {
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_eq"))) {
             if (e->call.arg_count != 2) {
                 cg_error(g, e->span, "str_eq expects exactly 2 arguments");
                 emit_str(g, "false");
@@ -540,7 +542,7 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
             emit_str(g, ")");
             return;
         }
-        if (rmb_string_equal(name, rmb_string_from_cstr("args_len"))) {
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("args_len"))) {
             if (e->call.arg_count != 1) {
                 cg_error(g, e->span, "args_len expects exactly 1 argument");
                 emit_str(g, "0");
@@ -551,7 +553,7 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
             emit_str(g, ")");
             return;
         }
-        if (rmb_string_equal(name, rmb_string_from_cstr("args_get"))) {
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("args_get"))) {
             if (e->call.arg_count != 2) {
                 cg_error(g, e->span, "args_get expects exactly 2 arguments");
                 emit_str(g, "rm_str(\"\")");
@@ -564,7 +566,17 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
             emit_str(g, ")");
             return;
         }
-        CgFn* fn = find_fn(g, name);
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("read_file"))) {
+            if (e->call.arg_count != 1) {
+                cg_error(g, e->span, "read_file expects exactly 1 argument");
+                emit_str(g, "rm_str(\"\")");
+                return;
+            }
+            emit_str(g, "rm_read_file(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ")");
+            return;
+        }
         if (fn && fn->error_capable) {
             cg_error(g, e->span, "error-returning functions are not supported by codegen v0.0.7");
             emit_str(g, "0");
@@ -944,6 +956,29 @@ static void emit_prelude(RmbCGen* g) {
         "\n"
         "static RM_UNUSED RmStr rm_args_get(RmArgs args, int64_t index) {\n"
         "    return rm_str(args.argv[index]);\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED RmStr rm_read_file(RmStr path) {\n"
+        "    char *cpath = (char*)malloc((size_t)path.len + 1);\n"
+        "    if (!cpath) return rm_str(\"\");\n"
+        "    memcpy(cpath, path.ptr, (size_t)path.len);\n"
+        "    cpath[path.len] = '\\0';\n"
+        "    FILE *f = fopen(cpath, \"rb\");\n"
+        "    free(cpath);\n"
+        "    if (!f) return rm_str(\"\");\n"
+        "    if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return rm_str(\"\"); }\n"
+        "    long size = ftell(f);\n"
+        "    if (size < 0) { fclose(f); return rm_str(\"\"); }\n"
+        "    if (fseek(f, 0, SEEK_SET) != 0) { fclose(f); return rm_str(\"\"); }\n"
+        "    char *data = (char*)malloc((size_t)size + 1);\n"
+        "    if (!data) { fclose(f); return rm_str(\"\"); }\n"
+        "    size_t got = fread(data, 1, (size_t)size, f);\n"
+        "    fclose(f);\n"
+        "    data[got] = '\\0';\n"
+        "    RmStr out;\n"
+        "    out.ptr = data;\n"
+        "    out.len = (int64_t)got;\n"
+        "    return out;\n"
         "}\n"
         "\n"
         "static RM_UNUSED void rm_print(RmStr s) {\n"

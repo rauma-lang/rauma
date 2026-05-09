@@ -7,4 +7,5 @@ pub fn print_help() {
     print("  help        print this help message\n");
     print("  demo-lex    run hardcoded lexer demo\n");
     print("  demo-parse  run hardcoded parser demo\n");
+    print("  demo-file   read a file and print basic info\n");
 }

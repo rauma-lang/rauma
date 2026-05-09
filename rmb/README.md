@@ -104,7 +104,7 @@ gcc link → build/debug/native/bin/<entry-stem>
 - **Functions**: prefixed `rm_fn_<name>`; `main` becomes the C entry point
 - **Built-in `print`**: emits `rm_print(rm_str(...))`, `rm_print_int`, or `rm_print_bool` depending on argument type
 - **String builtins**: `str_len(s str) int` and `str_byte(s str, index int) int` for bootstrap byte scanning
-- **CLI/string helpers**: `args_len(args Args) int`, `args_get(args Args, index int) str`, and `str_eq(a str, b str) bool`
+- **CLI/string/file helpers**: `args_len(args Args) int`, `args_get(args Args, index int) str`, `str_eq(a str, b str) bool`, and `read_file(path str) str`
 - **Statements**: variable declarations (`:=`, `: T = e`), assignment (`=`, `+=`, `-=`, `*=`, `/=`), `return`, `if`/`else`, `while`, `for`
 - **Expressions**: int/string/bool literals, identifiers, calls, field access, unary (`-`, `!`, `&`, `*`), binary arithmetic and comparisons, `&&`/`||`
 
@@ -129,6 +129,7 @@ gcc link → build/debug/native/bin/<entry-stem>
 - No struct literal codegen
 - String builtins are byte-level only; no Unicode, no char type, no `s[i]` syntax
 - `Args` is only a bootstrap CLI wrapper, not a general array/slice type
+- `read_file` returns empty string on failure and leaks returned buffers for now
 - No HIR / MIR / optimizer / native backend
 
 ### Unsupported Features (in v0.0.7)
@@ -251,6 +252,7 @@ use to `tests/project_nested/app/util.rm`. Dots map to path separators and
 - Written in RauMa
 - v0.0.8a starts as a minimal RauMa-written skeleton under `rmc/`
 - v0.0.8h adds `Args`-based command dispatch for help/version/demo commands
+- v0.0.8i adds a temporary `read_file` smoke path for generated binaries
 - Currently built by `rmb build ../rmc/main.rm`
 - Full language support and self-hosting are later milestones
 

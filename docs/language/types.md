@@ -44,12 +44,17 @@ The bootstrap compiler recognizes temporary byte-level string builtins:
 str_len(value str) int
 str_byte(value str, index int) int
 str_eq(a str, b str) bool
+read_file(path str) str
 ```
 
 `str_len` returns the string length in bytes. `str_byte` returns the byte value
 at a zero-based index. `str_eq` compares byte length and byte contents. These
 are ASCII/byte helpers for bootstrap compiler work; there is no Unicode
 handling, no `char` type, and no `s[i]` syntax yet.
+
+`read_file` reads the whole file at `path` and returns its content as `str`.
+It returns an empty string on failure, leaks the returned content buffer for
+now, and has no error type yet.
 
 ### Temporary Args Builtins (v0.0.8h)
 

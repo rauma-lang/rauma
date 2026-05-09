@@ -1,3 +1,3 @@
 pub fn print_version() {
-    print("rmc 0.0.8h\n");
+    print("rmc 0.0.8i\n");
 }
