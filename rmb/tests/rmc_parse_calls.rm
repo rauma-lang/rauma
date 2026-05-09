@@ -1,0 +1,7 @@
+fn greet(person str) {
+    show(person);
+}
+
+fn main() {
+    greet("Minh");
+}

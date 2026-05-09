@@ -147,6 +147,16 @@ AST storage is still summary-oriented, not heap-allocated. `rmc` still does not
 typecheck or codegen file contents, and the self-host fixed point remains
 v0.0.9.
 
+### v0.0.8m: Token Text Handling
+
+v0.0.8m reduces hardcoded parser names. The token stream exposes token start
+and end offsets plus text printing/equality helpers, so parser summaries can
+print names directly from source text.
+
+The parser still uses cursor-style stream access and summary output. It still
+does not build a heap AST, typecheck, or codegen file contents, and the
+self-host fixed point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

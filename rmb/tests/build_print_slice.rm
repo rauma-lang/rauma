@@ -1,0 +1,4 @@
+fn main() {
+    print_str_slice("abcdef", 1, 4);
+    print("\n");
+}

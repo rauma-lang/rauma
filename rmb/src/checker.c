@@ -377,11 +377,13 @@ static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name
     bool is_args_len = rmb_string_equal(name, rmb_string_from_cstr("args_len"));
     bool is_args_get = rmb_string_equal(name, rmb_string_from_cstr("args_get"));
     bool is_read_file = rmb_string_equal(name, rmb_string_from_cstr("read_file"));
-    if (!is_len && !is_byte && !is_eq && !is_args_len && !is_args_get && !is_read_file) {
+    bool is_print_slice = rmb_string_equal(name, rmb_string_from_cstr("print_str_slice"));
+    if (!is_len && !is_byte && !is_eq && !is_args_len && !is_args_get && !is_read_file &&
+        !is_print_slice) {
         return err_unknown();
     }
 
-    size_t expected = (is_len || is_args_len || is_read_file) ? 1 : 2;
+    size_t expected = is_print_slice ? 3 : ((is_len || is_args_len || is_read_file) ? 1 : 2);
     if (expr->call.arg_count != expected) {
         emit_error(c, expr->span,
             "builtin '%.*s' expects %zu arguments, got %zu",
@@ -390,7 +392,7 @@ static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name
 
     for (size_t i = 0; i < expr->call.arg_count; i++) {
         ExprResult arg = check_expr(c, expr->call.args[i]);
-        if ((is_len || is_byte || is_read_file) && i == 0 &&
+        if ((is_len || is_byte || is_read_file || is_print_slice) && i == 0 &&
             !rmb_type_is_unknown(arg.type) && arg.type->kind != RMB_TYPE_STR) {
             emit_error(c, expr->call.args[i]->span,
                 "first argument to '%.*s' must be str", (int)name.len, name.ptr);
@@ -412,8 +414,13 @@ static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name
             emit_error(c, expr->call.args[i]->span,
                 "second argument to 'args_get' must be int");
         }
+        if (is_print_slice && i > 0 && !type_is_known_kind(arg.type, RMB_TYPE_INT)) {
+            emit_error(c, expr->call.args[i]->span,
+                "slice bounds passed to 'print_str_slice' must be int");
+        }
     }
 
+    if (is_print_slice) return err_ty(rmb_type_void());
     if (is_eq) return err_ty(rmb_type_bool());
     if (is_args_get) return err_ty(rmb_type_str());
     if (is_read_file) return err_ty(rmb_type_str());
@@ -431,7 +438,8 @@ static ExprResult check_call(RmbChecker* c, RmbAstExpr* expr) {
             rmb_string_equal(name, rmb_string_from_cstr("str_eq")) ||
             rmb_string_equal(name, rmb_string_from_cstr("args_len")) ||
             rmb_string_equal(name, rmb_string_from_cstr("args_get")) ||
-            rmb_string_equal(name, rmb_string_from_cstr("read_file")))) {
+            rmb_string_equal(name, rmb_string_from_cstr("read_file")) ||
+            rmb_string_equal(name, rmb_string_from_cstr("print_str_slice")))) {
             return check_builtin(c, expr, name);
         }
         // Check args first regardless

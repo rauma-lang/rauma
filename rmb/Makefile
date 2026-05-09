@@ -150,6 +150,10 @@ test: debug
 	@./$(TARGET) build tests/build_file_read.rm
 	@./$(BUILD_DIR)/debug/native/bin/build_file_read
 	@echo ""
+	@echo "=== Build print slice test ==="
+	@./$(TARGET) build tests/build_print_slice.rm
+	@./$(BUILD_DIR)/debug/native/bin/build_print_slice
+	@echo ""
 	@echo "=== Build errors test (should fail) ==="
 	@python -c "import subprocess, sys; rc=subprocess.run(['./$(TARGET)','build','tests/build_errors.rm'], stderr=subprocess.DEVNULL).returncode; print('SUCCESS: build_errors.rm failed as expected' if rc else 'ERROR: Expected build_errors.rm to fail but it succeeded'); sys.exit(0 if rc else 1)"
 	@echo ""

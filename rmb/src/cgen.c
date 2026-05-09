@@ -330,6 +330,7 @@ static RmbType* call_type(RmbCGen* g, RmbAstExpr* e) {
         rmb_string name = callee->ident.name;
         CgFn* fn = find_fn(g, name);
         if (rmb_string_equal(name, rmb_string_from_cstr("print"))) return rmb_type_void();
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("print_str_slice"))) return rmb_type_void();
         if (!fn && (rmb_string_equal(name, rmb_string_from_cstr("str_len")) ||
             rmb_string_equal(name, rmb_string_from_cstr("str_byte")) ||
             rmb_string_equal(name, rmb_string_from_cstr("args_len")))) {
@@ -574,6 +575,21 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
             }
             emit_str(g, "rm_read_file(");
             emit_expr(g, e->call.args[0]);
+            emit_str(g, ")");
+            return;
+        }
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("print_str_slice"))) {
+            if (e->call.arg_count != 3) {
+                cg_error(g, e->span, "print_str_slice expects exactly 3 arguments");
+                emit_str(g, "0");
+                return;
+            }
+            emit_str(g, "rm_print_str_slice(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ", ");
+            emit_expr(g, e->call.args[1]);
+            emit_str(g, ", ");
+            emit_expr(g, e->call.args[2]);
             emit_str(g, ")");
             return;
         }
@@ -943,6 +959,13 @@ static void emit_prelude(RmbCGen* g) {
         "\n"
         "static RM_UNUSED int64_t rm_str_byte(RmStr s, int64_t index) {\n"
         "    return (int64_t)((unsigned char)s.ptr[index]);\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED void rm_print_str_slice(RmStr s, int64_t start, int64_t end) {\n"
+        "    if (start < 0) start = 0;\n"
+        "    if (end < start) return;\n"
+        "    if (end > s.len) end = s.len;\n"
+        "    fwrite(s.ptr + start, 1, (size_t)(end - start), stdout);\n"
         "}\n"
         "\n"
         "static RM_UNUSED bool rm_str_eq(RmStr a, RmStr b) {\n"

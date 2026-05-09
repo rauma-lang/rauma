@@ -1,0 +1,4 @@
+fn main() {
+    count := 123;
+    print("hello\n");
+}

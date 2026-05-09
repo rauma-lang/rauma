@@ -4,10 +4,10 @@
 
 `rmc` is the future main RauMa compiler written in RauMa.
 
-v0.0.8l generalizes the file-driven parser summary. `rmc parse <path>` reads a
-RauMa source file with `read_file`, parses the current small subset through
-token stream helpers, and computes the summary from the input instead of one
-fixed demo shape.
+v0.0.8m improves token text handling. `rmc parse <path>` reads a RauMa source
+file with `read_file`, parses the current small subset through token stream
+helpers, and prints function, parameter, local, type, and call names directly
+from source token spans.
 
 `rmc` still does not allocate a full AST, check, codegen, implement HIR/MIR,
 packages, std modules, or self-host.
@@ -62,8 +62,9 @@ parse       parse a RauMa source file
 
 `demo-file <path>` only reads bytes and prints `file bytes` plus `first byte`.
 `lex <path>` tokenizes the file contents only. `parse <path>` parses only the
-current small subset and prints a summary; it does not typecheck or generate
-code. The lexer and parser demos still run against `source.source.demo_text()`.
+current small subset and prints a summary using names from the source text; it
+does not typecheck or generate code. The lexer and parser demos still run
+against `source.source.demo_text()`.
 
 The parser subset currently covers:
 
@@ -97,5 +98,5 @@ The binary path is still entry-stem based, so `rmc/main.rm` builds to
 
 ## Later v0.0.8 Work
 
-v0.0.8m should start the checker/codegen bridge. The self-host fixed point
+v0.0.8n should start the checker/codegen bridge. The self-host fixed point
 remains a later milestone.

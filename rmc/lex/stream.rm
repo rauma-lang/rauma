@@ -18,6 +18,40 @@ pub fn current_end(src str, i int) int {
     return lex.lexer.next_end(src, i);
 }
 
+pub fn token_start(src str, i int) int {
+    return current_start(src, i);
+}
+
+pub fn token_end(src str, i int) int {
+    return current_end(src, i);
+}
+
+pub fn print_token_text(src str, start int, end int) {
+    print_str_slice(src, start, end);
+}
+
+pub fn print_ident_at(src str, i int) {
+    print_token_text(src, token_start(src, i), token_end(src, i));
+}
+
+pub fn token_text_eq(src str, start int, end int, expected str) bool {
+    len := end - start;
+    expected_len := str_len(expected);
+    if (len != expected_len) {
+        return false;
+    }
+
+    i := 0;
+    while (i < len) {
+        if (str_byte(src, start + i) != str_byte(expected, i)) {
+            return false;
+        }
+        i += 1;
+    }
+
+    return true;
+}
+
 pub fn advance(src str, i int) int {
     return current_end(src, i);
 }
@@ -43,7 +77,7 @@ pub fn print_ident_code(code int) {
 }
 
 pub fn expect_ident(src str, i int) int {
-    if (current_ident_code(src, i) == 0) {
+    if (current_kind(src, i) != lex.token.kind_ident()) {
         return 0;
     }
     return advance(src, i);
