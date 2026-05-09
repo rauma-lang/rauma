@@ -127,6 +127,15 @@ v0.0.8j adds `rmc lex <path>`. The command reads file contents with
 This is only tokenization. `rmc` still does not parse, check, or compile file
 contents, and the self-host fixed point remains v0.0.9.
 
+### v0.0.8k: File-Driven Parse Smoke
+
+v0.0.8k adds `rmc parse <path>`. The command reads file contents with
+`read_file` and parses the same small subset handled by the parser demo through
+token stream helpers.
+
+This is still not a full parser. `rmc` does not typecheck or codegen file
+contents yet, and the self-host fixed point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

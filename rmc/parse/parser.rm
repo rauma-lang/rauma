@@ -187,7 +187,7 @@ pub fn parse_main_fn(src str, i int) int {
     return lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
 }
 
-pub fn parse_demo(src str) bool {
+pub fn parse_program(src str) bool {
     pos := parse_add_fn(src, 0);
     if (pos == 0) {
         return false;
@@ -203,13 +203,21 @@ pub fn parse_demo(src str) bool {
     return true;
 }
 
-pub fn run_smoke() {
-    print("rmc parser smoke:\n");
-    ok := parse_demo(source.source.demo_text());
-
+pub fn parse_and_print(src str) {
+    ok := parse_program(src);
     if (ok) {
         ast.ast.print_demo_summary();
     } else {
         print("parser error\n");
     }
+}
+
+pub fn run_smoke() {
+    print("rmc parser smoke:\n");
+    parse_and_print(source.source.demo_text());
+}
+
+pub fn run_file(src str) {
+    print("rmc parse file:\n");
+    parse_and_print(src);
 }

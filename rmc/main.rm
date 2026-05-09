@@ -58,5 +58,21 @@ fn main(args Args) {
         return;
     }
 
+    if (str_eq(cmd, "parse")) {
+        if (args_len(args) < 3) {
+            print("usage: rmc parse <path>\n");
+            return;
+        }
+
+        text := read_file(args_get(args, 2));
+        if (str_len(text) == 0) {
+            print("empty or unreadable file\n");
+            return;
+        }
+
+        parse.parser.run_file(text);
+        return;
+    }
+
     cli.args.print_unknown();
 }
