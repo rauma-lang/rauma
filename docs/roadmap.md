@@ -62,7 +62,8 @@
 - v0.0.8i rmc file input smoke ✓ DONE
 - v0.0.8j rmc lex file command ✓ DONE
 - v0.0.8k rmc parse file command ✓ DONE
-- v0.0.8l rmc checker/codegen bridge
+- v0.0.8l rmc parser generalization ✓ DONE
+- v0.0.8m rmc checker/codegen bridge
 - Port compiler from C to RauMa
 - Implement self-hosting compiler core
 - Test compiler bootstrapping

@@ -141,6 +141,250 @@ pub fn is_print_ident(text str, start int, end int) bool {
     return false;
 }
 
+pub fn is_value_ident(text str, start int, end int) bool {
+    if (end - start != 5) {
+        return false;
+    }
+    if (str_byte(text, start) == 118 && str_byte(text, start + 1) == 97 &&
+        str_byte(text, start + 2) == 108 && str_byte(text, start + 3) == 117 &&
+        str_byte(text, start + 4) == 101) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_log_ident(text str, start int, end int) bool {
+    if (end - start != 3) {
+        return false;
+    }
+    if (str_byte(text, start) == 108 && str_byte(text, start + 1) == 111 &&
+        str_byte(text, start + 2) == 103) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_greet_ident(text str, start int, end int) bool {
+    if (end - start != 5) {
+        return false;
+    }
+    if (str_byte(text, start) == 103 && str_byte(text, start + 1) == 114 &&
+        str_byte(text, start + 2) == 101 && str_byte(text, start + 3) == 101 &&
+        str_byte(text, start + 4) == 116) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_name_ident(text str, start int, end int) bool {
+    if (end - start != 4) {
+        return false;
+    }
+    if (str_byte(text, start) == 110 && str_byte(text, start + 1) == 97 &&
+        str_byte(text, start + 2) == 109 && str_byte(text, start + 3) == 101) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_str_ident(text str, start int, end int) bool {
+    if (end - start != 3) {
+        return false;
+    }
+    if (str_byte(text, start) == 115 && str_byte(text, start + 1) == 116 &&
+        str_byte(text, start + 2) == 114) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_hello_ident(text str, start int, end int) bool {
+    if (end - start != 5) {
+        return false;
+    }
+    if (str_byte(text, start) == 104 && str_byte(text, start + 1) == 101 &&
+        str_byte(text, start + 2) == 108 && str_byte(text, start + 3) == 108 &&
+        str_byte(text, start + 4) == 111) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_compute_ident(text str, start int, end int) bool {
+    if (end - start != 7) {
+        return false;
+    }
+    if (str_byte(text, start) == 99 && str_byte(text, start + 1) == 111 &&
+        str_byte(text, start + 2) == 109 && str_byte(text, start + 3) == 112 &&
+        str_byte(text, start + 4) == 117 && str_byte(text, start + 5) == 116 &&
+        str_byte(text, start + 6) == 101) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_left_ident(text str, start int, end int) bool {
+    if (end - start != 4) {
+        return false;
+    }
+    if (str_byte(text, start) == 108 && str_byte(text, start + 1) == 101 &&
+        str_byte(text, start + 2) == 102 && str_byte(text, start + 3) == 116) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_right_ident(text str, start int, end int) bool {
+    if (end - start != 5) {
+        return false;
+    }
+    if (str_byte(text, start) == 114 && str_byte(text, start + 1) == 105 &&
+        str_byte(text, start + 2) == 103 && str_byte(text, start + 3) == 104 &&
+        str_byte(text, start + 4) == 116) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_result_ident(text str, start int, end int) bool {
+    if (end - start != 6) {
+        return false;
+    }
+    if (str_byte(text, start) == 114 && str_byte(text, start + 1) == 101 &&
+        str_byte(text, start + 2) == 115 && str_byte(text, start + 3) == 117 &&
+        str_byte(text, start + 4) == 108 && str_byte(text, start + 5) == 116) {
+        return true;
+    }
+    return false;
+}
+
+pub fn ident_code(text str, start int, end int) int {
+    if (is_add_ident(text, start, end)) {
+        return 1;
+    }
+    if (is_main_ident(text, start, end)) {
+        return 2;
+    }
+    if (is_a_ident(text, start, end)) {
+        return 3;
+    }
+    if (is_b_ident(text, start, end)) {
+        return 4;
+    }
+    if (is_int_ident(text, start, end)) {
+        return 5;
+    }
+    if (is_x_ident(text, start, end)) {
+        return 6;
+    }
+    if (is_print_ident(text, start, end)) {
+        return 7;
+    }
+    if (is_value_ident(text, start, end)) {
+        return 8;
+    }
+    if (is_log_ident(text, start, end)) {
+        return 9;
+    }
+    if (is_greet_ident(text, start, end)) {
+        return 10;
+    }
+    if (is_name_ident(text, start, end)) {
+        return 11;
+    }
+    if (is_str_ident(text, start, end)) {
+        return 12;
+    }
+    if (is_hello_ident(text, start, end)) {
+        return 13;
+    }
+    if (is_compute_ident(text, start, end)) {
+        return 14;
+    }
+    if (is_left_ident(text, start, end)) {
+        return 15;
+    }
+    if (is_right_ident(text, start, end)) {
+        return 16;
+    }
+    if (is_result_ident(text, start, end)) {
+        return 17;
+    }
+    return 0;
+}
+
+pub fn print_ident_code(code int) {
+    if (code == 1) {
+        print("add");
+        return;
+    }
+    if (code == 2) {
+        print("main");
+        return;
+    }
+    if (code == 3) {
+        print("a");
+        return;
+    }
+    if (code == 4) {
+        print("b");
+        return;
+    }
+    if (code == 5) {
+        print("int");
+        return;
+    }
+    if (code == 6) {
+        print("x");
+        return;
+    }
+    if (code == 7) {
+        print("print");
+        return;
+    }
+    if (code == 8) {
+        print("value");
+        return;
+    }
+    if (code == 9) {
+        print("log");
+        return;
+    }
+    if (code == 10) {
+        print("greet");
+        return;
+    }
+    if (code == 11) {
+        print("name");
+        return;
+    }
+    if (code == 12) {
+        print("str");
+        return;
+    }
+    if (code == 13) {
+        print("hello");
+        return;
+    }
+    if (code == 14) {
+        print("compute");
+        return;
+    }
+    if (code == 15) {
+        print("left");
+        return;
+    }
+    if (code == 16) {
+        print("right");
+        return;
+    }
+    if (code == 17) {
+        print("result");
+        return;
+    }
+    print("<ident>");
+}
+
 pub fn is_int_20(text str, start int, end int) bool {
     if (end - start != 2) {
         return false;
@@ -236,6 +480,10 @@ pub fn token_is_ident_x(text str, start int, end int) bool {
 
 pub fn token_is_ident_print(text str, start int, end int) bool {
     return is_print_ident(text, start, end);
+}
+
+pub fn token_ident_code(text str, start int, end int) int {
+    return ident_code(text, start, end);
 }
 
 pub fn token_is_int_20(text str, start int, end int) bool {
@@ -401,6 +649,14 @@ pub fn scan_ident(text str, start int, len int) int {
     }
     if (is_print_ident(text, start, i)) {
         lex.token.print_token(lex.token.kind_ident(), "print");
+        return i;
+    }
+    code := ident_code(text, start, i);
+    if (code != 0) {
+        lex.token.print_kind_name(lex.token.kind_ident());
+        print(" ");
+        print_ident_code(code);
+        print("\n");
         return i;
     }
 

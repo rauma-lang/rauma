@@ -1,0 +1,10 @@
+fn greet(name str) {
+    print("hello\n");
+    print(name);
+}
+
+fn main() {
+    value := 123;
+    greet("Minh");
+    print(value);
+}

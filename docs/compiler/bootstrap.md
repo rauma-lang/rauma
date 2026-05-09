@@ -136,6 +136,17 @@ token stream helpers.
 This is still not a full parser. `rmc` does not typecheck or codegen file
 contents yet, and the self-host fixed point remains v0.0.9.
 
+### v0.0.8l: Generalized Parser Summary
+
+v0.0.8l keeps `rmc parse <path>` file-driven but removes the single exact demo
+shape. The parser now computes summaries from the input for known function
+names, parameter lists, optional return types, return statements, variable
+statements, and simple call statements.
+
+AST storage is still summary-oriented, not heap-allocated. `rmc` still does not
+typecheck or codegen file contents, and the self-host fixed point remains
+v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

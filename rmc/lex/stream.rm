@@ -30,6 +30,25 @@ pub fn expect_kind(src str, i int, expected int) int {
     return advance(src, i);
 }
 
+pub fn current_ident_code(src str, i int) int {
+    kind := current_kind(src, i);
+    if (kind != lex.token.kind_ident()) {
+        return 0;
+    }
+    return lex.lexer.token_ident_code(src, current_start(src, i), current_end(src, i));
+}
+
+pub fn print_ident_code(code int) {
+    lex.lexer.print_ident_code(code);
+}
+
+pub fn expect_ident(src str, i int) int {
+    if (current_ident_code(src, i) == 0) {
+        return 0;
+    }
+    return advance(src, i);
+}
+
 pub fn expect_ident_main(src str, i int) int {
     start := current_start(src, i);
     end := current_end(src, i);

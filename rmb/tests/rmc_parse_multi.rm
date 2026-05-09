@@ -1,0 +1,8 @@
+fn log() {
+    print("log\n");
+}
+
+fn main() {
+    log();
+    print("done\n");
+}

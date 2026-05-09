@@ -1,0 +1,8 @@
+fn add(a int, b int) int {
+    return a + b;
+}
+
+fn compute(left int, right int) int {
+    result := add(left, right);
+    return result;
+}

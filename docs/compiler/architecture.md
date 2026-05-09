@@ -4,7 +4,7 @@
 
 RauMa uses a multi-stage compiler architecture designed for incremental development and self-hosting.
 
-### Bootstrap pipeline status (v0.0.8k)
+### Bootstrap pipeline status (v0.0.8l)
 
 The full pipeline (Resolver → HIR → MIR → multi-backend) is the long-term design.
 The v0.0.7 bootstrap compiler `rmb` deliberately skips most of these stages and
@@ -22,9 +22,10 @@ still emits C directly from checked AST chunks:
 - **The C backend in `rmb` is a bootstrap backend** — small, boring, and
   table-driven from the AST. It will eventually be replaced (or sit alongside)
   the richer pipeline once `rmc` takes over.
-- **v0.0.8k adds file-driven parsing in `rmc`.** `rmc parse <path>` reads a
-  file with `read_file` and parses the current small subset through token
-  stream helpers. It still does not check or compile file contents.
+- **v0.0.8l generalizes file-driven parser summaries in `rmc`.** `rmc parse
+  <path>` reads a file with `read_file`, parses the current small subset
+  through token stream helpers, and computes summary lines from the input. It
+  still does not check or compile file contents.
 
 ## Compilation Pipeline
 
@@ -178,14 +179,15 @@ build/debug/native/bin/main
 - Multiple backends
 - Self-hosting
 - Active development
-- In v0.0.8k, `rmc` has a minimal CLI skeleton plus early data modules:
+- In v0.0.8l, `rmc` has a minimal CLI skeleton plus early data modules:
   `source/span`, `source/source`, `lex/token`, `lex/lexer`, `ast/ast`,
   `lex/stream`, `parse/parser`, `diag/output`, `cli/args`, and `cli/file`.
 - The lexer scans hardcoded source bytes, and the parser consumes cursor-style
-  stream helpers. The parser handles a small file-driven subset covering
-  multiple functions, parameters, return, variable, and call statement shapes,
-  but there are no token arrays, real AST allocation, checker, codegen, or
-  self-hosting logic yet.
+  stream helpers. The parser handles a small file-driven subset and computes
+  summaries for multiple functions, parameters, optional return types, return,
+  variable, and call statement shapes, but AST storage is still minimal and
+  summary-oriented. There are no token arrays, checker, codegen, or self-hosting
+  logic yet.
 
 ## Self-Hosting Process
 
