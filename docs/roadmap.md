@@ -65,7 +65,9 @@
 - v0.0.8l rmc parser generalization ✓ DONE
 - v0.0.8m rmc token text handling ✓ DONE
 - v0.0.8n rmc check command ✓ DONE
-- v0.0.8o rmc emit-c bridge
+- v0.0.8o rmc emit-c bridge ✓ DONE
+- v0.0.8p rmc compile emitted C externally
+- v0.0.8q rmc build command bridge
 - Port compiler from C to RauMa
 - Implement self-hosting compiler core
 - Test compiler bootstrapping

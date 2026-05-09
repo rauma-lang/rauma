@@ -4,7 +4,7 @@
 
 RauMa uses a multi-stage compiler architecture designed for incremental development and self-hosting.
 
-### Bootstrap pipeline status (v0.0.8n)
+### Bootstrap pipeline status (v0.0.8o)
 
 The full pipeline (Resolver → HIR → MIR → multi-backend) is the long-term design.
 The v0.0.7 bootstrap compiler `rmb` deliberately skips most of these stages and
@@ -22,9 +22,9 @@ still emits C directly from checked AST chunks:
 - **The C backend in `rmb` is a bootstrap backend** — small, boring, and
   table-driven from the AST. It will eventually be replaced (or sit alongside)
   the richer pipeline once `rmc` takes over.
-- **v0.0.8n adds a lightweight `rmc check <path>` stage.** It reuses the parser
-  foundation to validate the supported subset and catch missing returns in
-  functions with explicit return types. It still does not compile file contents.
+- **v0.0.8o adds an `rmc emit-c <path>` bridge.** It reuses parser/checker
+  helpers and emits C text for tiny recognized source shapes. This is not the
+  full backend and `rmc` still does not compile or link file contents.
 
 ## Compilation Pipeline
 
@@ -178,17 +178,17 @@ build/debug/native/bin/main
 - Multiple backends
 - Self-hosting
 - Active development
-- In v0.0.8n, `rmc` has a minimal CLI skeleton plus early data modules:
+- In v0.0.8o, `rmc` has a minimal CLI skeleton plus early data modules:
   `source/span`, `source/source`, `lex/token`, `lex/lexer`, `ast/ast`,
-  `lex/stream`, `parse/parser`, `type/checker`, `diag/output`, `cli/args`, and
-  `cli/file`.
+  `lex/stream`, `parse/parser`, `type/checker`, `cgen/cgen`, `diag/output`,
+  `cli/args`, and `cli/file`.
 - The lexer scans hardcoded source bytes, and the parser consumes cursor-style
   stream helpers. The parser handles a small file-driven subset and computes
   summaries for multiple functions, parameters, optional return types, return,
   variable, and call statement shapes. Token text helpers print names from
   source spans, but AST storage is still minimal and summary-oriented. There
-  are no token arrays, full type inference, name resolution, codegen, or
-  self-hosting logic yet.
+  are no token arrays, full type inference, name resolution, HIR/MIR, full
+  backend architecture, or self-hosting logic yet.
 
 ## Self-Hosting Process
 

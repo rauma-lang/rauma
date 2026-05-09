@@ -4,12 +4,13 @@
 
 `rmc` is the future main RauMa compiler written in RauMa.
 
-v0.0.8n adds a lightweight file-driven checker. `rmc check <path>` reads a
-RauMa source file with `read_file`, reuses the parser foundation, and performs
-small structural checks for the supported subset.
+v0.0.8o adds the first emit-C bridge. `rmc emit-c <path>` reads a RauMa source
+file with `read_file`, runs the lightweight checker, and emits simple C text for
+tiny recognized source shapes.
 
 `rmc` still does not allocate a full AST, infer types, resolve names, codegen,
-implement HIR/MIR, packages, std modules, or self-host.
+compile or link generated C, implement HIR/MIR, packages, std modules, or
+self-host.
 
 ## Current Source Layout
 
@@ -34,6 +35,8 @@ rmc/
 │   └── parser.rm
 ├── type/
 │   └── checker.rm
+├── cgen/
+│   └── cgen.rm
 └── diag/
     └── output.rm
 ```
@@ -48,6 +51,7 @@ use cli.file;
 use lex.lexer;
 use parse.parser;
 use type.checker;
+use cgen.cgen;
 ```
 
 The executable dispatches commands through `fn main(args Args)`:
@@ -61,6 +65,7 @@ demo-file   read a file and print basic info
 lex         lex a RauMa source file
 parse       parse a RauMa source file
 check       check a RauMa source file
+emit-c      emit C for a RauMa source file
 ```
 
 `demo-file <path>` only reads bytes and prints `file bytes` plus `first byte`.
@@ -68,8 +73,9 @@ check       check a RauMa source file
 current small subset and prints a summary using names from the source text.
 `check <path>` performs lightweight structural validation only: parse success,
 non-empty function set, and missing-return checks for functions with explicit
-return types. It does not perform type inference, name resolution, or codegen.
-The lexer and parser demos still run against `source.source.demo_text()`.
+return types. `emit-c <path>` emits C to stdout only for tiny recognized
+checked shapes. It does not compile or link generated C. The lexer and parser
+demos still run against `source.source.demo_text()`.
 
 The parser subset currently covers:
 
@@ -103,5 +109,5 @@ The binary path is still entry-stem based, so `rmc/main.rm` builds to
 
 ## Later v0.0.8 Work
 
-v0.0.8o should start the emit-C bridge. The self-host fixed point
-remains a later milestone.
+v0.0.8p should compile emitted C externally. The self-host fixed point remains
+a later milestone.

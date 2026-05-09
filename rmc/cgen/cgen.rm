@@ -1,0 +1,215 @@
+use lex.token;
+use lex.stream;
+use type.checker;
+
+pub fn expect_ident_text(src str, i int, text str) int {
+    if (lex.stream.current_kind(src, i) != lex.token.kind_ident()) {
+        return 0;
+    }
+    if (lex.stream.token_text_eq(src, lex.stream.token_start(src, i), lex.stream.token_end(src, i), text)) {
+        return lex.stream.advance(src, i);
+    }
+    return 0;
+}
+
+pub fn expect_int_text(src str, i int, text str) int {
+    if (lex.stream.current_kind(src, i) != lex.token.kind_int()) {
+        return 0;
+    }
+    if (lex.stream.token_text_eq(src, lex.stream.token_start(src, i), lex.stream.token_end(src, i), text)) {
+        return lex.stream.advance(src, i);
+    }
+    return 0;
+}
+
+pub fn expect_string_text(src str, i int, text str) int {
+    if (lex.stream.current_kind(src, i) != lex.token.kind_string()) {
+        return 0;
+    }
+    if (lex.stream.token_text_eq(src, lex.stream.token_start(src, i), lex.stream.token_end(src, i), text)) {
+        return lex.stream.advance(src, i);
+    }
+    return 0;
+}
+
+pub fn can_emit_hello(src str) bool {
+    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "main");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "print");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) { return false; }
+    pos = expect_string_text(src, pos, "\"hello\\n\"");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_eof());
+    return pos != 0;
+}
+
+pub fn can_emit_add(src str) bool {
+    pos := lex.stream.expect_kind(src, 0, lex.token.kind_kw_fn());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "add");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "a");
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "int");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "b");
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "int");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "int");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_return());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "a");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "b");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "main");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "x");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_colon_eq());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "add");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) { return false; }
+    pos = expect_int_text(src, pos, "20");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_comma());
+    if (pos == 0) { return false; }
+    pos = expect_int_text(src, pos, "22");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "print");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "x");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    if (pos == 0) { return false; }
+    pos = expect_ident_text(src, pos, "print");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) { return false; }
+    pos = expect_string_text(src, pos, "\"\\n\"");
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+    if (pos == 0) { return false; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_eof());
+    return pos != 0;
+}
+
+pub fn emit_header() {
+    print("#include <stdint.h>\n");
+    print("#include <stddef.h>\n");
+    print("#include <stdbool.h>\n");
+    print("#include <stdio.h>\n");
+    print("#include <string.h>\n");
+    print("\n");
+    print("typedef struct {\n");
+    print("    const char *ptr;\n");
+    print("    int64_t len;\n");
+    print("} RmStr;\n");
+    print("\n");
+    print("static RmStr rm_str(const char *s) {\n");
+    print("    RmStr out;\n");
+    print("    out.ptr = s;\n");
+    print("    out.len = (int64_t)strlen(s);\n");
+    print("    return out;\n");
+    print("}\n");
+    print("\n");
+    print("static void rm_print(RmStr s) {\n");
+    print("    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n");
+    print("}\n");
+    print("\n");
+}
+
+pub fn emit_hello() {
+    emit_header();
+    print("int main(void) {\n");
+    print("    rm_print(rm_str(\"hello\\n\"));\n");
+    print("    return 0;\n");
+    print("}\n");
+}
+
+pub fn emit_add() {
+    emit_header();
+    print("static int64_t rm_fn_add(int64_t a, int64_t b) {\n");
+    print("    return a + b;\n");
+    print("}\n");
+    print("\n");
+    print("int main(void) {\n");
+    print("    int64_t x = rm_fn_add(20, 22);\n");
+    print("    printf(\"%lld\", (long long)x);\n");
+    print("    rm_print(rm_str(\"\\n\"));\n");
+    print("    return 0;\n");
+    print("}\n");
+}
+
+pub fn run_file(text str) {
+    if (type.checker.can_check(text) == false) {
+        print("emit failed: check failed\n");
+        return;
+    }
+
+    if (can_emit_hello(text)) {
+        emit_hello();
+        return;
+    }
+
+    if (can_emit_add(text)) {
+        emit_add();
+        return;
+    }
+
+    print("emit failed: unsupported source\n");
+}

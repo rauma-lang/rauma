@@ -11,4 +11,5 @@ pub fn print_help() {
     print("  lex         lex a RauMa source file\n");
     print("  parse       parse a RauMa source file\n");
     print("  check       check a RauMa source file\n");
+    print("  emit-c      emit C for a RauMa source file\n");
 }

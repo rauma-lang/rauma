@@ -5,6 +5,7 @@ use cli.file;
 use lex.lexer;
 use parse.parser;
 use type.checker;
+use cgen.cgen;
 
 fn main(args Args) {
     if (args_len(args) <= 1) {
@@ -88,6 +89,22 @@ fn main(args Args) {
         }
 
         type.checker.run_file(args_get(args, 2), text);
+        return;
+    }
+
+    if (str_eq(cmd, "emit-c")) {
+        if (args_len(args) < 3) {
+            print("usage: rmc emit-c <path>\n");
+            return;
+        }
+
+        text := read_file(args_get(args, 2));
+        if (str_len(text) == 0) {
+            print("empty or unreadable file\n");
+            return;
+        }
+
+        cgen.cgen.run_file(text);
         return;
     }
 

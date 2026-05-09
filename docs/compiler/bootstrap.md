@@ -167,6 +167,15 @@ This is not full type checking. There is no type inference, name resolution,
 symbol table, HIR/MIR, or code generation in `rmc` yet. The self-host fixed
 point remains v0.0.9.
 
+### v0.0.8o: emit-c Bridge
+
+v0.0.8o adds `rmc emit-c <path>`. The command reads a file, runs the
+lightweight checker, and emits C text to stdout for tiny recognized source
+shapes.
+
+This is bridge output, not the full backend. `rmc` still does not compile or
+link generated C by itself, and the self-host fixed point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

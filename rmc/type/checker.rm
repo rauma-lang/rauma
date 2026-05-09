@@ -1,19 +1,30 @@
 use parse.parser;
 
+pub fn can_check(text str) bool {
+    if (parse.parser.can_parse_file(text) == false) {
+        return false;
+    }
+
+    if (parse.parser.count_functions(text) <= 0) {
+        return false;
+    }
+
+    if (parse.parser.has_missing_return_for_typed_fn(text)) {
+        return false;
+    }
+
+    return true;
+}
+
 pub fn run_file(path str, text str) {
     print("rmc check file:\n");
 
-    if (parse.parser.can_parse_file(text) == false) {
+    if (can_check(text) == false) {
         print("check failed: parser error\n");
         return;
     }
 
     count := parse.parser.count_functions(text);
-    if (count <= 0) {
-        print("check failed: no functions\n");
-        return;
-    }
-
     if (parse.parser.has_missing_return_for_typed_fn(text)) {
         print("check failed: missing return\n");
         return;
