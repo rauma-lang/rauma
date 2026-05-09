@@ -4,7 +4,7 @@
 
 RauMa uses a multi-stage compiler architecture designed for incremental development and self-hosting.
 
-### Bootstrap pipeline status (v0.0.8t)
+### Bootstrap pipeline status (v0.0.8w)
 
 The full pipeline (Resolver → HIR → MIR → multi-backend) is the long-term design.
 The v0.0.7 bootstrap compiler `rmb` deliberately skips most of these stages and
@@ -70,6 +70,11 @@ still emits C directly from checked AST chunks:
   and conditionals. `rmc` can build the tool and the produced executable handles
   multiple commands, but this remains bridge output rather than HIR/MIR or a
   full backend.
+
+  v0.0.8w consolidates the bridge emitter by splitting common C prelude and
+  wrapper emission into smaller RauMa helpers and adding regression fixtures for
+  the supported single-file subset. This is cleanup before self-build readiness
+  work, not a full backend.
 
 ## Compilation Pipeline
 
@@ -223,7 +228,7 @@ build/debug/native/bin/main
 - Multiple backends
 - Self-hosting
 - Active development
-- In v0.0.8v, `rmc` has a minimal CLI skeleton plus early data modules:
+- In v0.0.8w, `rmc` has a minimal CLI skeleton plus early data modules:
   `source/span`, `source/source`, `lex/token`, `lex/lexer`, `ast/ast`,
   `lex/stream`, `parse/parser`, `type/checker`, `cgen/cgen`, `diag/output`,
   `cli/args`, and `cli/file`.
@@ -239,7 +244,9 @@ build/debug/native/bin/main
   example, but still has no `break`/`continue`, structs, multi-file
   compilation, HIR/MIR, fixed-point self-hosting, or full backend. It can build
   the tiny self-build target and a small self-build CLI tool target, but it
-  still cannot build itself.
+  still cannot build itself. The bridge emitter has consolidated prelude and
+  wrapper helpers, but it remains direct token-stream C emission rather than a
+  HIR/MIR-backed backend.
 
 ## Self-Hosting Process
 

@@ -39,6 +39,11 @@ binary handles `version`, `score`, no-arg help, and unknown-command dispatch.
 This extends the bridge subset with the minimal `Args`, `args_len`, `args_get`,
 `str_eq`, void helper, and `return;` shapes needed by the target.
 
+v0.0.8w consolidates the bridge emitter. The generated C prelude and function
+wrappers are now split into smaller helpers, and new regression fixtures cover
+Args dispatch, simple math calls, control flow, and `+=` emission so the bridge
+subset is less fragile.
+
 The pipeline is now:
 
 ```bash
@@ -56,6 +61,24 @@ gcc -std=c11 -Wall -Wextra -Werror -pedantic out.c -o out
 
 `rmc` still does not allocate a full AST, infer types, resolve names, do full
 codegen, implement HIR/MIR, packages, std modules, or self-host.
+
+The current single-file bridge build subset supports:
+
+- functions with `int` parameters/returns plus void helpers
+- `fn main()` and `fn main(args Args)`
+- `args_len`, `args_get`, and `str_eq` for command dispatch
+- int locals from literals, calls, and simple `+` expressions
+- one local string command variable from `args_get`
+- assignment with `=` and `+=`
+- `return expr;` and `return;`
+- function call statements
+- direct `print("...")` and `print(int_value)`
+- integer comparisons with `==`, `!=`, `<`, `>`, `<=`, `>=`
+- `if`/`else` and `while`
+
+Still unsupported: imports, multi-file builds, chunk layout in `rmc`, structs,
+arrays/slices, general string variables, string concatenation, break/continue,
+match/defer/optional/error syntax, HIR/MIR, and fixed-point self-hosting.
 
 ## Current Source Layout
 
@@ -233,6 +256,5 @@ parse. On Windows, use bash (the redirection above is plain `>`), or invoke via
 
 ## Later v0.0.8 Work
 
-v0.0.8w should consolidate the current `rmc build` subset and reduce
-template-specific build logic after the self-build CLI tool target is verified.
-Self-host fixed point remains v0.0.9.
+v0.0.8x should audit self-build readiness after bridge consolidation is
+verified. Self-host fixed point remains v0.0.9.

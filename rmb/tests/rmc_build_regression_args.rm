@@ -1,0 +1,19 @@
+fn show_version() {
+    print("regression 0.0.8w\n");
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        print("missing\n");
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "version")) {
+        show_version();
+        return;
+    }
+
+    print("unknown\n");
+}

@@ -328,6 +328,18 @@ This is proto self-build only. `rmc` still does not build itself, does not have
 multi-file chunk builds, and does not have HIR/MIR or a full backend.
 v0.0.9 remains the fixed-point milestone.
 
+### v0.0.8w: Bridge Consolidation
+
+v0.0.8w consolidates the bridge emitter before self-build readiness work. The
+generated C prelude and function wrappers are split into smaller RauMa helpers,
+and regression fixtures cover Args dispatch, simple math calls, control flow,
+and compound assignment emission.
+
+This is cleanup of the current single-file bridge. It does not introduce the
+self-host fixed point, does not make `rmc` build itself, and still has no
+multi-file chunk graph, HIR/MIR, or full backend. v0.0.9 remains the
+fixed-point milestone.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

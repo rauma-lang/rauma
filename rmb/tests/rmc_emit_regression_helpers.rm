@@ -1,0 +1,6 @@
+fn main() {
+    value := 41;
+    value += 1;
+    print(value);
+    print("\n");
+}

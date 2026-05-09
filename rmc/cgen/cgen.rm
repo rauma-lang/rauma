@@ -24,8 +24,32 @@ pub fn token_text(src str, i int) str {
     return lex.stream.token_text_slice(src, lex.stream.token_start(src, i), lex.stream.token_end(src, i));
 }
 
+pub fn emit_c_includes() str {
+    return "#include <stdint.h>\n#include <stddef.h>\n#include <stdbool.h>\n#include <stdio.h>\n#include <string.h>\n\n";
+}
+
+pub fn emit_runtime_types() str {
+    return "typedef struct {\n    const char *ptr;\n    int64_t len;\n} RmStr;\n\ntypedef struct {\n    int argc;\n    char **argv;\n} RmArgs;\n\n";
+}
+
+pub fn emit_runtime_strings() str {
+    return "static RmStr rm_str(const char *s) {\n    RmStr out;\n    out.ptr = s;\n    out.len = (int64_t)strlen(s);\n    return out;\n}\n\nstatic bool rm_str_eq(RmStr a, RmStr b) {\n    if (a.len != b.len) return false;\n    return memcmp(a.ptr, b.ptr, (size_t)a.len) == 0;\n}\n\nstatic void rm_print(RmStr s) {\n    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n}\n\n";
+}
+
+pub fn emit_runtime_args() str {
+    return "static int64_t rm_args_len(RmArgs args) {\n    return (int64_t)args.argc;\n}\n\nstatic RmStr rm_args_get(RmArgs args, int64_t index) {\n    return rm_str(args.argv[index]);\n}\n\n";
+}
+
+pub fn emit_prelude_to_string() str {
+    out := emit_c_includes();
+    out = str_concat(out, emit_runtime_types());
+    out = str_concat(out, emit_runtime_strings());
+    out = str_concat(out, emit_runtime_args());
+    return out;
+}
+
 pub fn emit_header_to_string() str {
-    return "#include <stdint.h>\n#include <stddef.h>\n#include <stdbool.h>\n#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    const char *ptr;\n    int64_t len;\n} RmStr;\n\ntypedef struct {\n    int argc;\n    char **argv;\n} RmArgs;\n\nstatic RmStr rm_str(const char *s) {\n    RmStr out;\n    out.ptr = s;\n    out.len = (int64_t)strlen(s);\n    return out;\n}\n\nstatic bool rm_str_eq(RmStr a, RmStr b) {\n    if (a.len != b.len) return false;\n    return memcmp(a.ptr, b.ptr, (size_t)a.len) == 0;\n}\n\nstatic int64_t rm_args_len(RmArgs args) {\n    return (int64_t)args.argc;\n}\n\nstatic RmStr rm_args_get(RmArgs args, int64_t index) {\n    return rm_str(args.argv[index]);\n}\n\nstatic void rm_print(RmStr s) {\n    fwrite(s.ptr, 1, (size_t)s.len, stdout);\n}\n\n";
+    return emit_prelude_to_string();
 }
 
 pub fn parse_primary_end(src str, i int) int {
@@ -926,6 +950,37 @@ pub fn emit_params_to_c(src str, i int) str {
     return fail_text();
 }
 
+pub fn emit_main_start(main_args bool) str {
+    out := "";
+    if (main_args) {
+        out = str_concat(out, "int main(int argc, char **argv) {\n");
+        out = str_concat(out, "    RmArgs args;\n");
+        out = str_concat(out, "    args.argc = argc;\n");
+        out = str_concat(out, "    args.argv = argv;\n");
+    } else {
+        out = str_concat(out, "int main(void) {\n");
+    }
+    out = str_concat(out, "    (void)rm_str_eq;\n");
+    out = str_concat(out, "    (void)rm_args_len;\n");
+    out = str_concat(out, "    (void)rm_args_get;\n");
+    return out;
+}
+
+pub fn emit_main_end() str {
+    return "    return 0;\n}\n";
+}
+
+pub fn emit_fn_prefix(name str, has_return bool) str {
+    out := "";
+    if (has_return) {
+        out = str_concat(out, "static int64_t rm_fn_");
+    } else {
+        out = str_concat(out, "static void rm_fn_");
+    }
+    out = str_concat(out, name);
+    return out;
+}
+
 pub fn params_are_main_args(src str, i int) bool {
     pos := i;
     if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
@@ -1062,31 +1117,13 @@ pub fn emit_fn_to_c(src str, i int) str {
             return "";
         }
 
-        out := "";
-        if (main_args) {
-            out = str_concat(out, "int main(int argc, char **argv) {\n");
-            out = str_concat(out, "    RmArgs args;\n");
-            out = str_concat(out, "    args.argc = argc;\n");
-            out = str_concat(out, "    args.argv = argv;\n");
-        } else {
-            out = str_concat(out, "int main(void) {\n");
-        }
-        out = str_concat(out, "    (void)rm_str_eq;\n");
-        out = str_concat(out, "    (void)rm_args_len;\n");
-        out = str_concat(out, "    (void)rm_args_get;\n");
+        out := emit_main_start(main_args);
         out = str_concat(out, body);
-        out = str_concat(out, "    return 0;\n");
-        out = str_concat(out, "}\n");
+        out = str_concat(out, emit_main_end());
         return out;
     }
 
-    out := "";
-    if (has_return) {
-        out = str_concat(out, "static int64_t rm_fn_");
-    } else {
-        out = str_concat(out, "static void rm_fn_");
-    }
-    out = str_concat(out, name);
+    out := emit_fn_prefix(name, has_return);
     out = str_concat(out, "(");
     out = str_concat(out, params);
     out = str_concat(out, ") {\n");

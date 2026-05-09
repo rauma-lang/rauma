@@ -1,0 +1,9 @@
+fn inc(x int) int {
+    return x + 1;
+}
+
+fn main() {
+    value := inc(41);
+    print(value);
+    print("\n");
+}

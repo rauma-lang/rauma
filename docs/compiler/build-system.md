@@ -91,11 +91,16 @@ v0.0.8r adds `rmc build <path>`, which wraps the full emit‑c→write‑file→
 v0.0.8s expands that bridge subset while keeping it single-file only. Current
 `rmc build` support is limited to:
 
+- `fn main()` and `fn main(args Args)`
+- `Args` command dispatch with `args_len`, `args_get`, and `str_eq`
 - direct string literal prints from `main`
 - local int variables initialized from int literals or simple calls
+- one local string command variable from `args_get`
 - printing local int variables
 - simple int functions with zero, one, or two int parameters
+- void helper functions and function call statements
 - return literals, return identifiers, and binary `+` returns
+- `return;` in void helpers / command dispatch
 - assignment with `=`
 - compound assignment with `+=`
 - simple integer comparisons
@@ -103,8 +108,8 @@ v0.0.8s expands that bridge subset while keeping it single-file only. Current
 - `while`
 
 Current limitations remain explicit: no `break`/`continue`, no structs, no
-string variables, no multi-file rmc build, no chunk layout in `rmc`, and no
-HIR/MIR or full backend.
+general string variables or string concatenation, no imports, no multi-file rmc
+build, no chunk layout in `rmc`, and no HIR/MIR or full backend.
 
 v0.0.8u adds a tiny proto self-build target:
 
@@ -132,6 +137,12 @@ The generated tool uses `Args` command dispatch, helper functions, loops, and
 conditionals, but it still flows through the same single-file bridge output
 path. There is still no `rmc` chunk layout, multi-file build graph, package
 manager, HIR/MIR, or fixed-point self-hosting.
+
+v0.0.8w consolidates the bridge implementation without expanding the language
+surface. The emitted C prelude and function wrappers are split into smaller
+helpers, and regression fixtures cover the supported Args, math, control-flow,
+and compound-assignment shapes. The build output path remains
+`build/rmc_build_out.c` / `build/rmc_build_out`.
 
 ## Chunk-Based Architecture
 
