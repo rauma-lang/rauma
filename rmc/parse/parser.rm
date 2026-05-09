@@ -46,6 +46,55 @@ pub fn parse_expr(src str, i int) int {
     return pos;
 }
 
+pub fn is_compare_kind(kind int) bool {
+    if (kind == lex.token.kind_eq_eq()) {
+        return true;
+    }
+    if (kind == lex.token.kind_bang_eq()) {
+        return true;
+    }
+    if (kind == lex.token.kind_lt()) {
+        return true;
+    }
+    if (kind == lex.token.kind_gt()) {
+        return true;
+    }
+    if (kind == lex.token.kind_lt_eq()) {
+        return true;
+    }
+    if (kind == lex.token.kind_gt_eq()) {
+        return true;
+    }
+    return false;
+}
+
+pub fn parse_condition(src str, i int) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return 0;
+    }
+
+    pos = parse_expr(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+
+    if (is_compare_kind(lex.stream.current_kind(src, pos)) == false) {
+        return 0;
+    }
+    pos = lex.stream.advance(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+
+    pos = parse_expr(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+
+    return lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+}
+
 pub fn count_args(src str, i int) int {
     pos := i;
     count := 0;
@@ -221,16 +270,140 @@ pub fn parse_call_stmt(src str, i int, emit bool) int {
     return pos;
 }
 
+pub fn parse_assign_stmt(src str, i int, emit bool) int {
+    if (lex.stream.current_kind(src, i) != lex.token.kind_ident()) {
+        return 0;
+    }
+
+    pos := lex.stream.expect_ident(src, i);
+    if (pos == 0) {
+        return 0;
+    }
+
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_eq()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_eq());
+    } else {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_plus_eq()) {
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus_eq());
+        } else {
+            return 0;
+        }
+    }
+
+    if (pos == 0) {
+        return 0;
+    }
+
+    pos = parse_expr(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+    if (pos == 0) {
+        return 0;
+    }
+
+    if (emit) {
+        print("  stmt assign\n");
+    }
+
+    return pos;
+}
+
+pub fn parse_block(src str, i int, emit bool) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_l_brace());
+    if (pos == 0) {
+        return 0;
+    }
+
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
+            return 0;
+        }
+        pos = parse_stmt(src, pos, emit);
+        if (pos == 0) {
+            return 0;
+        }
+    }
+
+    return lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+}
+
+pub fn parse_if_stmt(src str, i int, emit bool) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_if());
+    if (pos == 0) {
+        return 0;
+    }
+
+    pos = parse_condition(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+
+    if (emit) {
+        print("  stmt if\n");
+    }
+
+    pos = parse_block(src, pos, emit);
+    if (pos == 0) {
+        return 0;
+    }
+
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_else()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_else());
+        if (pos == 0) {
+            return 0;
+        }
+        pos = parse_block(src, pos, emit);
+        if (pos == 0) {
+            return 0;
+        }
+    }
+
+    return pos;
+}
+
+pub fn parse_while_stmt(src str, i int, emit bool) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_while());
+    if (pos == 0) {
+        return 0;
+    }
+
+    pos = parse_condition(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+
+    if (emit) {
+        print("  stmt while\n");
+    }
+
+    return parse_block(src, pos, emit);
+}
+
 pub fn parse_stmt(src str, i int, emit bool) int {
     kind := lex.stream.current_kind(src, i);
     if (kind == lex.token.kind_kw_return()) {
         return parse_return_stmt(src, i, emit);
+    }
+    if (kind == lex.token.kind_kw_if()) {
+        return parse_if_stmt(src, i, emit);
+    }
+    if (kind == lex.token.kind_kw_while()) {
+        return parse_while_stmt(src, i, emit);
     }
 
     if (kind == lex.token.kind_ident()) {
         next := lex.stream.advance(src, i);
         if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
             return parse_var_stmt(src, i, emit);
+        }
+        if (lex.stream.current_kind(src, next) == lex.token.kind_eq()) {
+            return parse_assign_stmt(src, i, emit);
+        }
+        if (lex.stream.current_kind(src, next) == lex.token.kind_plus_eq()) {
+            return parse_assign_stmt(src, i, emit);
         }
         if (lex.stream.current_kind(src, next) == lex.token.kind_l_paren()) {
             return parse_call_stmt(src, i, emit);
@@ -381,22 +554,7 @@ pub fn parse_fn_decl(src str, i int, emit bool) int {
         parse_params(src, param_start, true);
     }
 
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
-    if (pos == 0) {
-        return 0;
-    }
-
-    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
-        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
-            return 0;
-        }
-        pos = parse_stmt(src, pos, emit);
-        if (pos == 0) {
-            return 0;
-        }
-    }
-
-    return lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+    return parse_block(src, pos, emit);
 }
 
 pub fn parse_program(src str, emit bool) int {

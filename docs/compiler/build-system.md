@@ -96,10 +96,15 @@ v0.0.8s expands that bridge subset while keeping it single-file only. Current
 - printing local int variables
 - simple int functions with zero, one, or two int parameters
 - return literals, return identifiers, and binary `+` returns
+- assignment with `=`
+- compound assignment with `+=`
+- simple integer comparisons
+- `if` / `else`
+- `while`
 
-Current limitations remain explicit: no `if`/`while`, no structs, no string
-variables, no multi-file rmc build, no chunk layout in `rmc`, and no HIR/MIR or
-full backend.
+Current limitations remain explicit: no `break`/`continue`, no structs, no
+string variables, no multi-file rmc build, no chunk layout in `rmc`, and no
+HIR/MIR or full backend.
 
 ## Chunk-Based Architecture
 

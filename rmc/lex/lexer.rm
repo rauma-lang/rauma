@@ -75,6 +75,39 @@ pub fn is_return_keyword(text str, start int, end int) bool {
     return false;
 }
 
+pub fn is_if_keyword(text str, start int, end int) bool {
+    if (end - start != 2) {
+        return false;
+    }
+    if (str_byte(text, start) == 105 && str_byte(text, start + 1) == 102) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_else_keyword(text str, start int, end int) bool {
+    if (end - start != 4) {
+        return false;
+    }
+    if (str_byte(text, start) == 101 && str_byte(text, start + 1) == 108 &&
+        str_byte(text, start + 2) == 115 && str_byte(text, start + 3) == 101) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_while_keyword(text str, start int, end int) bool {
+    if (end - start != 5) {
+        return false;
+    }
+    if (str_byte(text, start) == 119 && str_byte(text, start + 1) == 104 &&
+        str_byte(text, start + 2) == 105 && str_byte(text, start + 3) == 108 &&
+        str_byte(text, start + 4) == 101) {
+        return true;
+    }
+    return false;
+}
+
 pub fn is_add_ident(text str, start int, end int) bool {
     if (end - start != 3) {
         return false;
@@ -532,6 +565,21 @@ pub fn scan_string_end(text str, start int, len int) int {
 
 pub fn punct_kind(text str, start int, len int) int {
     b := str_byte(text, start);
+    if (b == 61 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        return lex.token.kind_eq_eq();
+    }
+    if (b == 33 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        return lex.token.kind_bang_eq();
+    }
+    if (b == 60 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        return lex.token.kind_lt_eq();
+    }
+    if (b == 62 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        return lex.token.kind_gt_eq();
+    }
+    if (b == 43 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        return lex.token.kind_plus_eq();
+    }
     if (b == 40) {
         return lex.token.kind_l_paren();
     }
@@ -556,6 +604,12 @@ pub fn punct_kind(text str, start int, len int) int {
     if (b == 61) {
         return lex.token.kind_eq();
     }
+    if (b == 60) {
+        return lex.token.kind_lt();
+    }
+    if (b == 62) {
+        return lex.token.kind_gt();
+    }
     if (b == 58 && start + 1 < len && str_byte(text, start + 1) == 61) {
         return lex.token.kind_colon_eq();
     }
@@ -577,6 +631,15 @@ pub fn next_kind(text str, start int) int {
         }
         if (is_return_keyword(text, pos, end)) {
             return lex.token.kind_kw_return();
+        }
+        if (is_if_keyword(text, pos, end)) {
+            return lex.token.kind_kw_if();
+        }
+        if (is_else_keyword(text, pos, end)) {
+            return lex.token.kind_kw_else();
+        }
+        if (is_while_keyword(text, pos, end)) {
+            return lex.token.kind_kw_while();
         }
         return lex.token.kind_ident();
     }
@@ -609,6 +672,21 @@ pub fn next_end(text str, start int) int {
     if (b == 58 && pos + 1 < len && str_byte(text, pos + 1) == 61) {
         return pos + 2;
     }
+    if (b == 61 && pos + 1 < len && str_byte(text, pos + 1) == 61) {
+        return pos + 2;
+    }
+    if (b == 33 && pos + 1 < len && str_byte(text, pos + 1) == 61) {
+        return pos + 2;
+    }
+    if (b == 60 && pos + 1 < len && str_byte(text, pos + 1) == 61) {
+        return pos + 2;
+    }
+    if (b == 62 && pos + 1 < len && str_byte(text, pos + 1) == 61) {
+        return pos + 2;
+    }
+    if (b == 43 && pos + 1 < len && str_byte(text, pos + 1) == 61) {
+        return pos + 2;
+    }
     return pos + 1;
 }
 
@@ -621,6 +699,18 @@ pub fn scan_ident(text str, start int, len int) int {
     }
     if (is_return_keyword(text, start, i)) {
         lex.token.print_token(lex.token.kind_kw_return(), "return");
+        return i;
+    }
+    if (is_if_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_if(), "if");
+        return i;
+    }
+    if (is_else_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_else(), "else");
+        return i;
+    }
+    if (is_while_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_while(), "while");
         return i;
     }
     if (is_add_ident(text, start, i)) {
@@ -706,6 +796,26 @@ pub fn scan_string(text str, start int, len int) int {
 
 pub fn scan_punct(text str, start int, len int) int {
     b := str_byte(text, start);
+    if (b == 61 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        lex.token.print_token(lex.token.kind_eq_eq(), "==");
+        return start + 2;
+    }
+    if (b == 33 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        lex.token.print_token(lex.token.kind_bang_eq(), "!=");
+        return start + 2;
+    }
+    if (b == 60 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        lex.token.print_token(lex.token.kind_lt_eq(), "<=");
+        return start + 2;
+    }
+    if (b == 62 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        lex.token.print_token(lex.token.kind_gt_eq(), ">=");
+        return start + 2;
+    }
+    if (b == 43 && start + 1 < len && str_byte(text, start + 1) == 61) {
+        lex.token.print_token(lex.token.kind_plus_eq(), "+=");
+        return start + 2;
+    }
     if (b == 40) {
         lex.token.print_token(lex.token.kind_l_paren(), "(");
         return start + 1;
@@ -736,6 +846,14 @@ pub fn scan_punct(text str, start int, len int) int {
     }
     if (b == 61) {
         lex.token.print_token(lex.token.kind_eq(), "=");
+        return start + 1;
+    }
+    if (b == 60) {
+        lex.token.print_token(lex.token.kind_lt(), "<");
+        return start + 1;
+    }
+    if (b == 62) {
+        lex.token.print_token(lex.token.kind_gt(), ">");
         return start + 1;
     }
     if (b == 58 && start + 1 < len && str_byte(text, start + 1) == 61) {

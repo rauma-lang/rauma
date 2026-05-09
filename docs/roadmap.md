@@ -70,7 +70,8 @@
 - v0.0.8q runtime bridge primitives ✓ DONE
 - v0.0.8r rmc build command bridge ✓ DONE
 - v0.0.8s rmc build subset expansion ✓ DONE
-- v0.0.8t rmc control-flow build subset
+- v0.0.8t rmc control-flow build subset ✓ DONE
+- v0.0.8u rmc self-build preparation
 - Port compiler from C to RauMa
 - Implement self-hosting compiler core
 - Test compiler bootstrapping

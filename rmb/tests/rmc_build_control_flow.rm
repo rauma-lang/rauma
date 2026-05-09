@@ -1,0 +1,16 @@
+fn main() {
+    x := 0;
+
+    while (x < 3) {
+        print(x);
+        x += 1;
+    }
+
+    print("\n");
+
+    if (x == 3) {
+        print("ok\n");
+    } else {
+        print("bad\n");
+    }
+}

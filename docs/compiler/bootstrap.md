@@ -280,6 +280,21 @@ This is still bridge-style code generation. `rmc` does not have HIR/MIR, a full
 backend, multi-file chunk builds, or the self-host fixed point yet. v0.0.9
 remains the fixed-point milestone.
 
+### v0.0.8t: Control-Flow Build Subset
+
+v0.0.8t adds the first control-flow support to the single-file `rmc build`
+bridge. The RauMa-written emitter now handles:
+
+- simple integer comparisons
+- assignment with `=`
+- compound assignment with `+=`
+- `if` / `else`
+- `while`
+
+This remains bridge-style direct C emission over the token stream. It is not a
+full backend and still has no HIR/MIR, chunk layout in `rmc`, package manager,
+or self-host fixed point. v0.0.9 remains the fixed-point milestone.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

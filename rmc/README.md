@@ -20,8 +20,12 @@ on Windows), and prints the result.
 
 v0.0.8s expands that bridge subset. `rmc emit-c` and `rmc build` now recognize
 several simple single-file integer/function patterns instead of only two fixed
-templates. Multi-file/chunk builds, HIR/MIR, packages, control flow, structs,
-and self-host remain future milestones.
+templates.
+
+v0.0.8t adds minimal bridge-style control flow. `rmc emit-c` and `rmc build`
+now handle simple integer comparisons, assignment, `+=`, `if`/`else`, and
+`while` for small single-file imperative programs. Multi-file/chunk builds,
+HIR/MIR, packages, structs, and self-host remain future milestones.
 
 The pipeline is now:
 
@@ -117,10 +121,16 @@ The supported `rmc build` / `rmc emit-c` subset in v0.0.8s includes:
 - `return <identifier>`
 - `return <identifier> + <identifier>`
 - simple calls with int literals, identifiers, or zero-argument calls as args
+- assignment with `=`
+- compound assignment with `+=`
+- integer comparisons: `==`, `!=`, `<`, `>`, `<=`, `>=`
+- `if`/`else`
+- `while`
 
 The bridge still emits C directly from cursor scans over the source text. It is
-not a full backend, does not store a heap AST, and does not support `if`,
-`while`, structs, string variables, multi-file builds, or chunk layout in `rmc`.
+not a full backend, does not store a heap AST, and does not support
+`break`/`continue`, bool variables, structs, string variables, multi-file
+builds, or chunk layout in `rmc`.
 
 The parser subset currently covers:
 
@@ -131,10 +141,13 @@ param_list  = param ("," param)*
 param       = ident type_name
 return_type = type_name
 block       = "{" stmt* "}"
-stmt        = return_stmt | var_stmt | call_stmt
+stmt        = return_stmt | var_stmt | assign_stmt | call_stmt | if_stmt | while_stmt
 return_stmt = "return" expr ";"
 var_stmt    = ident ":=" expr ";"
+assign_stmt = ident ("=" | "+=") expr ";"
 call_stmt   = ident "(" arg_list? ")" ";"
+if_stmt     = "if" "(" expr compare expr ")" block ("else" block)?
+while_stmt  = "while" "(" expr compare expr ")" block
 expr        = call_expr | primary ("+" primary)?
 primary     = ident | int | string
 ```
@@ -186,6 +199,5 @@ parse. On Windows, use bash (the redirection above is plain `>`), or invoke via
 
 ## Later v0.0.8 Work
 
-v0.0.8t should add the first control-flow build subset (`if`/`while`) after the
-current single-file int/function bridge is verified. Self-host fixed point
-remains v0.0.9.
+v0.0.8u should prepare a tiny self-build target after the current single-file
+control-flow bridge is verified. Self-host fixed point remains v0.0.9.

@@ -139,6 +139,46 @@ pub fn kind_colon_eq() int {
     return 14;
 }
 
+pub fn kind_kw_if() int {
+    return 15;
+}
+
+pub fn kind_kw_else() int {
+    return 16;
+}
+
+pub fn kind_kw_while() int {
+    return 17;
+}
+
+pub fn kind_eq_eq() int {
+    return 18;
+}
+
+pub fn kind_bang_eq() int {
+    return 19;
+}
+
+pub fn kind_lt() int {
+    return 20;
+}
+
+pub fn kind_gt() int {
+    return 21;
+}
+
+pub fn kind_lt_eq() int {
+    return 22;
+}
+
+pub fn kind_gt_eq() int {
+    return 23;
+}
+
+pub fn kind_plus_eq() int {
+    return 24;
+}
+
 pub fn kind_invalid() int {
     return 99;
 }
@@ -202,6 +242,46 @@ pub fn print_kind_name(kind int) {
     }
     if (kind == 14) {
         print("colon_eq");
+        return;
+    }
+    if (kind == 15) {
+        print("kw_if");
+        return;
+    }
+    if (kind == 16) {
+        print("kw_else");
+        return;
+    }
+    if (kind == 17) {
+        print("kw_while");
+        return;
+    }
+    if (kind == 18) {
+        print("eq_eq");
+        return;
+    }
+    if (kind == 19) {
+        print("bang_eq");
+        return;
+    }
+    if (kind == 20) {
+        print("lt");
+        return;
+    }
+    if (kind == 21) {
+        print("gt");
+        return;
+    }
+    if (kind == 22) {
+        print("lt_eq");
+        return;
+    }
+    if (kind == 23) {
+        print("gt_eq");
+        return;
+    }
+    if (kind == 24) {
+        print("plus_eq");
         return;
     }
     print("invalid");
