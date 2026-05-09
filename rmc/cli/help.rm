@@ -8,4 +8,5 @@ pub fn print_help() {
     print("  demo-lex    run hardcoded lexer demo\n");
     print("  demo-parse  run hardcoded parser demo\n");
     print("  demo-file   read a file and print basic info\n");
+    print("  lex         lex a RauMa source file\n");
 }

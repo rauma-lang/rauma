@@ -119,6 +119,14 @@ not have a proper allocator or error model yet.
 byte. It still does not lex or parse file contents. The self-host fixed point
 remains v0.0.9.
 
+### v0.0.8j: File-Driven Lexing
+
+v0.0.8j adds `rmc lex <path>`. The command reads file contents with
+`read_file` and feeds those bytes to the RauMa-written lexer.
+
+This is only tokenization. `rmc` still does not parse, check, or compile file
+contents, and the self-host fixed point remains v0.0.9.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1

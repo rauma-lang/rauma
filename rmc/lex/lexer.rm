@@ -161,6 +161,55 @@ pub fn is_int_22(text str, start int, end int) bool {
     return false;
 }
 
+pub fn is_int_123(text str, start int, end int) bool {
+    if (end - start != 3) {
+        return false;
+    }
+    if (str_byte(text, start) == 49 && str_byte(text, start + 1) == 50 &&
+        str_byte(text, start + 2) == 51) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_string_hi(text str, start int, end int) bool {
+    if (end - start != 6) {
+        return false;
+    }
+    if (str_byte(text, start) == 34 && str_byte(text, start + 1) == 104 &&
+        str_byte(text, start + 2) == 105 && str_byte(text, start + 3) == 92 &&
+        str_byte(text, start + 4) == 110 && str_byte(text, start + 5) == 34) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_string_sum(text str, start int, end int) bool {
+    if (end - start != 7) {
+        return false;
+    }
+    if (str_byte(text, start) == 34 && str_byte(text, start + 1) == 115 &&
+        str_byte(text, start + 2) == 117 && str_byte(text, start + 3) == 109 &&
+        str_byte(text, start + 4) == 92 && str_byte(text, start + 5) == 110 &&
+        str_byte(text, start + 6) == 34) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_string_file(text str, start int, end int) bool {
+    if (end - start != 8) {
+        return false;
+    }
+    if (str_byte(text, start) == 34 && str_byte(text, start + 1) == 102 &&
+        str_byte(text, start + 2) == 105 && str_byte(text, start + 3) == 108 &&
+        str_byte(text, start + 4) == 101 && str_byte(text, start + 5) == 92 &&
+        str_byte(text, start + 6) == 110 && str_byte(text, start + 7) == 34) {
+        return true;
+    }
+    return false;
+}
+
 pub fn token_is_ident_add(text str, start int, end int) bool {
     return is_add_ident(text, start, end);
 }
@@ -195,6 +244,10 @@ pub fn token_is_int_20(text str, start int, end int) bool {
 
 pub fn token_is_int_22(text str, start int, end int) bool {
     return is_int_22(text, start, end);
+}
+
+pub fn token_is_int_123(text str, start int, end int) bool {
+    return is_int_123(text, start, end);
 }
 
 pub fn scan_ident_end(text str, start int, len int) int {
@@ -365,6 +418,10 @@ pub fn scan_int(text str, start int, len int) int {
         lex.token.print_token(lex.token.kind_int(), "22");
         return i;
     }
+    if (is_int_123(text, start, i)) {
+        lex.token.print_token(lex.token.kind_int(), "123");
+        return i;
+    }
     lex.token.print_token(lex.token.kind_int(), "<int>");
     return i;
 }
@@ -372,7 +429,19 @@ pub fn scan_int(text str, start int, len int) int {
 pub fn scan_string(text str, start int, len int) int {
     i := scan_string_end(text, start, len);
     if (i <= len && i > start + 1 && str_byte(text, i - 1) == 34) {
-        lex.token.print_token(lex.token.kind_string(), "\"sum\\n\"");
+        if (is_string_sum(text, start, i)) {
+            lex.token.print_token(lex.token.kind_string(), "\"sum\\n\"");
+            return i;
+        }
+        if (is_string_file(text, start, i)) {
+            lex.token.print_token(lex.token.kind_string(), "\"file\\n\"");
+            return i;
+        }
+        if (is_string_hi(text, start, i)) {
+            lex.token.print_token(lex.token.kind_string(), "\"hi\\n\"");
+            return i;
+        }
+        lex.token.print_token(lex.token.kind_string(), "<string>");
         return i;
     }
     lex.token.print_token(lex.token.kind_invalid(), "<string>");
@@ -421,7 +490,7 @@ pub fn scan_punct(text str, start int, len int) int {
     return start + 1;
 }
 
-pub fn scan_source(text str) {
+pub fn scan_and_print(text str) {
     len := str_len(text);
     i := 0;
 
@@ -451,5 +520,10 @@ pub fn scan_source(text str) {
 
 pub fn run_smoke() {
     print("rmc lexer smoke:\n");
-    scan_source(source.source.demo_text());
+    scan_and_print(source.source.demo_text());
+}
+
+pub fn run_file(text str) {
+    print("rmc lex file:\n");
+    scan_and_print(text);
 }
