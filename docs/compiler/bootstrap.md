@@ -43,6 +43,13 @@ calls into nested namespaces. The combined group glues lexer/parser/checker
 modules into one buildable graph. This is still not real `rmc` self-build, no
 fixed point yet, no package manager, no stdlib lookup, no HIR/MIR.
 
+v0.0.9g attempts the first fixed-point candidate chain for the controlled
+`rmb/tests/rmc_candidate/` source. The verified chain reaches `rmb -> rmc0 ->
+rmc1 candidate`, and `rmc1` runs all supported demo commands. The chain does
+not reach a valid `rmc2` yet because the candidate has `build-demo`, not a real
+`build <path>` command. The result is documented in
+`docs/compiler/v009-fixed-point-candidate.md`.
+
 ## Bootstrap Stages
 
 ### Stage 0: rmb (Bootstrap Compiler)

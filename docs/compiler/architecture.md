@@ -102,6 +102,11 @@ still emits C directly from checked AST chunks:
   architecture and still does not add HIR/MIR, package resolution, chunk
   caching, or fixed-point self-hosting.
 
+  v0.0.9g verifies the first candidate generation in the staged chain:
+  `rmb -> rmc0 -> rmc1 candidate`. The candidate behavior is stable for its
+  supported demo commands, but the architecture is not a fixed point yet because
+  the candidate lacks a real `build <path>` command and cannot produce `rmc2`.
+
   v0.0.9c builds a real-ish `rmc` module group probe using nested local modules
   (`cli.help`, `source.span`, `lex.token`, and friends). The bridge now handles
   the small transitive graph and qualified calls needed by that probe, while

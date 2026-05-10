@@ -134,6 +134,7 @@ gcc -std=c11 -Wall -Wextra -Werror -pedantic out.c -o out
 ```
 
 v0.0.9g verified the first step of a fixed‑point candidate chain: `rmb` builds `rmc0`, `rmc0` builds the candidate, and the candidate binary runs all demo commands. Because the candidate fixture does not contain a `build` command, the chain stops at one generation; a true fixed‑point demonstration awaits extending the candidate with a working `build` command.
+See `docs/compiler/v009-fixed-point-candidate.md` for the exact result.
 
 `rmc` still does not allocate a full AST, infer types, resolve names, do full
 codegen, implement HIR/MIR, packages, std modules, or self-host.

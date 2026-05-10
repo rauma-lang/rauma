@@ -11,6 +11,15 @@
 - **Simplicity**: Implement only essential RauMa language features
 - **Portability**: Generate C code that works on many platforms
 
+## Current rmc bridge verification
+
+As of v0.0.9g, `rmb` builds the real RauMa-written `rmc` (`rmc0`), and `rmc0`
+builds the controlled compiler-shaped candidate under
+`rmb/tests/rmc_candidate/`. The candidate binary runs its supported demo
+commands, including `self-test`, but it does not yet implement a real
+`build <path>` command, so the fixed-point chain does not reach a valid `rmc2`
+generation yet.
+
 ## Design Principles
 
 ### 1. Stay Small

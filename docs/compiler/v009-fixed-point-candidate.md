@@ -2,70 +2,81 @@
 
 ## What was verified
 
-### Build chain
+The v0.0.9g attempt verified the first candidate generation:
 
-- `rmb` (bootstrap compiler) built `rmc0` (real RauMa-written `rmc`)
-- `rmc0` built the controlled compiler candidate (`tests/rmc_candidate/main.rm`)
-- The candidate binary (`rmc1`) was produced and runs all expected demo commands
+- `rmb -> rmc0`
+- `rmc0 -> rmc1 candidate`
 
-### Behavior verification
+`rmc0` is the real RauMa-written `rmc` built by `rmb`.
+`rmc1` is the controlled compiler-shaped candidate built from
+`rmb/tests/rmc_candidate/main.rm`.
 
-`rmc1` passes the full candidate command suite:
+The produced `rmc1` candidate binary ran these commands:
 
-- `version` prints `rmc-candidate 0.0.9f`
-- `lex‑demo`, `parse‑demo`, `check‑demo`, `emit‑demo`, `build‑demo` produce the expected output sequences
-- `self‑test` runs all module demos and ends with `candidate ok`
-- `wat` (unknown command) prints `unknown command`
+- no args
+- `version`
+- `lex-demo`
+- `parse-demo`
+- `check-demo`
+- `emit-demo`
+- `build-demo`
+- `self-test`
+- unknown command
 
-### Regression verification
+The candidate self-test ended with:
 
-All previous frontend groups, CLI/source/diag probes, `rmc‑mini`, and single‑file bridge tests still pass with `rmc0`. The `rmb` bootstrap compiler still builds `project_basic` and `build_hello` correctly.
+```text
+candidate ok
+```
+
+The attempted `rmc1 -> rmc2` step did not pass. `rmc1` currently prints
+`unknown command` for `build tests/rmc_candidate/main.rm` because the controlled
+candidate fixture has only `build-demo`; it does not yet implement a real
+`build <path>` command.
+
+`rmc2` and `rmc3` were therefore not valid fixed-point generations in v0.0.9g.
 
 ## What this proves
 
-- The RauMa-written `rmc` can compile a real‑ish compiler‑shaped module graph (the candidate) that contains nested module paths and transitive dependencies up to seven levels deep.
-- The generated candidate binary behaves deterministically across runs.
-- The local multi‑file bridge (`rmc build`) can handle a graph of this size without hitting earlier depth limits.
+- The bootstrap compiler `rmb` can still build the real RauMa-written `rmc`.
+- The real RauMa-written `rmc` can build the controlled compiler-shaped
+  candidate.
+- The candidate binary preserves the expected compiler-like behavior for its
+  supported demo commands.
+- The current bridge can compile a deeper compiler-shaped multi-file fixture.
 
-## What this does **not** prove (and why the chain stops here)
+## What this does not prove
 
-The candidate fixture currently **does not contain a `build` command** – it is a demo‑only program, not a full compiler. Consequently:
-
-- `rmc1` cannot build `rmc2` because the candidate lacks the ability to compile source files.
-- A true fixed‑point chain (`rmc0 → rmc1 → rmc2 → …`) therefore cannot be completed with the current candidate design.
-
-The purpose of v0.0.9g was to **attempt** the chain; the attempt reveals that the candidate must be extended with a working `build` command before a real fixed‑point demonstration is possible.
+- The real `rmc` is not self-hosting yet.
+- The controlled candidate is not a fixed point yet.
+- `rmc1` cannot build `rmc2` until the candidate implements a real
+  `build <path>` command.
+- The real multi-file `rmc/main.rm` is not built by `rmc` yet.
+- There is no full package lookup, stdlib lookup, HIR/MIR, LLVM backend, or
+  fixed-point comparison pipeline.
 
 ## Artifact comparison
 
-Because only `rmc1` exists, no cross‑generation comparison of generated C or binary behavior was possible. The candidate’s generated C (`build/rmc_build_out.c`) was saved but not compared across generations.
+Generated C comparison was not valid for v0.0.9g because the chain stopped
+before a real `rmc2` generation. Behavior was verified for `rmc1`, but behavior
+could not be compared across `rmc1`, `rmc2`, and `rmc3`.
+
+The attempted `rmc1 build tests/rmc_candidate/main.rm` produced:
+
+```text
+unknown command
+```
+
+That output is the blocker to address before exact generated-C comparison is
+meaningful.
 
 ## Remaining gaps to v0.1.0
 
-1. **Real `rmc` self‑host path** – the real `rmc/main.rm` is still not built by `rmc`.
-2. **Candidate with `build` capability** – the candidate fixture would need to include a minimal `build` command that can compile its own source (or at least a trivial source) to close the loop.
-3. **Deterministic artifact comparison** – once a chain of at least two generations exists, we need to compare generated C and binary outputs to verify stability.
-4. **Robust cross‑module checking** – the current bridge still does not perform full type‑checking across module boundaries.
-5. **Stronger regression suite** – the candidate should be expanded to exercise more of the real `rmc`’s source shapes (structs, arrays, error syntax, etc.).
-6. **Docs and install/build UX** – the project still lacks end‑user documentation and a polished build/install story.
-
-## Next steps
-
-Given the outcome of v0.0.9g, two paths are reasonable:
-
-**Option A (recommended)** – Extend the candidate with a minimal `build` command that can compile a trivial single‑file program (or the candidate itself) using the existing local multi‑file bridge. This would allow a true `rmc0 → rmc1 → rmc2` chain and prove that the bridge is stable across one generation.
-
-**Option B** – Move directly to v0.1.0 stabilization, accepting that the fixed‑point candidate chain is blocked by the candidate’s design, and focus on polishing the existing bridge, improving diagnostics, and preparing for a release.
-
-Both paths keep the real `rmc` self‑host goal separate, as it requires a much larger expansion of the bridge (package lookup, stdlib resolution, full type checking, HIR/MIR, etc.).
-
-## Technical notes
-
-- The candidate module graph contains 16 files across `cli/`, `source/`, `diag/`, `lex/`, `parse/`, `type/`, `cgen/`, and `build/` directories.
-- The deepest transitive dependency chain is `main → build.build → cgen.cgen → type.checker → parse.parser → lex.lexer → source.source → source.span` (7 levels).
-- The bridge’s module‑discovery algorithm (limited to direct dependencies plus one level of transitivity) still sufficed because each module’s own dependencies are shallow; a deeper graph would require the improved recursive discovery planned for v0.0.9f but not yet implemented.
-- All verification was performed on Windows (MSYS2) with `gcc`; the `-Werror` flag is enabled, so the candidate builds cleanly with no unused‑function warnings.
-
----
-
-*Generated during v0.0.9g verification, 2026‑05‑10*
+- Add a real `build <path>` command to the controlled candidate.
+- Preserve candidate build outputs under distinct paths for staged comparison.
+- Compare generated C and produced binary behavior across candidate generations.
+- Expand real `rmc` source coverage beyond controlled fixtures.
+- Add robust cross-module checking and diagnostics.
+- Define deterministic artifact comparison rules.
+- Harden regression coverage for the staged build chain.
+- Keep docs and command-line build UX aligned with the actual verified chain.
