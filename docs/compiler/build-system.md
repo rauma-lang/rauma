@@ -165,6 +165,10 @@ builds in `rmc` remain future work. The verification checklist is captured in
 `docs/compiler/v008-stabilization.md`, and the next fixed-point planning
 boundary is `docs/compiler/v009-plan.md`.
 
+v0.0.9a keeps the same bridge architecture and hardens `rmc-mini` with a
+`self-test` command plus `rmb/tests/rmc_mini_hardening_probe.rm`. This is still
+single-file bridge verification, not a chunk build graph.
+
 ## Chunk-Based Architecture
 
 ### What is a Chunk?

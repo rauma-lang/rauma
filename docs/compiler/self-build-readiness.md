@@ -9,6 +9,8 @@ The current bootstrap chain is:
 - `rmc` can build `examples/selfbuild/tiny.rm`.
 - `rmc` can build `examples/selfbuild/tool.rm`.
 - `rmc` can build `examples/selfbuild/rmc-mini.rm`.
+- v0.0.9a hardens `rmc-mini` to `rmc-mini 0.0.9a` and adds a
+  `self-test` command.
 - v0.0.8z stabilizes the bridge milestone and points fixed-point work to
   `docs/compiler/v009-plan.md`.
 - This is not self-hosting yet.
@@ -97,30 +99,31 @@ Cons: needs either copied token helpers or real module support; the current lexe
 Pros: closer to compiler logic and validates cursor parsing.  
 Cons: parser depends heavily on token stream helpers and is much larger than current bridge confidence.
 
-4. Build a reduced `rmc-mini.rm`. ✓ verified in v0.0.8y
+4. Build a reduced `rmc-mini.rm`. ✓ verified in v0.0.8y and hardened in v0.0.9a
 
-Pros: best next bridge target because it can avoid imports while mimicking a tiny compiler CLI with version, lex-demo, and parse-demo commands.  
+Pros: best next bridge target because it can avoid imports while mimicking a tiny compiler CLI with version, lex-demo, parse-demo, check-demo, and self-test commands.  
 Cons: duplicates a thin slice of `rmc` behavior and is still not self-hosting.
 
 ## Recommended next milestone
 
-v0.0.8y created a standalone `rmc-mini.rm` target that mimics a tiny compiler command:
+v0.0.9a hardens the standalone `rmc-mini.rm` target that mimics a tiny compiler command:
 
 - `main(args Args)`
 - `version`
 - `lex-demo`
 - `parse-demo`
 - `check-demo`
+- `self-test`
 - no imports
 - no multi-file
 - buildable by `rmc build`
 
-The next milestone should be v0.0.9a standalone `rmc-mini` hardening. It should
-keep the target single-file, add stricter regressions around the verified bridge
-subset, and avoid jumping directly to full self-hosting.
+The next milestone should be v0.0.9b source partition audit. It should choose
+which real `rmc` modules can be represented as standalone or bundled source and
+identify the imports/use blockers before any bundled compiler experiment.
 
 ## Not yet self-hosting
 
-v0.0.8z is not self-hosting.
+v0.0.9a is not self-hosting.
 
 `rmc` does not build itself yet. `rmc` does not have multi-file chunk builds, HIR/MIR, a full backend, or fixed-point verification. v0.0.9 remains the self-host fixed-point milestone.

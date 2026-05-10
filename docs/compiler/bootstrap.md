@@ -12,6 +12,10 @@ self-hosting.
 See `docs/compiler/v008-stabilization.md` for the verified bridge chain and
 `docs/compiler/v009-plan.md` for the next fixed-point planning phase.
 
+v0.0.9a hardens the standalone `rmc-mini` target with a `self-test` command and
+an additional regression probe. This keeps the path single-file and verified
+before any real fixed-point or multi-file compiler build attempt.
+
 ## Bootstrap Stages
 
 ### Stage 0: rmb (Bootstrap Compiler)

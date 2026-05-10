@@ -59,6 +59,10 @@ v0.0.8z stabilizes the v0.0.8 bridge milestone. The supported bridge behavior,
 verification chain, and fixed-point boundaries are documented in
 `docs/compiler/v008-stabilization.md` and `docs/compiler/v009-plan.md`.
 
+v0.0.9a hardens `examples/selfbuild/rmc-mini.rm`. The standalone target now
+supports `version`, `lex-demo`, `parse-demo`, `check-demo`, and `self-test`.
+It is still a single-file compiler-like target, not the real multi-file `rmc`.
+
 The pipeline is now:
 
 ```bash
@@ -280,3 +284,19 @@ The stabilized proto self-build targets are:
 `rmb` builds `rmc`, and `rmc` builds each target through the single-file bridge.
 The real multi-file `rmc` compiler is still not built by `rmc`; fixed-point
 self-hosting remains future v0.0.9 work.
+
+## rmc-mini Commands
+
+`examples/selfbuild/rmc-mini.rm` is standalone and import-free. When built by
+`rmc build`, the produced binary supports:
+
+```text
+version
+lex-demo
+parse-demo
+check-demo
+self-test
+```
+
+The `self-test` command exercises helper calls, loops, conditionals, and int
+printing. It is only a pre-self-host target, not the real `rmc`.

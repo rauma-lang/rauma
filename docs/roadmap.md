@@ -83,7 +83,7 @@
   backend work to v0.0.9 and later.
 
 ### v0.0.9 Self-host Fixed Point
-- v0.0.9a standalone rmc-mini hardening
+- v0.0.9a standalone rmc-mini hardening ✓ DONE
 - v0.0.9b rmc source partition audit
 - v0.0.9c single-file bundled rmc experiment
 - v0.0.9d multi-file/chunk plan

@@ -91,6 +91,11 @@ still emits C directly from checked AST chunks:
   v0.0.9 boundary is planned in `docs/compiler/v009-plan.md`. There is still no
   HIR/MIR-backed `rmc` backend and no fixed-point self-hosting.
 
+  v0.0.9a hardens `rmc-mini` with a self-test command that exercises helper
+  calls, loops, conditionals, and int output. This keeps the bridge target
+  standalone and does not introduce HIR/MIR, a full backend, or fixed-point
+  self-hosting.
+
 ## Compilation Pipeline
 
 ```

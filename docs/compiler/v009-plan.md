@@ -14,6 +14,8 @@ expected staged build chain and comparison strategy.
 - keep single-file
 - expand `rmc-mini` only if needed
 - add stricter regression tests
+- v0.0.9a adds the `self-test` command to `rmc-mini`
+- verified before any fixed-point or real `rmc` self-build attempt
 
 ### v0.0.9b rmc source partition audit
 

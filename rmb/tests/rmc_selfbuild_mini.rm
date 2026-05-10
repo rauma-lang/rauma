@@ -1,5 +1,5 @@
 fn version() {
-    print("rmc-mini 0.0.8y\n");
+    print("rmc-mini 0.0.9a\n");
 }
 
 fn help() {
@@ -9,6 +9,7 @@ fn help() {
     print("  lex-demo\n");
     print("  parse-demo\n");
     print("  check-demo\n");
+    print("  self-test\n");
 }
 
 fn lex_demo() {
@@ -59,6 +60,46 @@ fn check_demo() {
     print("\n");
 }
 
+fn sum_to(limit int) int {
+    i := 0;
+    total := 0;
+
+    while (i < limit) {
+        total = total + i;
+        i += 1;
+    }
+
+    return total;
+}
+
+fn double(x int) int {
+    return x + x;
+}
+
+fn self_test() {
+    total := sum_to(6);
+    doubled := double(21);
+
+    print("mini self-test:\n");
+
+    if (total == 15) {
+        print("sum ok\n");
+    } else {
+        print("sum bad\n");
+    }
+
+    if (doubled == 42) {
+        print("double ok\n");
+    } else {
+        print("double bad\n");
+    }
+
+    print(total);
+    print("\n");
+    print(doubled);
+    print("\n");
+}
+
 fn main(args Args) {
     if (args_len(args) <= 1) {
         help();
@@ -84,6 +125,11 @@ fn main(args Args) {
 
     if (str_eq(cmd, "check-demo")) {
         check_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "self-test")) {
+        self_test();
         return;
     }
 

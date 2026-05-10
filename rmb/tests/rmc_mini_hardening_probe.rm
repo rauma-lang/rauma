@@ -1,0 +1,49 @@
+fn sum_to(limit int) int {
+    i := 0;
+    total := 0;
+
+    while (i < limit) {
+        total = total + i;
+        i += 1;
+    }
+
+    return total;
+}
+
+fn double(x int) int {
+    return x + x;
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        print("probe missing\n");
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "self-test")) {
+        total := sum_to(6);
+        doubled := double(21);
+
+        if (total == 15) {
+            print("sum ok\n");
+        } else {
+            print("sum bad\n");
+        }
+
+        if (doubled == 42) {
+            print("double ok\n");
+        } else {
+            print("double bad\n");
+        }
+
+        print(total);
+        print("\n");
+        print(doubled);
+        print("\n");
+        return;
+    }
+
+    print("probe unknown\n");
+}

@@ -252,6 +252,17 @@ checklist is documented in `docs/compiler/v008-stabilization.md` and covers
 existing `rmb` smoke tests. v0.0.9 planning is captured in
 `docs/compiler/v009-plan.md`.
 
+v0.0.9a hardens `rmc-mini`:
+
+```bash
+./build/debug/native/bin/main build tests/rmc_selfbuild_mini.rm
+./build/rmc_build_out self-test
+```
+
+Expected output includes `mini self-test`, `sum ok`, `double ok`, `15`, and
+`42`. The extra `tests/rmc_mini_hardening_probe.rm` fixture verifies the same
+bridge subset without the rmc-mini demo text.
+
 ### Output
 The compiler executable is built at:
 ```

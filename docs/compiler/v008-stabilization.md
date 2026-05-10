@@ -95,6 +95,7 @@ make
 ./build/rmc_build_out lex-demo
 ./build/rmc_build_out parse-demo
 ./build/rmc_build_out check-demo
+./build/rmc_build_out self-test
 
 ./build/debug/native/bin/main build tests/rmc_selfbuild_tool.rm
 ./build/rmc_build_out version
