@@ -1,0 +1,59 @@
+use cli.help;
+use cli.version;
+use cli.args;
+use cli.file;
+use source.span;
+use source.source;
+use diag.output;
+
+fn run_source() {
+    source.source.print_source_demo();
+    source.source.print_source_len();
+}
+
+fn run_diag() {
+    diag.output.error(7);
+    diag.output.note(3);
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        cli.help.print_help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "version")) {
+        cli.version.print_version();
+        return;
+    }
+
+    if (str_eq(cmd, "args")) {
+        cli.args.print_arg_count(args);
+        cli.args.print_command(args);
+        return;
+    }
+
+    if (str_eq(cmd, "file")) {
+        cli.file.print_file_info("tests/rmc_cli_probe/input.txt");
+        return;
+    }
+
+    if (str_eq(cmd, "source")) {
+        run_source();
+        return;
+    }
+
+    if (str_eq(cmd, "span")) {
+        source.span.print_span_size(4, 13);
+        return;
+    }
+
+    if (str_eq(cmd, "diag")) {
+        run_diag();
+        return;
+    }
+
+    print("unknown command\n");
+}

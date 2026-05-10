@@ -26,6 +26,13 @@ nested local modules such as `cli.help`, `source.span`, and `lex.token`.
 This validates the architecture direction without building the full real `rmc`
 or claiming fixed point.
 
+v0.0.9d grows that probe into a larger `rmc-cli`-shaped module group at
+`rmb/tests/rmc_cli_probe/` covering `cli/`, `source/`, and `diag/` namespaces,
+`Args`/`path str` parameters in dependency modules, and file-input plumbing
+through `read_file`/`str_len`/`str_byte` builtins inside module functions.
+This continues to grow the verified module topology; `rmc` still does not
+build itself end-to-end and the fixed point remains later v0.0.9 work.
+
 ## Bootstrap Stages
 
 ### Stage 0: rmb (Bootstrap Compiler)

@@ -76,6 +76,16 @@ that small graph. This proves the multi-file path can build compiler-shaped
 module groups, but it is still not the full real `rmc` and not fixed-point
 self-hosting.
 
+v0.0.9d expands that probe into a broader `rmc-cli`-shaped module group at
+`rmb/tests/rmc_cli_probe/`. Eight modules under `cli/`, `source/`, and `diag/`
+exercise `Args` parameters in dependency functions, `path str` parameters,
+`read_file`/`str_len`/`str_byte` builtins inside module functions, qualified
+calls into nested namespaces, and diagnostic-style void helpers. The bridge
+prelude now ships `rm_str_len`, `rm_str_byte`, and `rm_read_file` runtime
+helpers so module code can read input files. This validates a broader
+real-ish module topology, but `rmc` still does not build itself end-to-end and
+there is no fixed point yet.
+
 The pipeline is now:
 
 ```bash

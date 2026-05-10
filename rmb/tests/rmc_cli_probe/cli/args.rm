@@ -1,0 +1,24 @@
+fn print_arg_count(args Args) {
+    count := args_len(args);
+
+    print("args count ");
+    print(count);
+    print("\n");
+}
+
+fn print_command(args Args) {
+    if (args_len(args) <= 1) {
+        print("command missing\n");
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    print("command ok\n");
+
+    if (str_eq(cmd, "args")) {
+        print("args command\n");
+    } else {
+        print("other command\n");
+    }
+}

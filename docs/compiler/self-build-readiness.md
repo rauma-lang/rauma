@@ -15,6 +15,12 @@ The current bootstrap chain is:
   modules and emitting one combined bridge C file.
 - v0.0.9c builds a real-ish `rmc` module group probe with nested `cli`,
   `source`, and `lex`-style modules.
+- v0.0.9d builds a larger `rmc-cli`-shaped module group probe at
+  `rmb/tests/rmc_cli_probe/` with eight modules across `cli/`, `source/`, and
+  `diag/`. It exercises `Args`/`path str` parameters in dependency module
+  functions, `read_file`/`str_len`/`str_byte` builtins inside module
+  functions, qualified calls into nested namespaces, and diagnostic-style
+  void helpers.
 - v0.0.8z stabilizes the bridge milestone and points fixed-point work to
   `docs/compiler/v009-plan.md`.
 - This is not self-hosting yet.
@@ -53,6 +59,12 @@ The verified bridge subset currently includes:
 - local `use math;` / `use cli.help;` resolution relative to the entry file
 - nested local modules such as `source.span` and `lex.token`
 - small transitive local module graphs used by the `rmc_group_probe` fixture
+- broader CLI/source/diag module groups used by the `rmc_cli_probe` fixture
+- `Args` and `path str` parameters in dependency module functions
+- `read_file`, `str_len`, `str_byte` builtins inside dependency module
+  functions
+- string literal arguments wrapped through `rm_str` for qualified calls
+- `return;` in module void functions emits valid C
 
 ## Current rmc source feature audit
 
@@ -71,9 +83,14 @@ The verified bridge subset currently includes:
 
 ## Main gaps before rmc can build itself
 
+- larger CLI/source/diag module group is now verified (v0.0.9d)
+- real `rmc` source coverage beyond controlled module-group probes
+- robust module type checking in the bridge (parser/checker is bypassed for
+  multi-module builds today)
+- chunk cache and per-module incremental rebuild
+- deterministic fixed-point comparison strategy
 - broader multi-file `use` resolution in `rmc build`
 - real module/chunk build in `rmc`
-- real `rmc` source coverage beyond controlled module-group probes
 - more general parser/codegen instead of bridge patterns
 - token arrays or better cursor abstraction
 - heap AST or structured summary model
@@ -128,13 +145,13 @@ v0.0.9a hardens the standalone `rmc-mini.rm` target that mimics a tiny compiler 
 - no multi-file
 - buildable by `rmc build`
 
-The next milestone should be v0.0.9c real `rmc` module group build. It should
-use the local multi-file foundation to build a small real-ish `rmc` module
-group and identify the remaining source-shape/codegen blockers before any
-fixed-point attempt.
+The next milestone should be v0.0.9e: a lexer-focused real-ish `rmc` module
+group build. It should grow the local module-group fixture toward a
+lexer-shaped graph using the bridge subset, without rewriting the real lexer
+and without claiming fixed point.
 
 ## Not yet self-hosting
 
-v0.0.9b is not self-hosting.
+v0.0.9d is not self-hosting.
 
 `rmc` does not build itself yet. `rmc` does not have multi-file chunk builds, HIR/MIR, a full backend, or fixed-point verification. v0.0.9 remains the self-host fixed-point milestone.

@@ -25,7 +25,7 @@ pub fn token_text(src str, i int) str {
 }
 
 pub fn emit_c_includes() str {
-    return "#include <stdint.h>\n#include <stddef.h>\n#include <stdbool.h>\n#include <stdio.h>\n#include <string.h>\n\n";
+    return "#include <stdint.h>\n#include <stddef.h>\n#include <stdbool.h>\n#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\n";
 }
 
 pub fn emit_runtime_types() str {
@@ -40,11 +40,16 @@ pub fn emit_runtime_args() str {
     return "static int64_t rm_args_len(RmArgs args) {\n    return (int64_t)args.argc;\n}\n\nstatic RmStr rm_args_get(RmArgs args, int64_t index) {\n    return rm_str(args.argv[index]);\n}\n\n";
 }
 
+pub fn emit_runtime_str_helpers() str {
+    return "static int64_t rm_str_len(RmStr s) {\n    return s.len;\n}\n\nstatic int64_t rm_str_byte(RmStr s, int64_t index) {\n    return (int64_t)((unsigned char)s.ptr[index]);\n}\n\nstatic RmStr rm_read_file(RmStr path) {\n    char *cpath = (char*)malloc((size_t)path.len + 1);\n    if (!cpath) return rm_str(\"\");\n    memcpy(cpath, path.ptr, (size_t)path.len);\n    cpath[path.len] = 0;\n    FILE *f = fopen(cpath, \"rb\");\n    free(cpath);\n    if (!f) return rm_str(\"\");\n    if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return rm_str(\"\"); }\n    long size = ftell(f);\n    if (size < 0) { fclose(f); return rm_str(\"\"); }\n    if (fseek(f, 0, SEEK_SET) != 0) { fclose(f); return rm_str(\"\"); }\n    char *data = (char*)malloc((size_t)size + 1);\n    if (!data) { fclose(f); return rm_str(\"\"); }\n    size_t got = fread(data, 1, (size_t)size, f);\n    fclose(f);\n    data[got] = 0;\n    RmStr out;\n    out.ptr = data;\n    out.len = (int64_t)got;\n    return out;\n}\n\n";
+}
+
 pub fn emit_prelude_to_string() str {
     out := emit_c_includes();
     out = str_concat(out, emit_runtime_types());
     out = str_concat(out, emit_runtime_strings());
     out = str_concat(out, emit_runtime_args());
+    out = str_concat(out, emit_runtime_str_helpers());
     return out;
 }
 
@@ -153,6 +158,7 @@ pub fn emit_call_args_to_c(src str, i int) str {
     }
 
     while (true) {
+        arg_kind := lex.stream.current_kind(src, pos);
         expr := emit_expr_to_c(src, pos);
         if (str_len(expr) == 0) {
             return fail_text();
@@ -161,7 +167,13 @@ pub fn emit_call_args_to_c(src str, i int) str {
         if (first == false) {
             out = str_concat(out, ", ");
         }
-        out = str_concat(out, expr);
+        if (arg_kind == lex.token.kind_string()) {
+            out = str_concat(out, "rm_str(");
+            out = str_concat(out, expr);
+            out = str_concat(out, ")");
+        } else {
+            out = str_concat(out, expr);
+        }
         first = false;
 
         pos = parse_expr_end(src, pos);
@@ -320,6 +332,27 @@ pub fn emit_call_to_c(src str, i int) str {
 
     if (str_eq(name, "args_get")) {
         out := "rm_args_get(";
+        out = str_concat(out, args);
+        out = str_concat(out, ")");
+        return out;
+    }
+
+    if (str_eq(name, "str_len")) {
+        out := "rm_str_len(";
+        out = str_concat(out, args);
+        out = str_concat(out, ")");
+        return out;
+    }
+
+    if (str_eq(name, "str_byte")) {
+        out := "rm_str_byte(";
+        out = str_concat(out, args);
+        out = str_concat(out, ")");
+        return out;
+    }
+
+    if (str_eq(name, "read_file")) {
+        out := "rm_read_file(";
         out = str_concat(out, args);
         out = str_concat(out, ")");
         return out;
@@ -674,7 +707,7 @@ pub fn emit_var_stmt_to_c(src str, i int) str {
     }
 
     out := "    ";
-    if (is_call_named(src, pos, "args_get")) {
+    if (is_call_named(src, pos, "args_get") || is_call_named(src, pos, "read_file")) {
         out = str_concat(out, "RmStr ");
     } else {
         out = str_concat(out, "int64_t ");
@@ -1012,10 +1045,14 @@ pub fn emit_params_to_c(src str, i int) str {
         if (str_eq(type_name, "Args")) {
             out = str_concat(out, "RmArgs ");
         } else {
-            if (str_eq(type_name, "int") == false) {
-                return fail_text();
+            if (str_eq(type_name, "str")) {
+                out = str_concat(out, "RmStr ");
+            } else {
+                if (str_eq(type_name, "int") == false) {
+                    return fail_text();
+                }
+                out = str_concat(out, "int64_t ");
             }
-            out = str_concat(out, "int64_t ");
         }
         out = str_concat(out, name);
         first = false;
@@ -1049,6 +1086,9 @@ pub fn emit_main_start(main_args bool) str {
     out = str_concat(out, "    (void)rm_str_eq;\n");
     out = str_concat(out, "    (void)rm_args_len;\n");
     out = str_concat(out, "    (void)rm_args_get;\n");
+    out = str_concat(out, "    (void)rm_str_len;\n");
+    out = str_concat(out, "    (void)rm_str_byte;\n");
+    out = str_concat(out, "    (void)rm_read_file;\n");
     return out;
 }
 
@@ -1244,12 +1284,51 @@ pub fn emit_fn_to_c(src str, i int) str {
         return out;
     }
 
+    if (has_return == false) {
+        body = replace_void_returns(body);
+    }
+
     out := emit_fn_prefix(name, has_return);
     out = str_concat(out, "(");
     out = str_concat(out, params);
     out = str_concat(out, ") {\n");
     out = str_concat(out, body);
     out = str_concat(out, "}\n\n");
+    return out;
+}
+
+pub fn replace_void_returns(body str) str {
+    needle := "    return 0;\n";
+    repl := "    return;\n";
+    nlen := str_len(needle);
+    blen := str_len(body);
+    out := "";
+    i := 0;
+
+    while (i < blen) {
+        found := false;
+        if (i + nlen <= blen) {
+            j := 0;
+            mismatch := false;
+            while (j < nlen) {
+                if (str_byte(body, i + j) != str_byte(needle, j)) {
+                    mismatch = true;
+                }
+                j += 1;
+            }
+            if (mismatch == false) {
+                found = true;
+            }
+        }
+        if (found) {
+            out = str_concat(out, repl);
+            i += nlen;
+        } else {
+            out = str_concat(out, str_from_slice(body, i, i + 1));
+            i += 1;
+        }
+    }
+
     return out;
 }
 
@@ -1308,6 +1387,10 @@ pub fn emit_module_fn_to_c(src str, i int, module_prefix str) str {
     body := emit_block_to_c(src, pos);
     if (str_len(body) == 0 && lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
         return "";
+    }
+
+    if (has_return == false) {
+        body = replace_void_returns(body);
     }
 
     out := "#define rm_fn_";

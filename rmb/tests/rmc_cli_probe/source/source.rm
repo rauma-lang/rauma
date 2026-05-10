@@ -1,0 +1,15 @@
+fn print_source_demo() {
+    print("source demo\n");
+}
+
+fn source_len() int {
+    return 18;
+}
+
+fn print_source_len() {
+    len := source_len();
+
+    print("source len ");
+    print(len);
+    print("\n");
+}

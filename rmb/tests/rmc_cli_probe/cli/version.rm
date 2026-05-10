@@ -1,0 +1,3 @@
+fn print_version() {
+    print("rmc-cli-probe 0.0.9d\n");
+}

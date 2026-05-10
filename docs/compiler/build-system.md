@@ -182,16 +182,31 @@ with module-mangled C symbols. The bridge also handles the small transitive
 dependencies used by the probe, for example `lex/lexer.rm` importing
 `lex.token` and `source.source`.
 
+v0.0.9d grows that probe into a broader real-ish CLI module group at
+`rmb/tests/rmc_cli_probe/`. The fixture has eight modules under `cli/`,
+`source/`, and `diag/` that exercise:
+
+- `Args` parameters in dependency module functions (not only in `main`)
+- `path str` parameters and string literal arguments wrapped through `rm_str`
+- `read_file` / `str_len` / `str_byte` builtins inside dependency module
+  functions (the bridge prelude now ships `rm_str_len`, `rm_str_byte`, and
+  `rm_read_file`)
+- qualified calls into nested namespaces such as `cli.file.print_file_info`,
+  `source.span.print_span_size`, and `diag.output.error`
+- dispatch helpers in the entry that combine multiple qualified calls
+
 Current `rmc` multi-file limitations:
 
 - local modules only
-- small dependency graph
+- small dependency graph (one-level transitive `use` walk, up to 16 modules)
 - one generated C file, not per-module chunks
 - no package lookup
 - no stdlib lookup
 - no chunk cache or incremental rebuild
 - limited duplicate/cycle handling beyond rejecting unsupported/missing modules
 - no real module interface or cross-module type checking yet
+- the parser/checker path is bypassed for multi-module builds; the bridge
+  cgen scans tokens directly
 
 ## Chunk-Based Architecture
 

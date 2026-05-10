@@ -86,9 +86,10 @@
 - v0.0.9a standalone rmc-mini hardening ✓ DONE
 - v0.0.9b rmc multi-file build foundation ✓ DONE
 - v0.0.9c real rmc module group build ✓ DONE
-- v0.0.9d build larger real rmc module groups
-- v0.0.9e rmc chunk/multi-file design hardening
-- v0.0.9f fixed-point candidate
+- v0.0.9d larger rmc CLI module group build ✓ DONE
+- v0.0.9e lexer-focused rmc module group build
+- v0.0.9f parser/checker module group build
+- v0.0.9g fixed-point candidate planning
 - Do not claim fixed point until the staged compiler build and comparison
   strategy are stable.
 

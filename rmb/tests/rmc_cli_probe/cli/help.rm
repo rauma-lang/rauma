@@ -1,0 +1,10 @@
+fn print_help() {
+    print("rmc-cli-probe <command>\n");
+    print("commands:\n");
+    print("  version\n");
+    print("  args\n");
+    print("  file\n");
+    print("  source\n");
+    print("  span\n");
+    print("  diag\n");
+}

@@ -1,0 +1,16 @@
+fn print_file_info(path str) {
+    text := read_file(path);
+    len := str_len(text);
+
+    print("file bytes ");
+    print(len);
+    print("\n");
+
+    if (len > 0) {
+        print("file first ");
+        print(str_byte(text, 0));
+        print("\n");
+    } else {
+        print("file empty\n");
+    }
+}

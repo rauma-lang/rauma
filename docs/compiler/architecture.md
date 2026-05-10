@@ -108,6 +108,15 @@ still emits C directly from checked AST chunks:
   still emitting one combined C file and deferring real chunking, HIR/MIR, and
   fixed point.
 
+  v0.0.9d adds a larger CLI/source/diag module probe at
+  `rmb/tests/rmc_cli_probe/` with eight modules. The bridge cgen now handles
+  `Args` and `path str` parameters in dependency module functions,
+  `read_file`/`str_len`/`str_byte` builtins inside module functions, and
+  string literal arguments wrapped through `rm_str` for qualified calls. Empty
+  `return;` in module void functions emits valid C (`return;` instead of
+  `return 0;`). This continues to grow the verified topology without HIR/MIR,
+  per-module chunk caching, or fixed-point self-hosting.
+
 ## Compilation Pipeline
 
 ```

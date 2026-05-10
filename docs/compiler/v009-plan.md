@@ -34,22 +34,37 @@ expected staged build chain and comparison strategy.
 - keep scope below full `rmc` self-hosting
 - identify remaining source-shape/codegen blockers
 
-### v0.0.9d build larger real rmc module groups
+### v0.0.9d larger rmc CLI/source/diag module group build
 
-- grow from the probe fixture toward larger real `rmc` module groups
-- keep package lookup, stdlib lookup, and fixed point out of scope
-- use failures to identify the next smallest bridge and module graph gaps
+- grew the multi-file probe to a real-ish `rmc-cli`-shaped graph at
+  `rmb/tests/rmc_cli_probe/` with eight modules across `cli/`, `source/`, and
+  `diag/`
+- exercised `Args` and `path str` parameters in dependency module functions,
+  qualified calls into nested namespaces, diagnostic-style void helpers, and
+  `read_file`/`str_len`/`str_byte` builtins inside module functions
+- added the `rm_str_len`, `rm_str_byte`, and `rm_read_file` runtime helpers to
+  the bridge prelude so dependency-module file input works
+- kept package lookup, stdlib lookup, full type checking, and the fixed point
+  out of scope
+- this validates a broader real-ish module topology, not full real `rmc`
 
-### v0.0.9e rmc chunk/multi-file design hardening
+### v0.0.9e lexer-focused rmc module group build
 
-- design `rmc`-side chunk build
-- harden output paths, graph traversal, cycle diagnostics, and deterministic artifacts
+- grow the local module-group fixture toward a lexer-shaped graph
+- exercise larger token/byte/scan helpers without rewriting the real lexer
+- still no fixed point, no full real `rmc` build
 
-### v0.0.9f fixed-point candidate
+### v0.0.9f parser/checker module group build
 
-- `rmb` builds `rmc1`
-- `rmc1` builds candidate compiler source
-- compare outputs only when pipeline is stable
+- grow the local module-group fixture toward parser/checker-shaped graphs
+- still no fixed point, no full real `rmc` build
+
+### v0.0.9g fixed-point candidate planning
+
+- design `rmc`-side chunk build, output paths, graph traversal, cycle
+  diagnostics, and deterministic artifacts
+- once the pipeline is stable: `rmb` builds `rmc1`, `rmc1` builds candidate
+  compiler source, compare outputs
 
 ## Do not do yet
 
