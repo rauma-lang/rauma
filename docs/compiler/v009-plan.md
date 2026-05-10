@@ -108,10 +108,24 @@ build command is path-specific and does not build the real `rmc/main.rm`.
   as `b >= 65 && b <= 90` and `return b >= 48 && b <= 57`
 - next step should be a focused v0.0.9h-fix before retrying the real chain
 
+### v0.0.9h-fix2 boolean/logical bridge lowering ✓ PARTIAL
+
+- added C lowering in `rmc/cgen/cgen.rm` for comparisons, logical `&&`,
+  logical `||`, and parenthesized boolean expressions
+- verified `rmb/tests/rmc_bool_bridge/main.rm` through `rmc0 build` with the
+  expected output:
+  `upper ok`, `lower ok`, `alpha ok`, `inline and ok`, `inline or ok`
+- emitted C contains the expected `>=`, `<=`, `&&`, and `||` operators
+- controlled candidate chain and earlier frontend/probe/mini regressions still
+  pass
+- real `rmc0 build ../rmc/main.rm` still remains Tier 0 and reports
+  `build failed: unsupported source`; direct `parse`/`check` still report
+  `parser error`
+
 ## Next options
 
-- v0.0.9h-fix boolean/logical bridge lowering: safer immediate path, isolates
-  the first blocker before retrying real `rmc/main.rm`.
+- isolate the next real-source parser/unsupported-source shape with a small
+  fixture before retrying real `rmc/main.rm`.
 - v0.1.0 stabilization planning remains premature until the real self-host
   expansion either reaches a higher tier or is explicitly deferred.
 

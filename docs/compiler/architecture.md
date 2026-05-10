@@ -319,11 +319,13 @@ rmc2 builds → rmc3 (RauMa)
 Verify: rmc2 == rmc3 (behavior and tests)
 ```
 
-v0.0.9h tries to apply this shape to the real `rmc/main.rm` graph. The result
-is Tier 0 only: `rmb` still builds `rmc0`, but `rmc0 build ../rmc/main.rm`
-does not yet produce `rmc1-real`. The architecture remains bridge-based and
-local-module-only; the current blocker is boolean/logical expression lowering
-in real lexer code, not package management, HIR/MIR, or LLVM.
+v0.0.9h tries to apply this shape to the real `rmc/main.rm` graph. v0.0.9h-fix2
+adds bridge C lowering for comparison/logical expressions and verifies the
+focused boolean fixture, but the real graph still reaches Tier 0 only: `rmb`
+still builds `rmc0`, and `rmc0 build ../rmc/main.rm` still fails before
+producing `rmc1-real` with `build failed: unsupported source`. The architecture
+remains bridge-based and local-module-only; the next blocker is another real
+parser/codegen source shape, not package management, HIR/MIR, or LLVM.
 
 ## Error Reporting
 

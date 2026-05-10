@@ -57,6 +57,13 @@ fails with `build failed: unsupported source`. The first blocker is the real
 lexer module's boolean/logical expression shapes, especially `&&` in conditions
 and return expressions. See `docs/compiler/v009-real-self-host-expansion.md`.
 
+v0.0.9h-fix2 lowers that boolean/logical bridge blocker in `rmc/cgen/cgen.rm`.
+The focused `rmb/tests/rmc_bool_bridge/main.rm` fixture builds through `rmc0`
+and prints the expected five-line output. The real `rmc/main.rm` retry still
+does not produce `rmc1-real`: `rmc0 build ../rmc/main.rm` still reports
+`build failed: unsupported source`, and direct parse/check still report
+`parser error`. The highest real self-host tier remains Tier 0.
+
 ## Bootstrap Stages
 
 ### Stage 0: rmb (Bootstrap Compiler)

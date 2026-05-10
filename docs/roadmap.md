@@ -94,13 +94,18 @@
 - v0.0.9g-fix reached `rmc0 -> rmc1 -> rmc2 -> rmc3` for the controlled
   `rmb/tests/rmc_candidate/` source only.
 - v0.0.9h real-rmc self-host expansion ✓ PARTIAL
-- v0.0.9h reached Tier 0 only: `rmb` still builds `rmc0`, but
-  `rmc0 build ../rmc/main.rm` still reports `build failed: unsupported source`.
-- The first blocker is real boolean/logical expression lowering in
-  `rmc/lex/lexer.rm`, especially `&&` expressions in conditions and returns.
+- v0.0.9h-fix2 boolean/logical bridge lowering ✓ PARTIAL
+- v0.0.9h-fix2 lowers comparisons, `&&`, `||`, and parenthesized boolean
+  expressions in `rmc/cgen/cgen.rm`; the focused
+  `rmb/tests/rmc_bool_bridge/main.rm` fixture builds and prints the expected
+  five-line output.
+- Real self-host remains Tier 0: `rmb` still builds `rmc0`, but
+  `rmc0 build ../rmc/main.rm` still reports `build failed: unsupported source`;
+  direct `rmc0 parse/check ../rmc/main.rm` still reports `parser error`.
 - Do not claim real compiler self-hosting until the staged build applies to the
   real `rmc` source and comparison strategy.
-- Next option: v0.0.9h-fix focused boolean/logical bridge lowering.
+- Next option: isolate the next real-source parser/unsupported-source shape with
+  a small fixture and retry the real chain.
 
 ### v0.1.0 Usable Compiler
 - Stable self-hosting compiler

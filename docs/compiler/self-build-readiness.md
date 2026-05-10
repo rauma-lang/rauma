@@ -47,6 +47,12 @@ The current bootstrap chain is:
   reports `build failed: unsupported source`. The first isolated blocker is
   boolean/logical expression lowering for real lexer code such as `&&` in
   conditions and return expressions.
+- v0.0.9h-fix2 lowers comparison/logical expressions in the bridge cgen and
+  verifies `rmb/tests/rmc_bool_bridge/main.rm` through `rmc0 build`. The emitted
+  C contains `>=`, `<=`, `&&`, and `||`, and the fixture prints the expected
+  `upper/lower/alpha/inline` success lines. Real self-host remains Tier 0:
+  `rmc0 build ../rmc/main.rm` still reports `build failed: unsupported source`,
+  with direct parse/check still reporting `parser error`.
 - v0.0.8z stabilizes the bridge milestone and points fixed-point work to
   `docs/compiler/v009-plan.md`.
 - This is not self-hosting yet.

@@ -147,6 +147,13 @@ only: `rmb` still builds `rmc0`, but `rmc0 build ../rmc/main.rm` still reports
 expression lowering in real lexer code. See
 `docs/compiler/v009-real-self-host-expansion.md`.
 
+v0.0.9h-fix2 lowers comparisons, logical `&&`, logical `||`, and parenthesized
+boolean expressions in the bridge cgen. The focused
+`rmb/tests/rmc_bool_bridge/main.rm` fixture builds through `rmc0`, prints the
+expected five-line output, and emits C with the expected boolean/logical
+operators. Real self-host remains Tier 0 because `rmc0 build ../rmc/main.rm`
+still reports `build failed: unsupported source`.
+
 `rmc` still does not allocate a full AST, infer types, resolve names, do full
 codegen, implement HIR/MIR, packages, std modules, or self-host.
 

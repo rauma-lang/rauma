@@ -24,6 +24,12 @@ v0.0.9h tries the real `rmc/main.rm` source graph. The verified result is
 Tier 0 only: `rmb` still builds `rmc0`, but `rmc0 build ../rmc/main.rm` remains
 blocked by unsupported boolean/logical expression lowering in real lexer code.
 
+v0.0.9h-fix2 removes that first bridge blocker by lowering comparisons,
+logical `&&`, logical `||`, and parenthesized boolean expressions in
+`rmc/cgen/cgen.rm`. The focused bool bridge fixture builds through `rmc0` and
+runs successfully, while the real `rmc/main.rm` graph still remains Tier 0 with
+`build failed: unsupported source`.
+
 ## Design Principles
 
 ### 1. Stay Small

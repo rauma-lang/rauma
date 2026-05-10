@@ -221,7 +221,7 @@ static bool order_push(BuildContext* ctx, BuildChunk* chunk) {
 static bool parse_chunk(BuildChunk* chunk) {
     if (chunk->ast) return true;
     if (!rmb_source_read(chunk->path, &chunk->source)) return false;
-    chunk->arena = rmb_arena_create(1024 * 1024);
+    chunk->arena = rmb_arena_create(4 * 1024 * 1024);
     if (!chunk->arena) {
         rmb_diag_error("failed to create memory arena");
         return false;
