@@ -7,5 +7,6 @@ fn print_help() {
     print("  check-demo\n");
     print("  emit-demo\n");
     print("  build-demo\n");
+    print("  build\n");
     print("  self-test\n");
 }

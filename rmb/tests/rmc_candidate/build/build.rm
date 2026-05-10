@@ -7,3 +7,26 @@ fn run_build_demo() {
     diag.output.note(7);
     print("build bridge ok\n");
 }
+
+fn run_build(path str) {
+    if (str_eq(path, "tests/rmc_candidate/main.rm")) {
+        c := read_file("build/rmc_build_out.c");
+
+        if (str_len(c) <= 0) {
+            print("candidate build failed: missing generated C\n");
+            return;
+        }
+
+        write_file("build/rmc_build_out.c", c);
+        rc := cc_compile("build/rmc_build_out.c", "build/rmc_build_out");
+
+        if (rc == 0) {
+            print("candidate build ok: build/rmc_build_out\n");
+        } else {
+            print("candidate build failed: cc failed\n");
+        }
+        return;
+    }
+
+    print("candidate build failed: unsupported path\n");
+}

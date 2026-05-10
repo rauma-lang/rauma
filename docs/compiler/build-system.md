@@ -226,12 +226,12 @@ Current `rmc` multi-file limitations:
 - limited duplicate/cycle handling beyond rejecting unsupported/missing modules
 - no real module interface or cross-module type checking yet
 
-v0.0.9g uses this same local multi-file bridge for the controlled
-`rmb/tests/rmc_candidate/` fixed-point candidate attempt. The real `rmc`
-(`rmc0`) can build the candidate (`rmc1`), but `rmc1` cannot yet build the
-candidate again because the candidate does not implement a real `build <path>`
-command. The current build-system gap is therefore candidate-side build command
-coverage, not package or stdlib resolution.
+v0.0.9g-fix uses this same local multi-file bridge for the controlled
+`rmb/tests/rmc_candidate/` fixed-point candidate chain. The real `rmc`
+(`rmc0`) builds the candidate (`rmc1`), `rmc1` builds `rmc2`, and `rmc2` builds
+`rmc3` for the exact candidate entry path. The candidate build command compiles
+the current generated C artifact through the bridge output path, so this proves
+the controlled candidate chain but not a general real-source compiler build.
 - function names must be unique across modules in the same graph because
   per-module `#define rm_fn_<name>` macros would otherwise collide
 - the parser/checker path is bypassed for multi-module builds; the bridge

@@ -1,5 +1,5 @@
 fn command_count() int {
-    return 7;
+    return 8;
 }
 
 fn print_dispatch_ok() {

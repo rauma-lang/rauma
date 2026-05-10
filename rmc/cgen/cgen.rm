@@ -41,7 +41,7 @@ pub fn emit_runtime_args() str {
 }
 
 pub fn emit_runtime_str_helpers() str {
-    return "static int64_t rm_str_len(RmStr s) {\n    return s.len;\n}\n\nstatic int64_t rm_str_byte(RmStr s, int64_t index) {\n    return (int64_t)((unsigned char)s.ptr[index]);\n}\n\nstatic RmStr rm_read_file(RmStr path) {\n    char *cpath = (char*)malloc((size_t)path.len + 1);\n    if (!cpath) return rm_str(\"\");\n    memcpy(cpath, path.ptr, (size_t)path.len);\n    cpath[path.len] = 0;\n    FILE *f = fopen(cpath, \"rb\");\n    free(cpath);\n    if (!f) return rm_str(\"\");\n    if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return rm_str(\"\"); }\n    long size = ftell(f);\n    if (size < 0) { fclose(f); return rm_str(\"\"); }\n    if (fseek(f, 0, SEEK_SET) != 0) { fclose(f); return rm_str(\"\"); }\n    char *data = (char*)malloc((size_t)size + 1);\n    if (!data) { fclose(f); return rm_str(\"\"); }\n    size_t got = fread(data, 1, (size_t)size, f);\n    fclose(f);\n    data[got] = 0;\n    RmStr out;\n    out.ptr = data;\n    out.len = (int64_t)got;\n    return out;\n}\n\n";
+    return "static char *rm_cstr(RmStr s) {\n    char *out = (char*)malloc((size_t)s.len + 1);\n    if (!out) return NULL;\n    memcpy(out, s.ptr, (size_t)s.len);\n    out[s.len] = 0;\n    return out;\n}\n\nstatic int64_t rm_str_len(RmStr s) {\n    return s.len;\n}\n\nstatic int64_t rm_str_byte(RmStr s, int64_t index) {\n    return (int64_t)((unsigned char)s.ptr[index]);\n}\n\nstatic RmStr rm_read_file(RmStr path) {\n    char *cpath = rm_cstr(path);\n    if (!cpath) return rm_str(\"\");\n    FILE *f = fopen(cpath, \"rb\");\n    free(cpath);\n    if (!f) return rm_str(\"\");\n    if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return rm_str(\"\"); }\n    long size = ftell(f);\n    if (size < 0) { fclose(f); return rm_str(\"\"); }\n    if (fseek(f, 0, SEEK_SET) != 0) { fclose(f); return rm_str(\"\"); }\n    char *data = (char*)malloc((size_t)size + 1);\n    if (!data) { fclose(f); return rm_str(\"\"); }\n    size_t got = fread(data, 1, (size_t)size, f);\n    fclose(f);\n    data[got] = 0;\n    RmStr out;\n    out.ptr = data;\n    out.len = (int64_t)got;\n    return out;\n}\n\nstatic bool rm_write_file(RmStr path, RmStr text) {\n    char *cpath = rm_cstr(path);\n    if (!cpath) return false;\n    FILE *f = fopen(cpath, \"wb\");\n    free(cpath);\n    if (!f) return false;\n    size_t wrote = fwrite(text.ptr, 1, (size_t)text.len, f);\n    fclose(f);\n    return wrote == (size_t)text.len;\n}\n\nstatic int64_t rm_cc_compile(RmStr c_path, RmStr out_path) {\n    char *cc = rm_cstr(c_path);\n    char *out = rm_cstr(out_path);\n    if (!cc || !out) { free(cc); free(out); return 1; }\n    char cmd[4096];\n    int n = snprintf(cmd, sizeof(cmd), \"gcc -std=c11 -Wall -Wextra -pedantic %s -o %s\", cc, out);\n    free(cc);\n    free(out);\n    if (n < 0 || n >= (int)sizeof(cmd)) return 1;\n    return (int64_t)system(cmd);\n}\n\n";
 }
 
 pub fn emit_prelude_to_string() str {
@@ -353,6 +353,20 @@ pub fn emit_call_to_c(src str, i int) str {
 
     if (str_eq(name, "read_file")) {
         out := "rm_read_file(";
+        out = str_concat(out, args);
+        out = str_concat(out, ")");
+        return out;
+    }
+
+    if (str_eq(name, "write_file")) {
+        out := "rm_write_file(";
+        out = str_concat(out, args);
+        out = str_concat(out, ")");
+        return out;
+    }
+
+    if (str_eq(name, "cc_compile")) {
+        out := "rm_cc_compile(";
         out = str_concat(out, args);
         out = str_concat(out, ")");
         return out;
@@ -799,6 +813,17 @@ pub fn emit_call_stmt_to_c(src str, i int) str {
         return out;
     }
 
+    if (str_eq(name, "write_file") || str_eq(name, "cc_compile")) {
+        call := emit_call_to_c(src, i);
+        if (str_len(call) == 0) {
+            return "";
+        }
+        out := "    ";
+        out = str_concat(out, call);
+        out = str_concat(out, ";\n");
+        return out;
+    }
+
     args := emit_call_args_to_c(src, pos);
     if (is_fail_text(args)) {
         return "";
@@ -1089,6 +1114,8 @@ pub fn emit_main_start(main_args bool) str {
     out = str_concat(out, "    (void)rm_str_len;\n");
     out = str_concat(out, "    (void)rm_str_byte;\n");
     out = str_concat(out, "    (void)rm_read_file;\n");
+    out = str_concat(out, "    (void)rm_write_file;\n");
+    out = str_concat(out, "    (void)rm_cc_compile;\n");
     return out;
 }
 

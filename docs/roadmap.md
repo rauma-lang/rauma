@@ -90,10 +90,13 @@
 - v0.0.9e real-ish rmc frontend module group build ✓ DONE
 - v0.0.9f rmc compiler candidate ✓ DONE
 - v0.0.9g fixed-point candidate ✓ DONE
-- v0.0.9g reached `rmc0 -> rmc1 candidate`; it did not reach a valid `rmc2`
-  because the controlled candidate does not yet implement `build <path>`.
-- Do not claim full fixed point until the staged compiler build and comparison
-  strategy are stable across candidate generations.
+- v0.0.9g-fix controlled candidate chain ✓ DONE
+- v0.0.9g-fix reached `rmc0 -> rmc1 -> rmc2 -> rmc3` for the controlled
+  `rmb/tests/rmc_candidate/` source only.
+- Do not claim real compiler self-hosting until the staged build applies to the
+  real `rmc` source and comparison strategy.
+- Next options: v0.1.0 stabilization planning, or v0.0.9h real-rmc self-host
+  expansion.
 
 ### v0.1.0 Usable Compiler
 - Stable self-hosting compiler

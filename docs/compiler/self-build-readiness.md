@@ -36,11 +36,12 @@ The current bootstrap chain is:
   `version`, `lex‑demo`, `parse‑demo`, `check‑demo`, `emit‑demo`, `build‑demo`,
   `self‑test`, and help/unknown‑command dispatch. It validates the local
   multi‑file bridge with a deeper dependency graph (up to seven levels).
-- v0.0.9g verifies the first step of a fixed‑point candidate chain: `rmb` builds
-  `rmc0`, `rmc0` builds the candidate, and the candidate binary runs all demo
-  commands. Because the candidate fixture does not contain a `build` command,
-  the chain stops at one generation; a true fixed‑point demonstration awaits
-  extending the candidate with a working `build` command.
+- v0.0.9g-fix verifies the controlled fixed‑point candidate chain:
+  `rmb -> rmc0 -> rmc1 -> rmc2 -> rmc3` for
+  `rmb/tests/rmc_candidate/main.rm`. Candidate behavior matches across
+  generations, and generated C from `rmc1` and `rmc2` matches exactly.
+  This is still not real `rmc` self-hosting because the candidate build command
+  is path-specific and does not build the full real `rmc/main.rm`.
 - v0.0.8z stabilizes the bridge milestone and points fixed-point work to
   `docs/compiler/v009-plan.md`.
 - This is not self-hosting yet.

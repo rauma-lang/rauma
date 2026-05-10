@@ -2,7 +2,7 @@
 
 ## What was verified
 
-The v0.0.9g attempt verified the first candidate generation:
+The first v0.0.9g attempt verified only the first candidate generation:
 
 - `rmb -> rmc0`
 - `rmc0 -> rmc1 candidate`
@@ -11,7 +11,18 @@ The v0.0.9g attempt verified the first candidate generation:
 `rmc1` is the controlled compiler-shaped candidate built from
 `rmb/tests/rmc_candidate/main.rm`.
 
-The produced `rmc1` candidate binary ran these commands:
+That attempt stopped because the candidate fixture had only `build-demo`, not a
+real `build <path>` command.
+
+The v0.0.9g-fix milestone adds a controlled candidate `build <path>` command
+and verifies this chain:
+
+- `rmb -> rmc0`
+- `rmc0 -> rmc1 candidate`
+- `rmc1 -> rmc2 candidate`
+- `rmc2 -> rmc3 candidate`
+
+`rmc1`, `rmc2`, and `rmc3` all ran these commands with matching behavior:
 
 - no args
 - `version`
@@ -23,58 +34,57 @@ The produced `rmc1` candidate binary ran these commands:
 - `self-test`
 - unknown command
 
-The candidate self-test ended with:
+The candidate self-test output ends with:
 
 ```text
 candidate ok
 ```
 
-The attempted `rmc1 -> rmc2` step did not pass. `rmc1` currently prints
-`unknown command` for `build tests/rmc_candidate/main.rm` because the controlled
-candidate fixture has only `build-demo`; it does not yet implement a real
-`build <path>` command.
+The controlled candidate build command supports only:
 
-`rmc2` and `rmc3` were therefore not valid fixed-point generations in v0.0.9g.
+```text
+tests/rmc_candidate/main.rm
+```
+
+For that path it prints:
+
+```text
+candidate build ok: build/rmc_build_out
+```
 
 ## What this proves
 
 - The bootstrap compiler `rmb` can still build the real RauMa-written `rmc`.
 - The real RauMa-written `rmc` can build the controlled compiler-shaped
   candidate.
-- The candidate binary preserves the expected compiler-like behavior for its
-  supported demo commands.
+- A candidate-built compiler can build the controlled candidate again.
+- Candidate behavior is stable across `rmc1`, `rmc2`, and `rmc3` for the
+  supported commands.
 - The current bridge can compile a deeper compiler-shaped multi-file fixture.
 
 ## What this does not prove
 
 - The real `rmc` is not self-hosting yet.
-- The controlled candidate is not a fixed point yet.
-- `rmc1` cannot build `rmc2` until the candidate implements a real
-  `build <path>` command.
+- The controlled candidate fixed-point chain is not the real compiler
+  fixed-point chain.
+- The candidate `build <path>` command supports only the exact controlled
+  candidate path.
 - The real multi-file `rmc/main.rm` is not built by `rmc` yet.
 - There is no full package lookup, stdlib lookup, HIR/MIR, LLVM backend, or
   fixed-point comparison pipeline.
 
 ## Artifact comparison
 
-Generated C comparison was not valid for v0.0.9g because the chain stopped
-before a real `rmc2` generation. Behavior was verified for `rmc1`, but behavior
-could not be compared across `rmc1`, `rmc2`, and `rmc3`.
+Generated C comparison was performed for the controlled chain. The C produced
+by `rmc1 build tests/rmc_candidate/main.rm` matched the C produced by
+`rmc2 build tests/rmc_candidate/main.rm` exactly.
 
-The attempted `rmc1 build tests/rmc_candidate/main.rm` produced:
-
-```text
-unknown command
-```
-
-That output is the blocker to address before exact generated-C comparison is
-meaningful.
+Behavior comparison across `rmc1`, `rmc2`, and `rmc3` also matched for all
+candidate commands listed above.
 
 ## Remaining gaps to v0.1.0
 
-- Add a real `build <path>` command to the controlled candidate.
 - Preserve candidate build outputs under distinct paths for staged comparison.
-- Compare generated C and produced binary behavior across candidate generations.
 - Expand real `rmc` source coverage beyond controlled fixtures.
 - Add robust cross-module checking and diagnostics.
 - Define deterministic artifact comparison rules.

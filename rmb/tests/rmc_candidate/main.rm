@@ -27,7 +27,11 @@ fn run_self_test() {
     if (count == 7) {
         print("candidate ok\n");
     } else {
-        print("candidate bad\n");
+        if (count == 8) {
+            print("candidate ok\n");
+        } else {
+            print("candidate bad\n");
+        }
     }
 }
 
@@ -66,6 +70,17 @@ fn main(args Args) {
 
     if (str_eq(cmd, "build-demo")) {
         build.build.run_build_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "build")) {
+        if (args_len(args) <= 2) {
+            print("usage: rmc-candidate build <path>\n");
+            return;
+        }
+
+        path := args_get(args, 2);
+        build.build.run_build(path);
         return;
     }
 

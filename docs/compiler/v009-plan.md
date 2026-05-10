@@ -82,13 +82,26 @@ expected staged build chain and comparison strategy.
 ### v0.0.9g fixed-point candidate ✓ DONE
 
 - verified `rmb` builds `rmc0`, `rmc0` builds candidate `rmc1`
-- candidate `rmc1` runs all expected demo commands (version, lex‑demo, …, self‑test)
-- candidate does **not** contain a `build` command, so `rmc1` cannot build `rmc2`; the fixed‑point chain stops at one generation
-- full behavior comparison across generations was therefore not possible
+- v0.0.9g-fix adds the controlled candidate `build <path>` command
+- verified `rmc1` builds `rmc2`, and `rmc2` builds `rmc3`, for
+  `tests/rmc_candidate/main.rm`
+- `rmc1`, `rmc2`, and `rmc3` run all expected demo commands with matching
+  behavior
+- generated C from `rmc1` and `rmc2` matched exactly for the controlled
+  candidate build
 - all previous frontend groups, probes, and self‑build targets still pass
 - documented result in `docs/compiler/v009-fixed-point-candidate.md`
 
-**What this means:** The candidate fixture must be extended with a working `build` command before a true fixed‑point chain can be demonstrated. Real `rmc` self‑host remains a separate, larger milestone.
+**What this means:** The controlled candidate fixed-point chain works. Real
+`rmc` self-host remains a separate, larger milestone because the candidate
+build command is path-specific and does not build the real `rmc/main.rm`.
+
+## Next options
+
+- v0.1.0 stabilization planning: safer path, focuses on documenting and
+  hardening the verified bridge/candidate chain.
+- v0.0.9h real-rmc self-host expansion: more ambitious path, grows from the
+  controlled candidate toward real `rmc` source coverage.
 
 ## Compressed remaining v0.0.9 path
 

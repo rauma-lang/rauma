@@ -13,12 +13,12 @@
 
 ## Current rmc bridge verification
 
-As of v0.0.9g, `rmb` builds the real RauMa-written `rmc` (`rmc0`), and `rmc0`
-builds the controlled compiler-shaped candidate under
-`rmb/tests/rmc_candidate/`. The candidate binary runs its supported demo
-commands, including `self-test`, but it does not yet implement a real
-`build <path>` command, so the fixed-point chain does not reach a valid `rmc2`
-generation yet.
+As of v0.0.9g-fix, `rmb` builds the real RauMa-written `rmc` (`rmc0`), and
+`rmc0` builds the controlled compiler-shaped candidate under
+`rmb/tests/rmc_candidate/`. That candidate can build itself again through
+`rmc1 -> rmc2 -> rmc3` for the exact candidate path, and the produced
+generations match behavior for the supported commands. This is still a
+controlled candidate chain, not full real `rmc` self-hosting.
 
 ## Design Principles
 
