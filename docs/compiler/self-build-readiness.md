@@ -8,6 +8,7 @@ The current bootstrap chain is:
 - `rmc` can lex, parse, check, emit C for, and build small single-file RauMa programs.
 - `rmc` can build `examples/selfbuild/tiny.rm`.
 - `rmc` can build `examples/selfbuild/tool.rm`.
+- `rmc` can build `examples/selfbuild/rmc-mini.rm`.
 - This is not self-hosting yet.
 
 `rmc build` is currently a bridge: it reads a single file, runs lightweight checks, emits C text, writes `build/rmc_build_out.c`, invokes the external C compiler through the temporary `cc_compile` builtin, and produces `build/rmc_build_out`.
@@ -75,6 +76,10 @@ The verified bridge subset currently includes:
 
 ## Candidate next self-build targets
 
+The v0.0.8y milestone verified the recommended reduced `rmc-mini.rm` target. It
+proves that the bridge can build a standalone compiler-like CLI with version,
+lexer-demo, parser-demo, and check-demo commands.
+
 1. Build a single extracted CLI module as standalone source.
 
 Pros: closest to existing `rmc` command dispatch and mostly uses the verified `Args` subset.  
@@ -90,24 +95,27 @@ Cons: needs either copied token helpers or real module support; the current lexe
 Pros: closer to compiler logic and validates cursor parsing.  
 Cons: parser depends heavily on token stream helpers and is much larger than current bridge confidence.
 
-4. Build a reduced `rmc-mini.rm`.
+4. Build a reduced `rmc-mini.rm`. ✓ verified in v0.0.8y
 
 Pros: best next bridge target because it can avoid imports while mimicking a tiny compiler CLI with version, lex-demo, and parse-demo commands.  
 Cons: duplicates a thin slice of `rmc` behavior and is still not self-hosting.
 
 ## Recommended next milestone
 
-v0.0.8y should create a standalone `rmc-mini.rm` target that mimics a tiny compiler command:
+v0.0.8y created a standalone `rmc-mini.rm` target that mimics a tiny compiler command:
 
 - `main(args Args)`
 - `version`
 - `lex-demo`
 - `parse-demo`
+- `check-demo`
 - no imports
 - no multi-file
 - buildable by `rmc build`
 
-This is the smallest meaningful target before attempting module/chunk work. It exercises command dispatch and compiler-like output while staying inside the verified bridge subset.
+The next milestone should be v0.0.8z stabilization. It should freeze the v0.0.8
+bridge behavior, review docs/tests, and prepare clean v0.0.9 fixed-point
+planning without claiming self-hosting.
 
 ## Not yet self-hosting
 

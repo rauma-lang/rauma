@@ -1,0 +1,91 @@
+fn version() {
+    print("rmc-mini 0.0.8y\n");
+}
+
+fn help() {
+    print("usage: rmc-mini <command>\n");
+    print("commands:\n");
+    print("  version\n");
+    print("  lex-demo\n");
+    print("  parse-demo\n");
+    print("  check-demo\n");
+}
+
+fn lex_demo() {
+    print("mini lex demo:\n");
+    print("kw_fn fn\n");
+    print("ident main\n");
+    print("l_paren (\n");
+    print("r_paren )\n");
+    print("l_brace {\n");
+    print("ident print\n");
+    print("string \"hi\\n\"\n");
+    print("r_brace }\n");
+    print("eof\n");
+}
+
+fn parse_demo() {
+    print("mini parse demo:\n");
+    print("file items=1\n");
+    print("fn main params=0\n");
+    print("  stmt call print args=1\n");
+}
+
+fn score(limit int) int {
+    i := 0;
+    total := 0;
+
+    while (i < limit) {
+        total = total + i;
+        i += 1;
+    }
+
+    return total;
+}
+
+fn check_demo() {
+    total := score(5);
+    answer := total + 32;
+
+    print("mini check demo:\n");
+
+    if (answer == 42) {
+        print("check ok\n");
+    } else {
+        print("check bad\n");
+    }
+
+    print(answer);
+    print("\n");
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "version")) {
+        version();
+        return;
+    }
+
+    if (str_eq(cmd, "lex-demo")) {
+        lex_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "parse-demo")) {
+        parse_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "check-demo")) {
+        check_demo();
+        return;
+    }
+
+    print("unknown command\n");
+}

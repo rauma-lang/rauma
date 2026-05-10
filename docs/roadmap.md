@@ -75,7 +75,8 @@
 - v0.0.8v self-build CLI tool target ✓ DONE
 - v0.0.8w rmc bridge consolidation ✓ DONE
 - v0.0.8x self-build readiness audit ✓ DONE
-- v0.0.8y rmc-mini standalone target
+- v0.0.8y rmc-mini standalone target ✓ DONE
+- v0.0.8z v0.0.8 stabilization
 - Port compiler from C to RauMa
 - Implement self-hosting compiler core
 - Test compiler bootstrapping

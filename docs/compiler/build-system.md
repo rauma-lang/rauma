@@ -152,6 +152,13 @@ chunk layout, structured AST storage, broader codegen, and real type checking
 as the main build-system blockers before `rmc` can build meaningful parts of
 itself.
 
+v0.0.8y adds `examples/selfbuild/rmc-mini.rm` and
+`rmb/tests/rmc_selfbuild_mini.rm`. This target is a single-file compiler-like
+CLI built through the same bridge path. It verifies the current build bridge can
+produce a standalone command binary with help/version/demo/check-style commands,
+but the output path is still `build/rmc_build_out.c` / `build/rmc_build_out`
+and there is still no multi-file `rmc` build graph.
+
 ## Chunk-Based Architecture
 
 ### What is a Chunk?

@@ -49,6 +49,12 @@ v0.0.8x audits self-build readiness in
 `rmb` builds `rmc`, then `rmc` builds tiny/tool/probe single-file targets. `rmc`
 does not build itself yet.
 
+v0.0.8y adds a standalone pre-self-host target at
+`examples/selfbuild/rmc-mini.rm`. It has no imports and is built by the
+RauMa-written `rmc`; the produced binary behaves like a tiny compiler CLI with
+`version`, `lex-demo`, `parse-demo`, and `check-demo` commands. This is still
+not self-hosting.
+
 The pipeline is now:
 
 ```bash
@@ -261,5 +267,5 @@ parse. On Windows, use bash (the redirection above is plain `>`), or invoke via
 
 ## Later v0.0.8 Work
 
-v0.0.8y should create a standalone `rmc-mini.rm` target after the readiness
-audit is verified. Self-host fixed point remains v0.0.9.
+v0.0.8z should stabilize v0.0.8 and prepare the transition toward v0.0.9
+fixed-point planning. Self-host fixed point remains v0.0.9.

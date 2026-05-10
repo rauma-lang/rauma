@@ -234,6 +234,18 @@ The expected probe output is `probe ok` followed by `15`. The audit lives at
 `docs/compiler/self-build-readiness.md` and lists the remaining gaps before
 `rmc` can build meaningful parts of itself.
 
+v0.0.8y adds a standalone `rmc-mini` target:
+
+```bash
+./build/debug/native/bin/main build tests/rmc_selfbuild_mini.rm
+./build/rmc_build_out version
+./build/rmc_build_out check-demo
+```
+
+The user-facing copy lives at `examples/selfbuild/rmc-mini.rm`. It is a
+single-file, import-free compiler-like CLI built by the RauMa-written `rmc`.
+This is still not fixed-point self-hosting.
+
 ### Output
 The compiler executable is built at:
 ```

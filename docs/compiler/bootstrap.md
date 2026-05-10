@@ -354,6 +354,20 @@ This remains an audit and probe milestone only. `rmc` still does not build
 itself, does not have multi-file chunk builds, and does not have HIR/MIR or a
 full backend. v0.0.9 remains the fixed-point milestone.
 
+### v0.0.8y: Standalone rmc-mini Target
+
+v0.0.8y adds `examples/selfbuild/rmc-mini.rm` and the matching
+`rmb/tests/rmc_selfbuild_mini.rm` fixture. This proves:
+
+1. `rmb` builds the RauMa-written `rmc`
+2. the generated `rmc` builds `rmc-mini`
+3. the produced `rmc-mini` binary behaves like a tiny compiler CLI with
+   `version`, `lex-demo`, `parse-demo`, and `check-demo`
+
+`rmc-mini` is intentionally standalone: no imports, no multi-file source, no
+chunk layout, and no package manager. This is closer to self-hosting but still
+not the fixed point. v0.0.9 remains the fixed-point milestone.
+
 ### Stage 2: rmc2 (Second RauMa Compiler)
 - Written in full RauMa
 - Compiled by rmc1
