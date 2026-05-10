@@ -1,0 +1,47 @@
+fn is_upper(b int) int {
+    return b >= 65 && b <= 90;
+}
+
+fn is_lower(b int) int {
+    return b >= 97 && b <= 122;
+}
+
+fn is_alpha(b int) int {
+    return is_upper(b) || is_lower(b);
+}
+
+fn main() {
+    a := 65;
+    z := 122;
+    bang := 33;
+
+    if (is_upper(a)) {
+        print("upper ok\n");
+    } else {
+        print("upper bad\n");
+    }
+
+    if (is_lower(z)) {
+        print("lower ok\n");
+    } else {
+        print("lower bad\n");
+    }
+
+    if (is_alpha(bang)) {
+        print("alpha bad\n");
+    } else {
+        print("alpha ok\n");
+    }
+
+    if (a >= 65 && a <= 90) {
+        print("inline and ok\n");
+    } else {
+        print("inline and bad\n");
+    }
+
+    if (bang < 65 || bang > 122) {
+        print("inline or ok\n");
+    } else {
+        print("inline or bad\n");
+    }
+}

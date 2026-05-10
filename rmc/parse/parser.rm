@@ -28,8 +28,62 @@ pub fn parse_primary(src str, i int) int {
     return 0;
 }
 
-pub fn parse_expr(src str, i int) int {
+pub fn parse_comparison(src str, i int) int {
     pos := parse_primary(src, i);
+    if (pos == 0) {
+        return 0;
+    }
+    if (is_compare_kind(lex.stream.current_kind(src, pos))) {
+        pos = lex.stream.advance(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+        pos = parse_primary(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+    }
+    return pos;
+}
+
+pub fn parse_logical_and(src str, i int) int {
+    pos := parse_comparison(src, i);
+    if (pos == 0) {
+        return 0;
+    }
+    while (lex.stream.current_kind(src, pos) == lex.token.kind_and_and()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_and_and());
+        if (pos == 0) {
+            return 0;
+        }
+        pos = parse_comparison(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+    }
+    return pos;
+}
+
+pub fn parse_logical_or(src str, i int) int {
+    pos := parse_logical_and(src, i);
+    if (pos == 0) {
+        return 0;
+    }
+    while (lex.stream.current_kind(src, pos) == lex.token.kind_or_or()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_or_or());
+        if (pos == 0) {
+            return 0;
+        }
+        pos = parse_logical_and(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+    }
+    return pos;
+}
+
+pub fn parse_expr(src str, i int) int {
+    pos := parse_logical_or(src, i);
     if (pos == 0) {
         return 0;
     }
@@ -70,23 +124,6 @@ pub fn is_compare_kind(kind int) bool {
 
 pub fn parse_condition(src str, i int) int {
     pos := lex.stream.expect_kind(src, i, lex.token.kind_l_paren());
-    if (pos == 0) {
-        return 0;
-    }
-
-    pos = parse_expr(src, pos);
-    if (pos == 0) {
-        return 0;
-    }
-
-    if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
-        return lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
-    }
-
-    if (is_compare_kind(lex.stream.current_kind(src, pos)) == false) {
-        return 0;
-    }
-    pos = lex.stream.advance(src, pos);
     if (pos == 0) {
         return 0;
     }
@@ -179,23 +216,12 @@ pub fn parse_return_stmt(src str, i int, emit bool) int {
         return pos;
     }
 
-    pos = parse_primary(src, pos);
+    pos = parse_expr(src, pos);
     if (pos == 0) {
         return 0;
     }
 
     binary := false;
-    if (lex.stream.current_kind(src, pos) == lex.token.kind_plus()) {
-        binary = true;
-        pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
-        if (pos == 0) {
-            return 0;
-        }
-        pos = parse_primary(src, pos);
-        if (pos == 0) {
-            return 0;
-        }
-    }
 
     pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
     if (pos == 0) {
