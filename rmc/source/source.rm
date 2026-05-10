@@ -1,15 +1,6 @@
 use source.span;
 
-pub struct Source {
-    path str;
-    text str;
-}
-
 pub fn print_source_label() {
     print("source module ready\n");
     source.span.print_span_label();
-}
-
-pub fn demo_text() str {
-    return "fn add(a int, b int) int {\n    return a + b;\n}\n\nfn main() {\n    x := add(20, 22);\n    print(\"sum\\n\");\n    print(x);\n}";
 }

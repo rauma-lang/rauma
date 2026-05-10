@@ -84,6 +84,9 @@ candidate commands listed above.
 
 ## Remaining gaps to v0.1.0
 
+- v0.0.9h attempted the real `rmc/main.rm` graph and reached Tier 0 only:
+  `rmb` still builds `rmc0`, but `rmc0 build ../rmc/main.rm` remains blocked by
+  unsupported boolean/logical expression lowering in real lexer code.
 - Preserve candidate build outputs under distinct paths for staged comparison.
 - Expand real `rmc` source coverage beyond controlled fixtures.
 - Add robust cross-module checking and diagnostics.

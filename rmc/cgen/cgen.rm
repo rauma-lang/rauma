@@ -1281,7 +1281,9 @@ pub fn emit_fn_to_c(src str, i int) str {
     if (lex.stream.current_kind(src, pos) == lex.token.kind_ident()) {
         return_type := token_text(src, pos);
         if (str_eq(return_type, "int") == false) {
-            return "";
+            if (str_eq(return_type, "bool") == false) {
+                return "";
+            }
         }
         has_return = true;
         pos = lex.stream.expect_ident(src, pos);
@@ -1397,7 +1399,9 @@ pub fn emit_module_fn_to_c(src str, i int, module_prefix str) str {
     if (lex.stream.current_kind(src, pos) == lex.token.kind_ident()) {
         return_type := token_text(src, pos);
         if (str_eq(return_type, "int") == false) {
-            return "";
+            if (str_eq(return_type, "bool") == false) {
+                return "";
+            }
         }
         has_return = true;
         pos = lex.stream.expect_ident(src, pos);

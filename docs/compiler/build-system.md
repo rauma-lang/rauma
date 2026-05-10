@@ -86,6 +86,13 @@ These bridge primitives are used by the `rmb/tests/build_write_file.rm` and
 `rmb/tests/build_cc_compile.rm` fixtures to verify the low‑level operations
 work.
 
+v0.0.9h keeps the bridge build system local and non-package-based while trying
+the real `rmc/main.rm` graph. The attempt reaches Tier 0 only: `rmb` still
+builds `rmc0`, but the real `rmc0 build ../rmc/main.rm` path remains blocked by
+unsupported boolean/logical expression lowering in real lexer code. The local
+multi-file bridge and controlled candidate chain are still the verified build
+paths.
+
 v0.0.8r adds `rmc build <path>`, which wraps the full emit‑c→write‑file→cc‑compile pipeline behind a single command. The command writes generated C to `build/rmc_build_out.c`, compiles it to `build/rmc_build_out`, and reports success. This is still a bridge, not `rmc`’s own backend / link step. Later milestones replace the bridge with `rmc`’s own build system.
 
 v0.0.8s expands that bridge subset while keeping it single-file only. Current

@@ -47,8 +47,26 @@ pub fn is_ident_continue(b int) bool {
 pub fn next_start(text str, start int) int {
     len := str_len(text);
     i := start;
-    while (i < len && is_space(str_byte(text, i))) {
-        i += 1;
+    done := false;
+    while (done == false) {
+        while (i < len && is_space(str_byte(text, i))) {
+            i += 1;
+        }
+        if (i + 1 < len && str_byte(text, i) == 47 && str_byte(text, i + 1) == 47) {
+            i += 2;
+            while (i < len && str_byte(text, i) != 10) {
+                i += 1;
+            }
+        } else {
+            done = true;
+        }
+    }
+    if (i + 3 < len && str_byte(text, i) == 112 && str_byte(text, i + 1) == 117 &&
+        str_byte(text, i + 2) == 98 && is_space(str_byte(text, i + 3))) {
+        i += 3;
+        while (i < len && is_space(str_byte(text, i))) {
+            i += 1;
+        }
     }
     return i;
 }
@@ -114,6 +132,40 @@ pub fn is_use_keyword(text str, start int, end int) bool {
     }
     if (str_byte(text, start) == 117 && str_byte(text, start + 1) == 115 &&
         str_byte(text, start + 2) == 101) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_pub_keyword(text str, start int, end int) bool {
+    if (end - start != 3) {
+        return false;
+    }
+    if (str_byte(text, start) == 112 && str_byte(text, start + 1) == 117 &&
+        str_byte(text, start + 2) == 98) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_struct_keyword(text str, start int, end int) bool {
+    if (end - start != 6) {
+        return false;
+    }
+    if (str_byte(text, start) == 115 && str_byte(text, start + 1) == 116 &&
+        str_byte(text, start + 2) == 114 && str_byte(text, start + 3) == 117 &&
+        str_byte(text, start + 4) == 99 && str_byte(text, start + 5) == 116) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_enum_keyword(text str, start int, end int) bool {
+    if (end - start != 4) {
+        return false;
+    }
+    if (str_byte(text, start) == 101 && str_byte(text, start + 1) == 110 &&
+        str_byte(text, start + 2) == 117 && str_byte(text, start + 3) == 109) {
         return true;
     }
     return false;
@@ -576,6 +628,12 @@ pub fn scan_string_end(text str, start int, len int) int {
 
 pub fn punct_kind(text str, start int, len int) int {
     b := str_byte(text, start);
+    if (b == 38 && start + 1 < len && str_byte(text, start + 1) == 38) {
+        return lex.token.kind_and_and();
+    }
+    if (b == 124 && start + 1 < len && str_byte(text, start + 1) == 124) {
+        return lex.token.kind_or_or();
+    }
     if (b == 61 && start + 1 < len && str_byte(text, start + 1) == 61) {
         return lex.token.kind_eq_eq();
     }
@@ -617,6 +675,9 @@ pub fn punct_kind(text str, start int, len int) int {
     }
     if (b == 45) {
         return lex.token.kind_minus();
+    }
+    if (b == 33) {
+        return lex.token.kind_bang();
     }
     if (b == 61) {
         return lex.token.kind_eq();
@@ -660,6 +721,15 @@ pub fn next_kind(text str, start int) int {
         }
         if (is_use_keyword(text, pos, end)) {
             return lex.token.kind_kw_use();
+        }
+        if (is_pub_keyword(text, pos, end)) {
+            return lex.token.kind_kw_pub();
+        }
+        if (is_struct_keyword(text, pos, end)) {
+            return lex.token.kind_kw_struct();
+        }
+        if (is_enum_keyword(text, pos, end)) {
+            return lex.token.kind_kw_enum();
         }
         return lex.token.kind_ident();
     }
@@ -707,6 +777,12 @@ pub fn next_end(text str, start int) int {
     if (b == 43 && pos + 1 < len && str_byte(text, pos + 1) == 61) {
         return pos + 2;
     }
+    if (b == 38 && pos + 1 < len && str_byte(text, pos + 1) == 38) {
+        return pos + 2;
+    }
+    if (b == 124 && pos + 1 < len && str_byte(text, pos + 1) == 124) {
+        return pos + 2;
+    }
     return pos + 1;
 }
 
@@ -735,6 +811,18 @@ pub fn scan_ident(text str, start int, len int) int {
     }
     if (is_use_keyword(text, start, i)) {
         lex.token.print_token(lex.token.kind_kw_use(), "use");
+        return i;
+    }
+    if (is_pub_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_pub(), "pub");
+        return i;
+    }
+    if (is_struct_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_struct(), "struct");
+        return i;
+    }
+    if (is_enum_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_enum(), "enum");
         return i;
     }
     if (is_add_ident(text, start, i)) {
@@ -820,6 +908,14 @@ pub fn scan_string(text str, start int, len int) int {
 
 pub fn scan_punct(text str, start int, len int) int {
     b := str_byte(text, start);
+    if (b == 38 && start + 1 < len && str_byte(text, start + 1) == 38) {
+        lex.token.print_token(lex.token.kind_and_and(), "&&");
+        return start + 2;
+    }
+    if (b == 124 && start + 1 < len && str_byte(text, start + 1) == 124) {
+        lex.token.print_token(lex.token.kind_or_or(), "||");
+        return start + 2;
+    }
     if (b == 61 && start + 1 < len && str_byte(text, start + 1) == 61) {
         lex.token.print_token(lex.token.kind_eq_eq(), "==");
         return start + 2;
@@ -876,6 +972,10 @@ pub fn scan_punct(text str, start int, len int) int {
         lex.token.print_token(lex.token.kind_minus(), "-");
         return start + 1;
     }
+    if (b == 33) {
+        lex.token.print_token(lex.token.kind_bang(), "!");
+        return start + 1;
+    }
     if (b == 61) {
         lex.token.print_token(lex.token.kind_eq(), "=");
         return start + 1;
@@ -926,7 +1026,7 @@ pub fn scan_and_print(text str) {
 
 pub fn run_smoke() {
     print("rmc lexer smoke:\n");
-    scan_and_print(source.source.demo_text());
+    scan_and_print("fn add(a int, b int) int {\n    return a + b;\n}\n\nfn main() {\n    x := add(20, 22);\n    print(\"sum\\n\");\n    print(x);\n}");
 }
 
 pub fn run_file(text str) {

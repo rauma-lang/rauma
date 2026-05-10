@@ -96,18 +96,31 @@ expected staged build chain and comparison strategy.
 `rmc` self-host remains a separate, larger milestone because the candidate
 build command is path-specific and does not build the real `rmc/main.rm`.
 
+### v0.0.9h real-rmc self-host expansion ✓ PARTIAL
+
+- attempted the actual `rmc0 build ../rmc/main.rm` path against the real
+  `rmc/` source tree
+- kept the real source tree as the target; no one-file bundled compiler hack
+- result: Tier 0 only
+- `rmb` still builds `rmc0`, but `rmc0 build ../rmc/main.rm` still reports
+  `build failed: unsupported source`
+- first blocker: boolean/logical expression lowering for real lexer code such
+  as `b >= 65 && b <= 90` and `return b >= 48 && b <= 57`
+- next step should be a focused v0.0.9h-fix before retrying the real chain
+
 ## Next options
 
-- v0.1.0 stabilization planning: safer path, focuses on documenting and
-  hardening the verified bridge/candidate chain.
-- v0.0.9h real-rmc self-host expansion: more ambitious path, grows from the
-  controlled candidate toward real `rmc` source coverage.
+- v0.0.9h-fix boolean/logical bridge lowering: safer immediate path, isolates
+  the first blocker before retrying real `rmc/main.rm`.
+- v0.1.0 stabilization planning remains premature until the real self-host
+  expansion either reaches a higher tier or is explicitly deferred.
 
 ## Compressed remaining v0.0.9 path
 
 1. v0.0.9e — real-ish frontend module groups ✓ DONE
 2. v0.0.9f — rmc compiler candidate ✓ DONE
 3. v0.0.9g — fixed-point candidate ✓ DONE
+4. v0.0.9h — real-rmc self-host expansion ✓ PARTIAL
 
 ## Do not do yet
 

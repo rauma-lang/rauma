@@ -51,6 +51,12 @@ generated C from `rmc1` and `rmc2` matches exactly. This is still not real
 does not build the full real `rmc/main.rm`. The result is documented in
 `docs/compiler/v009-fixed-point-candidate.md`.
 
+v0.0.9h attempts the real `rmc/main.rm` self-host expansion. The result is
+Tier 0 only: `rmb` still builds `rmc0`, but `rmc0 build ../rmc/main.rm` still
+fails with `build failed: unsupported source`. The first blocker is the real
+lexer module's boolean/logical expression shapes, especially `&&` in conditions
+and return expressions. See `docs/compiler/v009-real-self-host-expansion.md`.
+
 ## Bootstrap Stages
 
 ### Stage 0: rmb (Bootstrap Compiler)

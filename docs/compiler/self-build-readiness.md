@@ -42,6 +42,11 @@ The current bootstrap chain is:
   generations, and generated C from `rmc1` and `rmc2` matches exactly.
   This is still not real `rmc` self-hosting because the candidate build command
   is path-specific and does not build the full real `rmc/main.rm`.
+- v0.0.9h attempts the real `rmc/main.rm` self-host expansion and reaches
+  Tier 0 only. `rmb` still builds `rmc0`, but `rmc0 build ../rmc/main.rm`
+  reports `build failed: unsupported source`. The first isolated blocker is
+  boolean/logical expression lowering for real lexer code such as `&&` in
+  conditions and return expressions.
 - v0.0.8z stabilizes the bridge milestone and points fixed-point work to
   `docs/compiler/v009-plan.md`.
 - This is not self-hosting yet.

@@ -319,6 +319,12 @@ rmc2 builds → rmc3 (RauMa)
 Verify: rmc2 == rmc3 (behavior and tests)
 ```
 
+v0.0.9h tries to apply this shape to the real `rmc/main.rm` graph. The result
+is Tier 0 only: `rmb` still builds `rmc0`, but `rmc0 build ../rmc/main.rm`
+does not yet produce `rmc1-real`. The architecture remains bridge-based and
+local-module-only; the current blocker is boolean/logical expression lowering
+in real lexer code, not package management, HIR/MIR, or LLVM.
+
 ## Error Reporting
 
 ### Diagnostic System

@@ -20,6 +20,10 @@ As of v0.0.9g-fix, `rmb` builds the real RauMa-written `rmc` (`rmc0`), and
 generations match behavior for the supported commands. This is still a
 controlled candidate chain, not full real `rmc` self-hosting.
 
+v0.0.9h tries the real `rmc/main.rm` source graph. The verified result is
+Tier 0 only: `rmb` still builds `rmc0`, but `rmc0 build ../rmc/main.rm` remains
+blocked by unsupported boolean/logical expression lowering in real lexer code.
+
 ## Design Principles
 
 ### 1. Stay Small

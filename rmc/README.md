@@ -141,6 +141,12 @@ generated C from `rmc1` and `rmc2` matches exactly. This is still not real
 does not build the full real `rmc/main.rm`.
 See `docs/compiler/v009-fixed-point-candidate.md` for the exact result.
 
+v0.0.9h attempts the real `rmc/main.rm` self-host expansion. It reaches Tier 0
+only: `rmb` still builds `rmc0`, but `rmc0 build ../rmc/main.rm` still reports
+`build failed: unsupported source`. The first blocker is boolean/logical
+expression lowering in real lexer code. See
+`docs/compiler/v009-real-self-host-expansion.md`.
+
 `rmc` still does not allocate a full AST, infer types, resolve names, do full
 codegen, implement HIR/MIR, packages, std modules, or self-host.
 

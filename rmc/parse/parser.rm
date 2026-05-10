@@ -692,7 +692,7 @@ pub fn parse_and_print(src str) {
 
 pub fn run_smoke() {
     print("rmc parser smoke:\n");
-    parse_and_print(source.source.demo_text());
+    parse_and_print("fn add(a int, b int) int {\n    return a + b;\n}\n\nfn main() {\n    x := add(20, 22);\n    print(\"sum\\n\");\n    print(x);\n}");
 }
 
 pub fn run_file(src str) {

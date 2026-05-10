@@ -93,10 +93,14 @@
 - v0.0.9g-fix controlled candidate chain ✓ DONE
 - v0.0.9g-fix reached `rmc0 -> rmc1 -> rmc2 -> rmc3` for the controlled
   `rmb/tests/rmc_candidate/` source only.
+- v0.0.9h real-rmc self-host expansion ✓ PARTIAL
+- v0.0.9h reached Tier 0 only: `rmb` still builds `rmc0`, but
+  `rmc0 build ../rmc/main.rm` still reports `build failed: unsupported source`.
+- The first blocker is real boolean/logical expression lowering in
+  `rmc/lex/lexer.rm`, especially `&&` expressions in conditions and returns.
 - Do not claim real compiler self-hosting until the staged build applies to the
   real `rmc` source and comparison strategy.
-- Next options: v0.1.0 stabilization planning, or v0.0.9h real-rmc self-host
-  expansion.
+- Next option: v0.0.9h-fix focused boolean/logical bridge lowering.
 
 ### v0.1.0 Usable Compiler
 - Stable self-hosting compiler

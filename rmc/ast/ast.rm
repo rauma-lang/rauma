@@ -1,12 +1,3 @@
-pub struct File {
-    item_count int;
-}
-
-pub struct Function {
-    name str;
-    param_count int;
-}
-
 pub fn print_ast_label() {
     print("ast module ready\n");
 }
