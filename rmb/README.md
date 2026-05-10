@@ -263,6 +263,20 @@ Expected output includes `mini self-test`, `sum ok`, `double ok`, `15`, and
 `42`. The extra `tests/rmc_mini_hardening_probe.rm` fixture verifies the same
 bridge subset without the rmc-mini demo text.
 
+v0.0.9b adds local multi-file bridge verification:
+
+```bash
+./build/debug/native/bin/main build tests/multifile_basic/main.rm
+./build/rmc_build_out
+
+./build/debug/native/bin/main build tests/multifile_cli/main.rm
+./build/rmc_build_out score
+```
+
+These fixtures exercise local `use` resolution, qualified module calls, and one
+combined generated C file. This is not the final chunk build system inside
+`rmc`.
+
 ### Output
 The compiler executable is built at:
 ```

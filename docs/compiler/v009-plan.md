@@ -17,21 +17,23 @@ expected staged build chain and comparison strategy.
 - v0.0.9a adds the `self-test` command to `rmc-mini`
 - verified before any fixed-point or real `rmc` self-build attempt
 
-### v0.0.9b rmc source partition audit
+### v0.0.9b rmc multi-file build foundation
 
-- choose which real `rmc` modules can be represented as standalone or bundled source
-- identify imports/use blockers
+- add local `use`/module resolution to `rmc build`
+- build small local multi-file programs without a one-file bundled compiler hack
+- emit one bridge C file for the discovered local module graph
+- keep package lookup, stdlib lookup, chunk caching, and fixed point for later
 
-### v0.0.9c single-file bundled rmc experiment
+### v0.0.9c real rmc module group build
 
-- generate or write a bundled `rmc-onefile.rm`
-- no multi-file build yet
-- prove `rmc build rmc-onefile.rm` if feasible
+- use the multi-file foundation to build a small real-ish `rmc` module group
+- keep scope below full `rmc` self-hosting
+- identify remaining source-shape/codegen blockers
 
-### v0.0.9d multi-file/chunk plan
+### v0.0.9d rmc chunk/multi-file design hardening
 
 - design `rmc`-side chunk build
-- do not implement until design is clear
+- harden output paths, graph traversal, cycle diagnostics, and deterministic artifacts
 
 ### v0.0.9e fixed-point candidate
 

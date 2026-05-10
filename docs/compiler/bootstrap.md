@@ -16,6 +16,11 @@ v0.0.9a hardens the standalone `rmc-mini` target with a `self-test` command and
 an additional regression probe. This keeps the path single-file and verified
 before any real fixed-point or multi-file compiler build attempt.
 
+v0.0.9b introduces the first local multi-file foundation in the RauMa-written
+`rmc`. It resolves local `use` modules beside the entry file and emits one
+combined bridge C file. Fixed point is still later; this is only the first
+module graph step.
+
 ## Bootstrap Stages
 
 ### Stage 0: rmb (Bootstrap Compiler)

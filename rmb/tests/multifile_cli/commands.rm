@@ -1,0 +1,10 @@
+fn version() {
+    print("multi-cli 0.0.9b\n");
+}
+
+fn help() {
+    print("usage: multi-cli <command>\n");
+    print("commands:\n");
+    print("  version\n");
+    print("  score\n");
+}

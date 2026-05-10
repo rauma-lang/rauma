@@ -1,5 +1,6 @@
 use type.checker;
 use cgen.cgen;
+use build.module;
 
 pub fn run_file(path str, text str) {
     // path currently unused; keep for compatibility
@@ -8,6 +9,11 @@ pub fn run_file(path str, text str) {
 
     if (str_len(text) == 0) {
         print("empty or unreadable file\n");
+        return;
+    }
+
+    if (build.module.has_uses(text)) {
+        build.module.run_file(path, text);
         return;
     }
 

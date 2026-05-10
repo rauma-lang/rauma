@@ -108,6 +108,17 @@ pub fn is_while_keyword(text str, start int, end int) bool {
     return false;
 }
 
+pub fn is_use_keyword(text str, start int, end int) bool {
+    if (end - start != 3) {
+        return false;
+    }
+    if (str_byte(text, start) == 117 && str_byte(text, start + 1) == 115 &&
+        str_byte(text, start + 2) == 101) {
+        return true;
+    }
+    return false;
+}
+
 pub fn is_add_ident(text str, start int, end int) bool {
     if (end - start != 3) {
         return false;
@@ -598,6 +609,9 @@ pub fn punct_kind(text str, start int, len int) int {
     if (b == 44) {
         return lex.token.kind_comma();
     }
+    if (b == 46) {
+        return lex.token.kind_dot();
+    }
     if (b == 43) {
         return lex.token.kind_plus();
     }
@@ -640,6 +654,9 @@ pub fn next_kind(text str, start int) int {
         }
         if (is_while_keyword(text, pos, end)) {
             return lex.token.kind_kw_while();
+        }
+        if (is_use_keyword(text, pos, end)) {
+            return lex.token.kind_kw_use();
         }
         return lex.token.kind_ident();
     }
@@ -711,6 +728,10 @@ pub fn scan_ident(text str, start int, len int) int {
     }
     if (is_while_keyword(text, start, i)) {
         lex.token.print_token(lex.token.kind_kw_while(), "while");
+        return i;
+    }
+    if (is_use_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_use(), "use");
         return i;
     }
     if (is_add_ident(text, start, i)) {
@@ -838,6 +859,10 @@ pub fn scan_punct(text str, start int, len int) int {
     }
     if (b == 44) {
         lex.token.print_token(lex.token.kind_comma(), ",");
+        return start + 1;
+    }
+    if (b == 46) {
+        lex.token.print_token(lex.token.kind_dot(), ".");
         return start + 1;
     }
     if (b == 43) {

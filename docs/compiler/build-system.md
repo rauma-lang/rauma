@@ -169,6 +169,21 @@ v0.0.9a keeps the same bridge architecture and hardens `rmc-mini` with a
 `self-test` command plus `rmb/tests/rmc_mini_hardening_probe.rm`. This is still
 single-file bridge verification, not a chunk build graph.
 
+v0.0.9b starts the `rmc` local multi-file foundation. `rmc build <entry.rm>`
+can now discover top-level local `use` statements, resolve modules relative to
+the entry file directory, emit all discovered modules into one bridge C file,
+and compile/link that file through the existing `cc_compile` bridge.
+
+Current `rmc` multi-file limitations:
+
+- local modules only
+- small dependency graph
+- one generated C file, not per-module chunks
+- no package lookup
+- no stdlib lookup
+- no chunk cache or incremental rebuild
+- no cycle handling beyond rejecting unsupported/missing modules
+
 ## Chunk-Based Architecture
 
 ### What is a Chunk?

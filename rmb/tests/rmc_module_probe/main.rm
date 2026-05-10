@@ -1,0 +1,18 @@
+use cli.help;
+use cli.version;
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        cli.help.print_help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "version")) {
+        cli.version.print_version();
+        return;
+    }
+
+    cli.help.print_help();
+}

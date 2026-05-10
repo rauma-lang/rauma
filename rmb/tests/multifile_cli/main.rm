@@ -1,0 +1,32 @@
+use calc;
+use commands;
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        commands.help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "version")) {
+        commands.version();
+        return;
+    }
+
+    if (str_eq(cmd, "score")) {
+        total := calc.score(6);
+
+        if (total == 15) {
+            print("score ok\n");
+        } else {
+            print("score bad\n");
+        }
+
+        print(total);
+        print("\n");
+        return;
+    }
+
+    print("unknown command\n");
+}

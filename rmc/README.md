@@ -63,6 +63,12 @@ v0.0.9a hardens `examples/selfbuild/rmc-mini.rm`. The standalone target now
 supports `version`, `lex-demo`, `parse-demo`, `check-demo`, and `self-test`.
 It is still a single-file compiler-like target, not the real multi-file `rmc`.
 
+v0.0.9b adds the first local multi-file foundation to `rmc build`. The command
+can resolve simple local `use` modules next to the entry file, emit all modules
+into one bridge C file, and compile it through the existing `cc_compile`
+bridge. This is not a package manager, stdlib resolver, chunk cache, or
+self-host fixed point.
+
 The pipeline is now:
 
 ```bash
@@ -95,9 +101,20 @@ The current single-file bridge build subset supports:
 - integer comparisons with `==`, `!=`, `<`, `>`, `<=`, `>=`
 - `if`/`else` and `while`
 
-Still unsupported: imports, multi-file builds, chunk layout in `rmc`, structs,
-arrays/slices, general string variables, string concatenation, break/continue,
-match/defer/optional/error syntax, HIR/MIR, and fixed-point self-hosting.
+Still unsupported: general imports beyond local `use`, package/std lookup,
+chunk layout in `rmc`, structs, arrays/slices, general string variables, string
+concatenation, break/continue, match/defer/optional/error syntax, HIR/MIR, and
+fixed-point self-hosting.
+
+The local multi-file bridge subset supports:
+
+- `use math;` -> `math.rm` beside the entry file
+- `use cli.help;` -> `cli/help.rm` beside the entry file
+- qualified calls such as `math.add(...)` and `cli.help.print_help()`
+- one combined generated C file at `build/rmc_build_out.c`
+
+There is no package lookup, stdlib lookup, cycle handling, chunk cache, or
+per-module object layout in `rmc` yet.
 
 ## Current Source Layout
 

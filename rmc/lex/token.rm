@@ -179,6 +179,14 @@ pub fn kind_plus_eq() int {
     return 24;
 }
 
+pub fn kind_dot() int {
+    return 25;
+}
+
+pub fn kind_kw_use() int {
+    return 26;
+}
+
 pub fn kind_invalid() int {
     return 99;
 }
@@ -282,6 +290,14 @@ pub fn print_kind_name(kind int) {
     }
     if (kind == 24) {
         print("plus_eq");
+        return;
+    }
+    if (kind == 25) {
+        print("dot");
+        return;
+    }
+    if (kind == 26) {
+        print("kw_use");
         return;
     }
     print("invalid");

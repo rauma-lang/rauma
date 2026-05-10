@@ -1,0 +1,204 @@
+use cgen.cgen;
+
+pub fn is_space(b int) bool {
+    if (b == 32) {
+        return true;
+    }
+    if (b == 10) {
+        return true;
+    }
+    if (b == 9) {
+        return true;
+    }
+    if (b == 13) {
+        return true;
+    }
+    return false;
+}
+
+pub fn skip_space(text str, i int) int {
+    len := str_len(text);
+    pos := i;
+    while (pos < len && is_space(str_byte(text, pos))) {
+        pos += 1;
+    }
+    return pos;
+}
+
+pub fn is_module_char(b int) bool {
+    if (b >= 65 && b <= 90) {
+        return true;
+    }
+    if (b >= 97 && b <= 122) {
+        return true;
+    }
+    if (b >= 48 && b <= 57) {
+        return true;
+    }
+    if (b == 95) {
+        return true;
+    }
+    if (b == 46) {
+        return true;
+    }
+    return false;
+}
+
+pub fn starts_with_use(text str, i int) bool {
+    len := str_len(text);
+    if (i + 3 > len) {
+        return false;
+    }
+    if (str_byte(text, i) == 117 && str_byte(text, i + 1) == 115 && str_byte(text, i + 2) == 101) {
+        return true;
+    }
+    return false;
+}
+
+pub fn has_uses(text str) bool {
+    return str_len(use_module_at_index(text, 0)) > 0;
+}
+
+pub fn use_module_at_index(text str, wanted int) str {
+    len := str_len(text);
+    pos := skip_space(text, 0);
+    found := 0;
+
+    while (pos < len && starts_with_use(text, pos)) {
+        pos = pos + 3;
+        pos = skip_space(text, pos);
+        module_start := pos;
+
+        while (pos < len && is_module_char(str_byte(text, pos))) {
+            pos += 1;
+        }
+
+        module_end := pos;
+        pos = skip_space(text, pos);
+
+        if (pos < len && str_byte(text, pos) == 59) {
+            if (found == wanted) {
+                return str_from_slice(text, module_start, module_end);
+            }
+            found += 1;
+            pos += 1;
+            pos = skip_space(text, pos);
+        } else {
+            return "";
+        }
+    }
+
+    return "";
+}
+
+pub fn dirname(path str) str {
+    len := str_len(path);
+    i := 0;
+    last := 0;
+
+    while (i < len) {
+        b := str_byte(path, i);
+        if (b == 47) {
+            last = i;
+        }
+        if (b == 92) {
+            last = i;
+        }
+        i += 1;
+    }
+
+    if (last == 0) {
+        return ".";
+    }
+
+    return str_from_slice(path, 0, last);
+}
+
+pub fn module_source_path(base str, module str) str {
+    len := str_len(module);
+    i := 0;
+    start := 0;
+    out := base;
+    out = str_concat(out, "/");
+
+    while (i < len) {
+        if (str_byte(module, i) == 46) {
+            out = str_concat(out, str_from_slice(module, start, i));
+            out = str_concat(out, "/");
+            start = i + 1;
+        }
+        i += 1;
+    }
+
+    out = str_concat(out, str_from_slice(module, start, len));
+    out = str_concat(out, ".rm");
+    return out;
+}
+
+pub fn emit_modules(entry_path str, entry_text str) str {
+    base := dirname(entry_path);
+    out := cgen.cgen.emit_header_to_string();
+    i := 0;
+    done := false;
+
+    while (i < 8 && done == false) {
+        module_name := use_module_at_index(entry_text, i);
+        if (str_len(module_name) == 0) {
+            done = true;
+        } else {
+            dep_path := module_source_path(base, module_name);
+            dep_text := read_file(dep_path);
+            if (str_len(dep_text) == 0) {
+                return "#missing";
+            }
+
+            module_c := cgen.cgen.emit_module_to_string(module_name, dep_text);
+            if (str_len(module_c) == 0) {
+                return "";
+            }
+
+            out = str_concat(out, module_c);
+            i += 1;
+        }
+    }
+
+    entry_c := cgen.cgen.emit_entry_to_string(entry_text);
+    if (str_len(entry_c) == 0) {
+        return "";
+    }
+
+    out = str_concat(out, entry_c);
+    return out;
+}
+
+pub fn run_file(path str, text str) {
+    c := emit_modules(path, text);
+
+    if (str_eq(c, "#missing")) {
+        print("build failed: missing module\n");
+        return;
+    }
+
+    if (str_len(c) == 0) {
+        print("build failed: unsupported source\n");
+        return;
+    }
+
+    c_path := "build/rmc_build_out.c";
+    out_path := "build/rmc_build_out";
+
+    ok := write_file(c_path, c);
+    if (!ok) {
+        print("build failed: write failed\n");
+        return;
+    }
+
+    rc := cc_compile(c_path, out_path);
+    if (rc == 0) {
+        print("build ok: ");
+        print(out_path);
+        print("\n");
+    } else {
+        print("build failed: cc failed\n");
+    }
+}

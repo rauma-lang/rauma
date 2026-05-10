@@ -96,6 +96,12 @@ still emits C directly from checked AST chunks:
   standalone and does not introduce HIR/MIR, a full backend, or fixed-point
   self-hosting.
 
+  v0.0.9b adds a local module graph foundation to `rmc build`. The bridge can
+  resolve simple local `use` modules relative to the entry file and emit one
+  combined C file for small multi-file programs. This preserves the bridge
+  architecture and still does not add HIR/MIR, package resolution, chunk
+  caching, or fixed-point self-hosting.
+
 ## Compilation Pipeline
 
 ```

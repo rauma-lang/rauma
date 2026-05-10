@@ -1,0 +1,14 @@
+use math;
+use msg;
+
+fn main() {
+    msg.banner();
+
+    x := math.add(20, 22);
+    y := math.double(5);
+
+    print(x);
+    print("\n");
+    print(y);
+    print("\n");
+}

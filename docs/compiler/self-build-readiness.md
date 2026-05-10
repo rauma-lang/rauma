@@ -11,6 +11,8 @@ The current bootstrap chain is:
 - `rmc` can build `examples/selfbuild/rmc-mini.rm`.
 - v0.0.9a hardens `rmc-mini` to `rmc-mini 0.0.9a` and adds a
   `self-test` command.
+- v0.0.9b starts local multi-file `rmc build` by resolving simple local `use`
+  modules and emitting one combined bridge C file.
 - v0.0.8z stabilizes the bridge milestone and points fixed-point work to
   `docs/compiler/v009-plan.md`.
 - This is not self-hosting yet.
@@ -22,6 +24,7 @@ The current bootstrap chain is:
 The verified bridge subset currently includes:
 
 - single-file source
+- small local multi-file source through `use`
 - `fn`
 - typed int parameters
 - int return values
@@ -45,6 +48,7 @@ The verified bridge subset currently includes:
 - `Args`, `args_len`, `args_get`
 - `str_eq`
 - `read_file`, `write_file`, `cc_compile` as bridge builtins
+- local `use math;` / `use cli.help;` resolution relative to the entry file
 
 ## Current rmc source feature audit
 
@@ -63,8 +67,8 @@ The verified bridge subset currently includes:
 
 ## Main gaps before rmc can build itself
 
-- multi-file `use` resolution in `rmc build`
-- module/chunk build in `rmc`
+- broader multi-file `use` resolution in `rmc build`
+- real module/chunk build in `rmc`
 - more general parser/codegen instead of bridge patterns
 - token arrays or better cursor abstraction
 - heap AST or structured summary model
@@ -77,6 +81,7 @@ The verified bridge subset currently includes:
 - better error handling
 - output paths per source
 - support for more `rmc` source shapes, especially structs, enums, imports, cross-module calls, and large helper-heavy files
+- deterministic fixed-point comparison strategy
 
 ## Candidate next self-build targets
 
@@ -118,12 +123,13 @@ v0.0.9a hardens the standalone `rmc-mini.rm` target that mimics a tiny compiler 
 - no multi-file
 - buildable by `rmc build`
 
-The next milestone should be v0.0.9b source partition audit. It should choose
-which real `rmc` modules can be represented as standalone or bundled source and
-identify the imports/use blockers before any bundled compiler experiment.
+The next milestone should be v0.0.9c real `rmc` module group build. It should
+use the local multi-file foundation to build a small real-ish `rmc` module
+group and identify the remaining source-shape/codegen blockers before any
+fixed-point attempt.
 
 ## Not yet self-hosting
 
-v0.0.9a is not self-hosting.
+v0.0.9b is not self-hosting.
 
 `rmc` does not build itself yet. `rmc` does not have multi-file chunk builds, HIR/MIR, a full backend, or fixed-point verification. v0.0.9 remains the self-host fixed-point milestone.

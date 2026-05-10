@@ -1,0 +1,3 @@
+fn print_version() {
+    print("probe version 0.0.9b\n");
+}
