@@ -108,6 +108,16 @@ lexer/parser/checker modules into one buildable graph. This is still not real
 `rmc` self-build, no fixed point, no package manager, no stdlib lookup, no
 HIR/MIR.
 
+v0.0.9f adds a controlled multi‑file `rmc` compiler candidate under
+`rmb/tests/rmc_candidate/`. The candidate mirrors the real `rmc` compiler
+module topology with `cli/`, `source/`, `diag/`, `lex/`, `parse/`, `type/`,
+`cgen/`, and `build/` groups. Built with `rmc build`, the candidate binary
+supports `version`, `lex‑demo`, `parse‑demo`, `check‑demo`, `emit‑demo`,
+`build‑demo`, `self‑test`, and help/unknown‑command dispatch. This validates
+the local multi‑file bridge with a deeper dependency graph (up to seven
+levels) while still not reaching fixed‑point self‑hosting, package manager,
+stdlib lookup, HIR/MIR, or real `rmc` self‑build.
+
 The pipeline is now:
 
 ```bash

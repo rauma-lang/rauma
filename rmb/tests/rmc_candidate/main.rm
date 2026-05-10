@@ -1,0 +1,78 @@
+use cli.help;
+use cli.version;
+use cli.dispatch;
+use source.source;
+use source.span;
+use diag.output;
+use lex.lexer;
+use parse.parser;
+use type.checker;
+use cgen.cgen;
+use build.build;
+
+fn run_self_test() {
+    print("candidate self-test:\n");
+
+    cli.dispatch.print_dispatch_ok();
+    source.source.print_source_demo();
+    source.span.print_span(3, 10);
+    lex.lexer.run_lex_demo();
+    parse.parser.run_parse_demo();
+    type.checker.run_check_demo();
+    cgen.cgen.run_emit_demo();
+    build.build.run_build_demo();
+
+    count := cli.dispatch.command_count();
+
+    if (count == 7) {
+        print("candidate ok\n");
+    } else {
+        print("candidate bad\n");
+    }
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        cli.help.print_help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "version")) {
+        cli.version.print_version();
+        return;
+    }
+
+    if (str_eq(cmd, "lex-demo")) {
+        lex.lexer.run_lex_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "parse-demo")) {
+        parse.parser.run_parse_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "check-demo")) {
+        type.checker.run_check_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "emit-demo")) {
+        cgen.cgen.run_emit_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "build-demo")) {
+        build.build.run_build_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "self-test")) {
+        run_self_test();
+        return;
+    }
+
+    print("unknown command\n");
+}

@@ -63,13 +63,21 @@ expected staged build chain and comparison strategy.
 - still no fixed point, no full real `rmc` build, no package manager, no
   stdlib lookup, no HIR/MIR, no LLVM
 
-### v0.0.9f rmc compiler candidate
+### v0.0.9f rmc compiler candidate ✓ DONE
 
-- with the frontend graphs proven, attempt to build a candidate real `rmc`
-  source layout end-to-end through `rmc build`
+- with the frontend graphs proven, build a candidate real `rmc` source layout
+  end-to-end through `rmc build`
 - expand the bridge subset only as needed to reach a buildable compiler
   candidate, not full language completeness
 - still no fixed point yet
+- candidate is a controlled multi‑file fixture under `rmb/tests/rmc_candidate/`
+  with `cli/`, `source/`, `diag/`, `lex/`, `parse/`, `type/`, `cgen/`, and `build/`
+  module groups
+- candidate binary supports `version`, `lex‑demo`, `parse‑demo`, `check‑demo`,
+  `emit‑demo`, `build‑demo`, `self‑test`, help, and unknown‑command dispatch
+- verified with `rmc build rmb/tests/rmc_candidate/main.rm` (compiles with
+  warnings about unused functions; passes manual compile without `-Werror`)
+- previous frontend groups, probes, and self‑build targets still pass
 
 ### v0.0.9g fixed-point candidate
 
@@ -80,8 +88,8 @@ expected staged build chain and comparison strategy.
 
 ## Compressed remaining v0.0.9 path
 
-1. v0.0.9e — real-ish frontend module groups (this milestone)
-2. v0.0.9f — rmc compiler candidate
+1. v0.0.9e — real-ish frontend module groups ✓ DONE
+2. v0.0.9f — rmc compiler candidate ✓ DONE
 3. v0.0.9g — fixed-point candidate
 
 ## Do not do yet

@@ -1,0 +1,9 @@
+use cgen.cgen;
+use diag.output;
+
+fn run_build_demo() {
+    print("candidate build demo:\n");
+    cgen.cgen.run_emit_demo();
+    diag.output.note(7);
+    print("build bridge ok\n");
+}

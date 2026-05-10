@@ -1,0 +1,3 @@
+fn print_version() {
+    print("rmc-candidate 0.0.9f\n");
+}

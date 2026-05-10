@@ -1,0 +1,10 @@
+use type.checker;
+
+fn run_emit_demo() {
+    print("candidate emit demo:\n");
+    type.checker.run_check_demo();
+    print("#include <stdint.h>\n");
+    print("int main(void) {\n");
+    print("  return 0;\n");
+    print("}\n");
+}

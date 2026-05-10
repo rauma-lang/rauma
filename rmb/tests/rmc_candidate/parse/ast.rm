@@ -1,0 +1,11 @@
+fn print_file() {
+    print("file items=1\n");
+}
+
+fn print_function() {
+    print("fn main params=0\n");
+}
+
+fn print_statement() {
+    print("  stmt call print args=1\n");
+}

@@ -1,0 +1,21 @@
+use source.source;
+use source.span;
+use diag.output;
+use lex.char;
+use lex.token;
+
+fn run_lex_demo() {
+    print("candidate lex demo:\n");
+
+    first := source.source.first_byte();
+
+    if (lex.char.is_alpha(first) == 1) {
+        lex.token.print_token(lex.token.token_fn());
+        lex.token.print_token(lex.token.token_ident());
+        lex.token.print_token(lex.token.token_string());
+    } else {
+        diag.output.error(64);
+    }
+
+    source.span.print_span(0, source.source.source_len());
+}

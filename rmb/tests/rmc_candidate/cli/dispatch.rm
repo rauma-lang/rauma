@@ -1,0 +1,7 @@
+fn command_count() int {
+    return 7;
+}
+
+fn print_dispatch_ok() {
+    print("dispatch ok\n");
+}

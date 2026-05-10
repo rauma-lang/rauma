@@ -1,0 +1,11 @@
+fn print_help() {
+    print("rmc-candidate <command>\n");
+    print("commands:\n");
+    print("  version\n");
+    print("  lex-demo\n");
+    print("  parse-demo\n");
+    print("  check-demo\n");
+    print("  emit-demo\n");
+    print("  build-demo\n");
+    print("  self-test\n");
+}

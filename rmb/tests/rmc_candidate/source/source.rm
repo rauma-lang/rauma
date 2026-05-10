@@ -1,0 +1,17 @@
+fn source_len() int {
+    return 18;
+}
+
+fn first_byte() int {
+    return 102;
+}
+
+fn print_source_demo() {
+    print("source demo\n");
+    print("source len ");
+    print(source_len());
+    print("\n");
+    print("source first ");
+    print(first_byte());
+    print("\n");
+}

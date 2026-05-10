@@ -1,0 +1,16 @@
+use lex.lexer;
+use parse.ast;
+use diag.output;
+
+fn run_parse_demo() {
+    print("candidate parse demo:\n");
+    parse.ast.print_file();
+    parse.ast.print_function();
+    parse.ast.print_statement();
+    diag.output.ok();
+}
+
+fn run_parse_with_lex() {
+    lex.lexer.run_lex_demo();
+    run_parse_demo();
+}

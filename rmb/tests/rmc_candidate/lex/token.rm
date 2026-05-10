@@ -1,0 +1,27 @@
+fn token_fn() int {
+    return 1;
+}
+
+fn token_ident() int {
+    return 2;
+}
+
+fn token_string() int {
+    return 3;
+}
+
+fn print_token(kind int) {
+    if (kind == 1) {
+        print("kw_fn\n");
+    } else {
+        if (kind == 2) {
+            print("ident\n");
+        } else {
+            if (kind == 3) {
+                print("string\n");
+            } else {
+                print("unknown token\n");
+            }
+        }
+    }
+}

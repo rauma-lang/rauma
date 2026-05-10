@@ -1,0 +1,15 @@
+fn error(code int) {
+    print("diag error ");
+    print(code);
+    print("\n");
+}
+
+fn note(code int) {
+    print("diag note ");
+    print(code);
+    print("\n");
+}
+
+fn ok() {
+    print("diag ok\n");
+}
