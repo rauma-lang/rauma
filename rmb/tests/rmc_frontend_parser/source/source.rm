@@ -1,0 +1,3 @@
+fn parser_input_size() int {
+    return 24;
+}

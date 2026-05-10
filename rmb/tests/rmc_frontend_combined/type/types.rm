@@ -1,0 +1,3 @@
+fn types_int() int {
+    return 1;
+}

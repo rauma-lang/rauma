@@ -1,0 +1,27 @@
+use source.source;
+use diag.output;
+use lex.char;
+use lex.token;
+
+fn scan_demo() {
+    print("lexer scan:\n");
+
+    first := source.source.byte_at(0);
+
+    if (lex.char.is_alpha(first) == 1) {
+        lex.token.print_kw_fn();
+        lex.token.print_ident();
+    }
+
+    lex.token.print_l_paren();
+    lex.token.print_r_paren();
+    lex.token.print_l_brace();
+    lex.token.print_ident();
+    lex.token.print_string();
+    lex.token.print_r_brace();
+    lex.token.print_eof();
+}
+
+fn invalid_demo() {
+    diag.output.error_invalid_byte(64);
+}

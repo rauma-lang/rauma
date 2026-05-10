@@ -1,0 +1,14 @@
+use parse.ast;
+use lex.token;
+use diag.output;
+
+fn run_parse_demo() {
+    print("combined parse:\n");
+    parse.ast.ast_print_file();
+    parse.ast.ast_print_main_fn();
+
+    marker := diag.output.diag_marker();
+    if (marker == 1) {
+        lex.token.tok_print_eof();
+    }
+}

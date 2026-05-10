@@ -1,0 +1,24 @@
+fn byte_at(index int) int {
+    if (index == 0) {
+        return 102;
+    }
+    if (index == 1) {
+        return 110;
+    }
+    if (index == 2) {
+        return 32;
+    }
+    if (index == 3) {
+        return 109;
+    }
+    if (index == 4) {
+        return 97;
+    }
+    if (index == 5) {
+        return 105;
+    }
+    if (index == 6) {
+        return 110;
+    }
+    return 0;
+}

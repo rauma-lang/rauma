@@ -117,6 +117,16 @@ still emits C directly from checked AST chunks:
   `return 0;`). This continues to grow the verified topology without HIR/MIR,
   per-module chunk caching, or fixed-point self-hosting.
 
+  v0.0.9e adds real-ish frontend module group probes at
+  `rmb/tests/rmc_frontend_lexer/`, `rmb/tests/rmc_frontend_parser/`,
+  `rmb/tests/rmc_frontend_checker/`, and `rmb/tests/rmc_frontend_combined/`.
+  Each probe is shaped like a slice of the real compiler frontend with nested
+  module paths (`source.span`, `lex.token`, `parse.parser`, `type.checker`),
+  transitive local dependencies, repeated module-name components across the
+  graph, void module helpers, and qualified calls into nested namespaces. The
+  combined group glues lexer/parser/checker modules into one buildable graph.
+  This is still bridge cgen, not real chunking, HIR/MIR, or fixed point.
+
 ## Compilation Pipeline
 
 ```

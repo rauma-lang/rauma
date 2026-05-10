@@ -1,0 +1,3 @@
+fn token_count() int {
+    return 1;
+}

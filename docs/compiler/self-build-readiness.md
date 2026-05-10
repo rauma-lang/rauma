@@ -21,6 +21,15 @@ The current bootstrap chain is:
   functions, `read_file`/`str_len`/`str_byte` builtins inside module
   functions, qualified calls into nested namespaces, and diagnostic-style
   void helpers.
+- v0.0.9e builds real-ish frontend module group probes shaped like the real
+  compiler frontend at `rmb/tests/rmc_frontend_lexer/`,
+  `rmb/tests/rmc_frontend_parser/`, `rmb/tests/rmc_frontend_checker/`, and
+  `rmb/tests/rmc_frontend_combined/`. Each group exercises nested module
+  paths (`source.span`, `lex.token`, `parse.parser`, `type.checker`),
+  transitive local dependencies, repeated module-name components across the
+  graph, void module helpers, and qualified calls into nested namespaces.
+  The combined group glues lexer/parser/checker modules into one buildable
+  graph.
 - v0.0.8z stabilizes the bridge milestone and points fixed-point work to
   `docs/compiler/v009-plan.md`.
 - This is not self-hosting yet.
@@ -84,7 +93,11 @@ The verified bridge subset currently includes:
 ## Main gaps before rmc can build itself
 
 - larger CLI/source/diag module group is now verified (v0.0.9d)
-- real `rmc` source coverage beyond controlled module-group probes
+- real-ish frontend-shaped module groups (lexer, parser, checker, combined)
+  are now verified (v0.0.9e)
+- real `rmc` candidate compiler build through `rmc build` (next: v0.0.9f)
+- deterministic fixed-point comparison strategy (still later: v0.0.9g)
+- broader real `rmc` source coverage beyond controlled module-group probes
 - robust module type checking in the bridge (parser/checker is bypassed for
   multi-module builds today)
 - chunk cache and per-module incremental rebuild
@@ -145,13 +158,20 @@ v0.0.9a hardens the standalone `rmc-mini.rm` target that mimics a tiny compiler 
 - no multi-file
 - buildable by `rmc build`
 
-The next milestone should be v0.0.9e: a lexer-focused real-ish `rmc` module
-group build. It should grow the local module-group fixture toward a
-lexer-shaped graph using the bridge subset, without rewriting the real lexer
-and without claiming fixed point.
+v0.0.9e adds real-ish frontend module group probes (lexer, parser, checker,
+combined) under `rmb/tests/rmc_frontend_*/`. They exercise the bridge subset
+across nested namespaces and transitive local dependencies without rewriting
+the real frontend and without claiming fixed point.
+
+The next milestone should be v0.0.9f: a real `rmc` compiler candidate built
+through `rmc build`. The remaining compressed v0.0.9 path is:
+
+1. v0.0.9e — real-ish frontend module groups (this milestone)
+2. v0.0.9f — rmc compiler candidate
+3. v0.0.9g — fixed-point candidate
 
 ## Not yet self-hosting
 
-v0.0.9d is not self-hosting.
+v0.0.9e is not self-hosting.
 
 `rmc` does not build itself yet. `rmc` does not have multi-file chunk builds, HIR/MIR, a full backend, or fixed-point verification. v0.0.9 remains the self-host fixed-point milestone.

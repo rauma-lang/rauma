@@ -87,9 +87,9 @@
 - v0.0.9b rmc multi-file build foundation ✓ DONE
 - v0.0.9c real rmc module group build ✓ DONE
 - v0.0.9d larger rmc CLI module group build ✓ DONE
-- v0.0.9e lexer-focused rmc module group build
-- v0.0.9f parser/checker module group build
-- v0.0.9g fixed-point candidate planning
+- v0.0.9e real-ish rmc frontend module group build ✓ DONE
+- v0.0.9f rmc compiler candidate
+- v0.0.9g fixed-point candidate
 - Do not claim fixed point until the staged compiler build and comparison
   strategy are stable.
 

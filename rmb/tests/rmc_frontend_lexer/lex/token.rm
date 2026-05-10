@@ -1,0 +1,31 @@
+fn print_kw_fn() {
+    print("kw_fn\n");
+}
+
+fn print_ident() {
+    print("ident\n");
+}
+
+fn print_l_paren() {
+    print("l_paren\n");
+}
+
+fn print_r_paren() {
+    print("r_paren\n");
+}
+
+fn print_l_brace() {
+    print("l_brace\n");
+}
+
+fn print_r_brace() {
+    print("r_brace\n");
+}
+
+fn print_string() {
+    print("string\n");
+}
+
+fn print_eof() {
+    print("eof\n");
+}

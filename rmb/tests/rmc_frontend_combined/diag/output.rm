@@ -1,0 +1,7 @@
+fn diag_marker() int {
+    return 0;
+}
+
+fn diag_msg() {
+    print("diag\n");
+}

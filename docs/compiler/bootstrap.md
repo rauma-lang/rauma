@@ -33,6 +33,16 @@ through `read_file`/`str_len`/`str_byte` builtins inside module functions.
 This continues to grow the verified module topology; `rmc` still does not
 build itself end-to-end and the fixed point remains later v0.0.9 work.
 
+v0.0.9e adds real-ish frontend module group probes shaped like the real
+compiler frontend at `rmb/tests/rmc_frontend_lexer/`,
+`rmb/tests/rmc_frontend_parser/`, `rmb/tests/rmc_frontend_checker/`, and
+`rmb/tests/rmc_frontend_combined/`. Each group exercises nested module paths
+(`source.span`, `lex.token`, `parse.parser`, `type.checker`), transitive local
+dependencies, repeated module-name components across the graph, and qualified
+calls into nested namespaces. The combined group glues lexer/parser/checker
+modules into one buildable graph. This is still not real `rmc` self-build, no
+fixed point yet, no package manager, no stdlib lookup, no HIR/MIR.
+
 ## Bootstrap Stages
 
 ### Stage 0: rmb (Bootstrap Compiler)

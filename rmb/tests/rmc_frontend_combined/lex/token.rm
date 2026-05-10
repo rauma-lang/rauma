@@ -1,0 +1,11 @@
+fn tok_print_kw_fn() {
+    print("kw_fn\n");
+}
+
+fn tok_print_ident() {
+    print("ident\n");
+}
+
+fn tok_print_eof() {
+    print("eof\n");
+}

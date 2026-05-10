@@ -1,0 +1,13 @@
+fn size(start int, end int) int {
+    return end - start;
+}
+
+fn print_span(start int, end int) {
+    print("span ");
+    print(start);
+    print("..");
+    print(end);
+    print(" size ");
+    print(size(start, end));
+    print("\n");
+}

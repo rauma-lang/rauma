@@ -1,0 +1,6 @@
+fn error_invalid_byte(value int) {
+    print("lexer error:\n");
+    print("invalid byte ");
+    print(value);
+    print("\n");
+}

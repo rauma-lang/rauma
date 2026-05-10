@@ -1,0 +1,3 @@
+fn span_size(a int, b int) int {
+    return b - a;
+}

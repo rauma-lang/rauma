@@ -1,0 +1,15 @@
+fn ch_is_alpha(b int) int {
+    if (b >= 65) {
+        if (b <= 90) {
+            return 1;
+        }
+    }
+
+    if (b >= 97) {
+        if (b <= 122) {
+            return 1;
+        }
+    }
+
+    return 0;
+}

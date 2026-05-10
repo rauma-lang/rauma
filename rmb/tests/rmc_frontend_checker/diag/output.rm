@@ -1,0 +1,5 @@
+fn type_mismatch() {
+    print("checker error:\n");
+    print("expected int\n");
+    print("got str\n");
+}

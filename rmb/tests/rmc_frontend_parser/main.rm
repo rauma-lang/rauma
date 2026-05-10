@@ -1,0 +1,29 @@
+use parse.parser;
+
+fn help() {
+    print("frontend-parser <command>\n");
+    print("commands:\n");
+    print("  parse\n");
+    print("  error\n");
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "parse")) {
+        parse.parser.parse_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "error")) {
+        parse.parser.error_demo();
+        return;
+    }
+
+    print("unknown command\n");
+}

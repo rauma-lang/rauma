@@ -195,16 +195,38 @@ v0.0.9d grows that probe into a broader real-ish CLI module group at
   `source.span.print_span_size`, and `diag.output.error`
 - dispatch helpers in the entry that combine multiple qualified calls
 
+v0.0.9e adds real-ish frontend module group probes shaped like the real
+compiler frontend at:
+
+- `rmb/tests/rmc_frontend_lexer/` — lexer-shaped graph (`source.span`,
+  `source.source`, `diag.output`, `lex.char`, `lex.token`, `lex.lexer`)
+- `rmb/tests/rmc_frontend_parser/` — parser-shaped graph (`source.source`,
+  `lex.token`, `parse.ast`, `parse.parser`, `diag.output`)
+- `rmb/tests/rmc_frontend_checker/` — checker-shaped graph (`type.types`,
+  `type.checker`, `diag.output`)
+- `rmb/tests/rmc_frontend_combined/` — combined frontend graph that uses all
+  four namespaces together (`source.*`, `lex.*`, `parse.*`, `type.*`,
+  `diag.output`) under one entry
+
+These probes exercise nested module paths with repeated module-name components
+across the graph, transitive dependencies, void module helpers, qualified
+calls into nested namespaces, and `int`-returning helpers consumed by control
+flow. The combined group glues lexer/parser/checker modules into one
+buildable graph without a one-file bundled compiler hack.
+
 Current `rmc` multi-file limitations:
 
 - local modules only
-- small dependency graph (one-level transitive `use` walk, up to 16 modules)
+- small dependency graph (one-level transitive `use` walk, up to 16 direct
+  modules at the entry; transitive deps deduped per graph)
 - one generated C file, not per-module chunks
 - no package lookup
 - no stdlib lookup
 - no chunk cache or incremental rebuild
 - limited duplicate/cycle handling beyond rejecting unsupported/missing modules
 - no real module interface or cross-module type checking yet
+- function names must be unique across modules in the same graph because
+  per-module `#define rm_fn_<name>` macros would otherwise collide
 - the parser/checker path is bypassed for multi-module builds; the bridge
   cgen scans tokens directly
 

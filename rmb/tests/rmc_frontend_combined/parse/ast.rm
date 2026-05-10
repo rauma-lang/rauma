@@ -1,0 +1,7 @@
+fn ast_print_file() {
+    print("file items=1\n");
+}
+
+fn ast_print_main_fn() {
+    print("fn main params=0\n");
+}

@@ -1,0 +1,61 @@
+use source.span;
+use lex.lexer;
+use parse.parser;
+use type.checker;
+
+fn help() {
+    print("frontend-combined <command>\n");
+    print("commands:\n");
+    print("  lex\n");
+    print("  parse\n");
+    print("  check\n");
+    print("  all\n");
+}
+
+fn run_lex() {
+    n := source.span.span_size(0, 3);
+    if (n != 0) {
+        lex.lexer.run_lex_demo();
+    }
+}
+
+fn run_parse() {
+    parse.parser.run_parse_demo();
+}
+
+fn run_check() {
+    type.checker.run_check_demo();
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "lex")) {
+        run_lex();
+        return;
+    }
+
+    if (str_eq(cmd, "parse")) {
+        run_parse();
+        return;
+    }
+
+    if (str_eq(cmd, "check")) {
+        run_check();
+        return;
+    }
+
+    if (str_eq(cmd, "all")) {
+        run_lex();
+        run_parse();
+        run_check();
+        return;
+    }
+
+    print("unknown command\n");
+}

@@ -1,0 +1,22 @@
+use source.source;
+use lex.token;
+use parse.ast;
+use diag.output;
+
+fn parse_demo() {
+    print("parser demo:\n");
+
+    n := source.source.parser_input_size();
+    has := lex.token.token_count();
+
+    if (n > 0) {
+        if (has == 1) {
+            parse.ast.print_file_summary();
+            parse.ast.print_main_summary();
+        }
+    }
+}
+
+fn error_demo() {
+    diag.output.parser_error();
+}

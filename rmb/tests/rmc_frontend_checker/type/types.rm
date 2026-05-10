@@ -1,0 +1,11 @@
+fn type_int() int {
+    return 1;
+}
+
+fn print_type_name(kind int) {
+    if (kind == 1) {
+        print("int\n");
+    } else {
+        print("unknown\n");
+    }
+}

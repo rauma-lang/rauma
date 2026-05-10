@@ -1,0 +1,16 @@
+use type.types;
+use diag.output;
+
+fn run_check_demo() {
+    print("combined check:\n");
+
+    kind := type.types.types_int();
+    if (kind == 1) {
+        print("check ok\n");
+    }
+
+    marker := diag.output.diag_marker();
+    if (marker == 1) {
+        diag.output.diag_msg();
+    }
+}

@@ -1,0 +1,13 @@
+use type.types;
+use diag.output;
+
+fn check_demo() {
+    print("checker demo:\n");
+    print("type ");
+    type.types.print_type_name(type.types.type_int());
+    print("check ok\n");
+}
+
+fn mismatch_demo() {
+    diag.output.type_mismatch();
+}

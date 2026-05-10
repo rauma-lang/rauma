@@ -1,0 +1,4 @@
+fn parser_error() {
+    print("parser error:\n");
+    print("expected function name\n");
+}

@@ -1,0 +1,36 @@
+use source.span;
+use lex.lexer;
+
+fn help() {
+    print("frontend-lexer <command>\n");
+    print("commands:\n");
+    print("  scan\n");
+    print("  invalid\n");
+    print("  span\n");
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "scan")) {
+        lex.lexer.scan_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "invalid")) {
+        lex.lexer.invalid_demo();
+        return;
+    }
+
+    if (str_eq(cmd, "span")) {
+        source.span.print_span(3, 8);
+        return;
+    }
+
+    print("unknown command\n");
+}

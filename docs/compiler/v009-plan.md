@@ -48,23 +48,41 @@ expected staged build chain and comparison strategy.
   out of scope
 - this validates a broader real-ish module topology, not full real `rmc`
 
-### v0.0.9e lexer-focused rmc module group build
+### v0.0.9e real-ish rmc frontend module group build
 
-- grow the local module-group fixture toward a lexer-shaped graph
-- exercise larger token/byte/scan helpers without rewriting the real lexer
-- still no fixed point, no full real `rmc` build
+- grow the local module-group fixtures into lexer-, parser-, checker-, and
+  combined-frontend-shaped graphs under
+  `rmb/tests/rmc_frontend_lexer/`, `rmb/tests/rmc_frontend_parser/`,
+  `rmb/tests/rmc_frontend_checker/`, and `rmb/tests/rmc_frontend_combined/`
+- exercise nested module paths (`source.span`, `lex.token`, `parse.parser`,
+  `type.checker`), transitive local dependencies, repeated module-name
+  components across the graph, void module helpers, and qualified calls
+  shaped like the real compiler frontend
+- prove `rmc build` can compile real-ish frontend module graphs without a
+  one-file bundled compiler hack
+- still no fixed point, no full real `rmc` build, no package manager, no
+  stdlib lookup, no HIR/MIR, no LLVM
 
-### v0.0.9f parser/checker module group build
+### v0.0.9f rmc compiler candidate
 
-- grow the local module-group fixture toward parser/checker-shaped graphs
-- still no fixed point, no full real `rmc` build
+- with the frontend graphs proven, attempt to build a candidate real `rmc`
+  source layout end-to-end through `rmc build`
+- expand the bridge subset only as needed to reach a buildable compiler
+  candidate, not full language completeness
+- still no fixed point yet
 
-### v0.0.9g fixed-point candidate planning
+### v0.0.9g fixed-point candidate
 
 - design `rmc`-side chunk build, output paths, graph traversal, cycle
   diagnostics, and deterministic artifacts
 - once the pipeline is stable: `rmb` builds `rmc1`, `rmc1` builds candidate
   compiler source, compare outputs
+
+## Compressed remaining v0.0.9 path
+
+1. v0.0.9e — real-ish frontend module groups (this milestone)
+2. v0.0.9f — rmc compiler candidate
+3. v0.0.9g — fixed-point candidate
 
 ## Do not do yet
 

@@ -86,6 +86,28 @@ helpers so module code can read input files. This validates a broader
 real-ish module topology, but `rmc` still does not build itself end-to-end and
 there is no fixed point yet.
 
+v0.0.9e adds real-ish frontend module group probes shaped like the real
+compiler frontend:
+
+- `rmb/tests/rmc_frontend_lexer/` — lexer-shaped graph (`source.span`,
+  `source.source`, `diag.output`, `lex.char`, `lex.token`, `lex.lexer`)
+  with `scan`, `invalid`, and `span` commands.
+- `rmb/tests/rmc_frontend_parser/` — parser-shaped graph (`source.source`,
+  `lex.token`, `parse.ast`, `parse.parser`, `diag.output`) with `parse` and
+  `error` commands.
+- `rmb/tests/rmc_frontend_checker/` — checker-shaped graph (`type.types`,
+  `type.checker`, `diag.output`) with `check` and `mismatch` commands.
+- `rmb/tests/rmc_frontend_combined/` — combined frontend graph that uses
+  `source.*`, `lex.*`, `parse.*`, `type.*`, and `diag.output` together under
+  one entry, with `lex`, `parse`, `check`, and `all` commands.
+
+Each group exercises nested module paths, transitive local dependencies,
+repeated module-name components across the graph, void module helpers, and
+qualified calls into nested namespaces. The combined group glues
+lexer/parser/checker modules into one buildable graph. This is still not real
+`rmc` self-build, no fixed point, no package manager, no stdlib lookup, no
+HIR/MIR.
+
 The pipeline is now:
 
 ```bash

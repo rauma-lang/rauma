@@ -1,0 +1,3 @@
+fn src_first_byte() int {
+    return 102;
+}

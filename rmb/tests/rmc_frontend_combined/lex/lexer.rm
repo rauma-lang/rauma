@@ -1,0 +1,23 @@
+use lex.token;
+use lex.char;
+use source.source;
+use diag.output;
+
+fn run_lex_demo() {
+    print("combined lex:\n");
+
+    first := source.source.src_first_byte();
+    is := lex.char.ch_is_alpha(first);
+
+    if (is == 1) {
+        lex.token.tok_print_kw_fn();
+        lex.token.tok_print_ident();
+    }
+
+    lex.token.tok_print_eof();
+
+    marker := diag.output.diag_marker();
+    if (marker == 1) {
+        diag.output.diag_msg();
+    }
+}
