@@ -30,6 +30,17 @@ The current bootstrap chain is:
   graph, void module helpers, and qualified calls into nested namespaces.
   The combined group glues lexer/parser/checker modules into one buildable
   graph.
+- v0.0.9f adds a controlled multi‑file `rmc` compiler candidate under
+  `rmb/tests/rmc_candidate/` with `cli/`, `source/`, `diag/`, `lex/`, `parse/`,
+  `type/`, `cgen/`, and `build/` module groups. The candidate binary supports
+  `version`, `lex‑demo`, `parse‑demo`, `check‑demo`, `emit‑demo`, `build‑demo`,
+  `self‑test`, and help/unknown‑command dispatch. It validates the local
+  multi‑file bridge with a deeper dependency graph (up to seven levels).
+- v0.0.9g verifies the first step of a fixed‑point candidate chain: `rmb` builds
+  `rmc0`, `rmc0` builds the candidate, and the candidate binary runs all demo
+  commands. Because the candidate fixture does not contain a `build` command,
+  the chain stops at one generation; a true fixed‑point demonstration awaits
+  extending the candidate with a working `build` command.
 - v0.0.8z stabilizes the bridge milestone and points fixed-point work to
   `docs/compiler/v009-plan.md`.
 - This is not self-hosting yet.

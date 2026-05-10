@@ -89,7 +89,7 @@
 - v0.0.9d larger rmc CLI module group build ✓ DONE
 - v0.0.9e real-ish rmc frontend module group build ✓ DONE
 - v0.0.9f rmc compiler candidate ✓ DONE
-- v0.0.9g fixed-point candidate
+- v0.0.9g fixed-point candidate ✓ DONE
 - Do not claim fixed point until the staged compiler build and comparison
   strategy are stable.
 

@@ -79,18 +79,22 @@ expected staged build chain and comparison strategy.
   warnings about unused functions; passes manual compile without `-Werror`)
 - previous frontend groups, probes, and self‑build targets still pass
 
-### v0.0.9g fixed-point candidate
+### v0.0.9g fixed-point candidate ✓ DONE
 
-- design `rmc`-side chunk build, output paths, graph traversal, cycle
-  diagnostics, and deterministic artifacts
-- once the pipeline is stable: `rmb` builds `rmc1`, `rmc1` builds candidate
-  compiler source, compare outputs
+- verified `rmb` builds `rmc0`, `rmc0` builds candidate `rmc1`
+- candidate `rmc1` runs all expected demo commands (version, lex‑demo, …, self‑test)
+- candidate does **not** contain a `build` command, so `rmc1` cannot build `rmc2`; the fixed‑point chain stops at one generation
+- full behavior comparison across generations was therefore not possible
+- all previous frontend groups, probes, and self‑build targets still pass
+- documented result in `docs/compiler/v009-fixed-point-candidate.md`
+
+**What this means:** The candidate fixture must be extended with a working `build` command before a true fixed‑point chain can be demonstrated. Real `rmc` self‑host remains a separate, larger milestone.
 
 ## Compressed remaining v0.0.9 path
 
 1. v0.0.9e — real-ish frontend module groups ✓ DONE
 2. v0.0.9f — rmc compiler candidate ✓ DONE
-3. v0.0.9g — fixed-point candidate
+3. v0.0.9g — fixed-point candidate ✓ DONE
 
 ## Do not do yet
 
