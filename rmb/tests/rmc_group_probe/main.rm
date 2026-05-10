@@ -1,0 +1,46 @@
+use cli.help;
+use cli.version;
+use source.span;
+use lex.lexer;
+use lex.token;
+
+fn run_span() {
+    source.span.print_span_size(3, 10);
+}
+
+fn run_token() {
+    print("token demo\n");
+    lex.token.print_token_name(lex.token.token_fn());
+    lex.token.print_token_name(lex.token.token_ident());
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        cli.help.print_help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "version")) {
+        cli.version.print_version();
+        return;
+    }
+
+    if (str_eq(cmd, "span")) {
+        run_span();
+        return;
+    }
+
+    if (str_eq(cmd, "token")) {
+        run_token();
+        return;
+    }
+
+    if (str_eq(cmd, "lex")) {
+        lex.lexer.run_lex_demo();
+        return;
+    }
+
+    print("unknown command\n");
+}

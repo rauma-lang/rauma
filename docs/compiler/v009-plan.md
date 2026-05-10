@@ -27,15 +27,25 @@ expected staged build chain and comparison strategy.
 ### v0.0.9c real rmc module group build
 
 - use the multi-file foundation to build a small real-ish `rmc` module group
+- exercise nested local modules such as `cli.help`, `source.span`, and
+  `lex.token`
+- verify transitive local dependencies and qualified calls without a one-file
+  bundled compiler hack
 - keep scope below full `rmc` self-hosting
 - identify remaining source-shape/codegen blockers
 
-### v0.0.9d rmc chunk/multi-file design hardening
+### v0.0.9d build larger real rmc module groups
+
+- grow from the probe fixture toward larger real `rmc` module groups
+- keep package lookup, stdlib lookup, and fixed point out of scope
+- use failures to identify the next smallest bridge and module graph gaps
+
+### v0.0.9e rmc chunk/multi-file design hardening
 
 - design `rmc`-side chunk build
 - harden output paths, graph traversal, cycle diagnostics, and deterministic artifacts
 
-### v0.0.9e fixed-point candidate
+### v0.0.9f fixed-point candidate
 
 - `rmb` builds `rmc1`
 - `rmc1` builds candidate compiler source

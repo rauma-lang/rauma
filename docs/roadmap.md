@@ -85,9 +85,10 @@
 ### v0.0.9 Self-host Fixed Point
 - v0.0.9a standalone rmc-mini hardening ✓ DONE
 - v0.0.9b rmc multi-file build foundation ✓ DONE
-- v0.0.9c real rmc module group build
-- v0.0.9d rmc chunk/multi-file design hardening
-- v0.0.9e fixed-point candidate
+- v0.0.9c real rmc module group build ✓ DONE
+- v0.0.9d build larger real rmc module groups
+- v0.0.9e rmc chunk/multi-file design hardening
+- v0.0.9f fixed-point candidate
 - Do not claim fixed point until the staged compiler build and comparison
   strategy are stable.
 

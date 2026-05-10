@@ -83,8 +83,9 @@ pub fn parse_expr_end(src str, i int) int {
         return 0;
     }
 
-    if (lex.stream.current_kind(src, pos) == lex.token.kind_plus()) {
-        pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
+    op_kind := lex.stream.current_kind(src, pos);
+    if (op_kind == lex.token.kind_plus() || op_kind == lex.token.kind_minus()) {
+        pos = lex.stream.expect_kind(src, pos, op_kind);
         if (pos == 0) {
             return 0;
         }
@@ -368,8 +369,10 @@ pub fn emit_expr_to_c(src str, i int) str {
         return "";
     }
 
-    if (lex.stream.current_kind(src, pos) == lex.token.kind_plus()) {
-        pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus());
+    op_kind := lex.stream.current_kind(src, pos);
+    if (op_kind == lex.token.kind_plus() || op_kind == lex.token.kind_minus()) {
+        op := token_text(src, pos);
+        pos = lex.stream.expect_kind(src, pos, op_kind);
         if (pos == 0) {
             return "";
         }
@@ -379,7 +382,9 @@ pub fn emit_expr_to_c(src str, i int) str {
         }
 
         out := left;
-        out = str_concat(out, " + ");
+        out = str_concat(out, " ");
+        out = str_concat(out, op);
+        out = str_concat(out, " ");
         out = str_concat(out, right);
         return out;
     }
@@ -1305,7 +1310,14 @@ pub fn emit_module_fn_to_c(src str, i int, module_prefix str) str {
         return "";
     }
 
-    out := emit_module_fn_prefix(module_prefix, name, has_return);
+    out := "#define rm_fn_";
+    out = str_concat(out, name);
+    out = str_concat(out, " rm_mod_");
+    out = str_concat(out, module_prefix);
+    out = str_concat(out, "_");
+    out = str_concat(out, name);
+    out = str_concat(out, "\n");
+    out = str_concat(out, emit_module_fn_prefix(module_prefix, name, has_return));
     out = str_concat(out, "(");
     out = str_concat(out, params);
     out = str_concat(out, ") {\n");

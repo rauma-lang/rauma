@@ -135,13 +135,71 @@ pub fn module_source_path(base str, module str) str {
     return out;
 }
 
+pub fn text_contains(text str, needle str) bool {
+    len := str_len(text);
+    nlen := str_len(needle);
+    i := 0;
+
+    if (nlen == 0) {
+        return true;
+    }
+
+    while (i + nlen <= len) {
+        j := 0;
+        ok := true;
+        while (j < nlen) {
+            if (str_byte(text, i + j) != str_byte(needle, j)) {
+                ok = false;
+            }
+            j += 1;
+        }
+        if (ok) {
+            return true;
+        }
+        i += 1;
+    }
+
+    return false;
+}
+
+pub fn module_marker(module str) str {
+    out := "|";
+    out = str_concat(out, module);
+    out = str_concat(out, "|");
+    return out;
+}
+
+pub fn has_emitted(emitted str, module str) bool {
+    return text_contains(emitted, module_marker(module));
+}
+
+pub fn append_marker(emitted str, module str) str {
+    return str_concat(emitted, module_marker(module));
+}
+
+pub fn emit_one_module(base str, module_name str) str {
+    dep_path := module_source_path(base, module_name);
+    dep_text := read_file(dep_path);
+    if (str_len(dep_text) == 0) {
+        return "#missing";
+    }
+
+    module_c := cgen.cgen.emit_module_to_string(module_name, dep_text);
+    if (str_len(module_c) == 0) {
+        return "";
+    }
+
+    return module_c;
+}
+
 pub fn emit_modules(entry_path str, entry_text str) str {
     base := dirname(entry_path);
     out := cgen.cgen.emit_header_to_string();
     i := 0;
     done := false;
+    emitted := "|";
 
-    while (i < 8 && done == false) {
+    while (i < 16 && done == false) {
         module_name := use_module_at_index(entry_text, i);
         if (str_len(module_name) == 0) {
             done = true;
@@ -152,12 +210,37 @@ pub fn emit_modules(entry_path str, entry_text str) str {
                 return "#missing";
             }
 
-            module_c := cgen.cgen.emit_module_to_string(module_name, dep_text);
-            if (str_len(module_c) == 0) {
-                return "";
+            j := 0;
+            trans_done := false;
+            while (j < 16 && trans_done == false) {
+                trans_name := use_module_at_index(dep_text, j);
+                if (str_len(trans_name) == 0) {
+                    trans_done = true;
+                } else {
+                    if (has_emitted(emitted, trans_name) == false) {
+                        trans_c := emit_one_module(base, trans_name);
+                        if (str_eq(trans_c, "#missing")) {
+                            return "#missing";
+                        }
+                        if (str_len(trans_c) == 0) {
+                            return "";
+                        }
+                        out = str_concat(out, trans_c);
+                        emitted = append_marker(emitted, trans_name);
+                    }
+                    j += 1;
+                }
             }
 
-            out = str_concat(out, module_c);
+            if (has_emitted(emitted, module_name) == false) {
+                module_c := cgen.cgen.emit_module_to_string(module_name, dep_text);
+                if (str_len(module_c) == 0) {
+                    return "";
+                }
+
+                out = str_concat(out, module_c);
+                emitted = append_marker(emitted, module_name);
+            }
             i += 1;
         }
     }

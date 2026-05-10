@@ -1,0 +1,7 @@
+fn print_source_demo() {
+    print("source demo\n");
+}
+
+fn source_len() int {
+    return 12;
+}

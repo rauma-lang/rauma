@@ -13,6 +13,8 @@ The current bootstrap chain is:
   `self-test` command.
 - v0.0.9b starts local multi-file `rmc build` by resolving simple local `use`
   modules and emitting one combined bridge C file.
+- v0.0.9c builds a real-ish `rmc` module group probe with nested `cli`,
+  `source`, and `lex`-style modules.
 - v0.0.8z stabilizes the bridge milestone and points fixed-point work to
   `docs/compiler/v009-plan.md`.
 - This is not self-hosting yet.
@@ -49,6 +51,8 @@ The verified bridge subset currently includes:
 - `str_eq`
 - `read_file`, `write_file`, `cc_compile` as bridge builtins
 - local `use math;` / `use cli.help;` resolution relative to the entry file
+- nested local modules such as `source.span` and `lex.token`
+- small transitive local module graphs used by the `rmc_group_probe` fixture
 
 ## Current rmc source feature audit
 
@@ -69,6 +73,7 @@ The verified bridge subset currently includes:
 
 - broader multi-file `use` resolution in `rmc build`
 - real module/chunk build in `rmc`
+- real `rmc` source coverage beyond controlled module-group probes
 - more general parser/codegen instead of bridge patterns
 - token arrays or better cursor abstraction
 - heap AST or structured summary model
@@ -77,7 +82,7 @@ The verified bridge subset currently includes:
 - general statement emission
 - general expression emission
 - better name resolution
-- real type checking
+- real module-aware type checking
 - better error handling
 - output paths per source
 - support for more `rmc` source shapes, especially structs, enums, imports, cross-module calls, and large helper-heavy files

@@ -615,6 +615,9 @@ pub fn punct_kind(text str, start int, len int) int {
     if (b == 43) {
         return lex.token.kind_plus();
     }
+    if (b == 45) {
+        return lex.token.kind_minus();
+    }
     if (b == 61) {
         return lex.token.kind_eq();
     }
@@ -867,6 +870,10 @@ pub fn scan_punct(text str, start int, len int) int {
     }
     if (b == 43) {
         lex.token.print_token(lex.token.kind_plus(), "+");
+        return start + 1;
+    }
+    if (b == 45) {
+        lex.token.print_token(lex.token.kind_minus(), "-");
         return start + 1;
     }
     if (b == 61) {

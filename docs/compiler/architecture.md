@@ -102,6 +102,12 @@ still emits C directly from checked AST chunks:
   architecture and still does not add HIR/MIR, package resolution, chunk
   caching, or fixed-point self-hosting.
 
+  v0.0.9c builds a real-ish `rmc` module group probe using nested local modules
+  (`cli.help`, `source.span`, `lex.token`, and friends). The bridge now handles
+  the small transitive graph and qualified calls needed by that probe, while
+  still emitting one combined C file and deferring real chunking, HIR/MIR, and
+  fixed point.
+
 ## Compilation Pipeline
 
 ```

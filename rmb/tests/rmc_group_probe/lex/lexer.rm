@@ -1,0 +1,18 @@
+use lex.token;
+use source.source;
+
+fn run_lex_demo() {
+    source.source.print_source_demo();
+
+    print("lex demo\n");
+    lex.token.print_token_name(lex.token.token_fn());
+    lex.token.print_token_name(lex.token.token_ident());
+
+    n := source.source.source_len();
+
+    if (n == 12) {
+        print("source len ok\n");
+    } else {
+        print("source len bad\n");
+    }
+}

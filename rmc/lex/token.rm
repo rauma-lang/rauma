@@ -187,6 +187,10 @@ pub fn kind_kw_use() int {
     return 26;
 }
 
+pub fn kind_minus() int {
+    return 27;
+}
+
 pub fn kind_invalid() int {
     return 99;
 }
@@ -298,6 +302,10 @@ pub fn print_kind_name(kind int) {
     }
     if (kind == 26) {
         print("kw_use");
+        return;
+    }
+    if (kind == 27) {
+        print("minus");
         return;
     }
     print("invalid");

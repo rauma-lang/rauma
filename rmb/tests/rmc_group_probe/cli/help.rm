@@ -1,0 +1,8 @@
+fn print_help() {
+    print("rmc-group <command>\n");
+    print("commands:\n");
+    print("  version\n");
+    print("  span\n");
+    print("  token\n");
+    print("  lex\n");
+}

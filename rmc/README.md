@@ -69,6 +69,13 @@ into one bridge C file, and compile it through the existing `cc_compile`
 bridge. This is not a package manager, stdlib resolver, chunk cache, or
 self-host fixed point.
 
+v0.0.9c adds a real-ish `rmc` module group probe under
+`rmb/tests/rmc_group_probe/`. The bridge now handles nested local module paths
+such as `cli.help`, `source.span`, and `lex.token`, plus qualified calls across
+that small graph. This proves the multi-file path can build compiler-shaped
+module groups, but it is still not the full real `rmc` and not fixed-point
+self-hosting.
+
 The pipeline is now:
 
 ```bash
@@ -111,10 +118,12 @@ The local multi-file bridge subset supports:
 - `use math;` -> `math.rm` beside the entry file
 - `use cli.help;` -> `cli/help.rm` beside the entry file
 - qualified calls such as `math.add(...)` and `cli.help.print_help()`
+- nested local module paths such as `source.span` and `lex.token`
+- one-level transitive local dependencies for small module groups
 - one combined generated C file at `build/rmc_build_out.c`
 
-There is no package lookup, stdlib lookup, cycle handling, chunk cache, or
-per-module object layout in `rmc` yet.
+There is no package lookup, stdlib lookup, robust cycle handling, chunk cache,
+real module type checking, or per-module object layout in `rmc` yet.
 
 ## Current Source Layout
 

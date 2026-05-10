@@ -21,6 +21,11 @@ v0.0.9b introduces the first local multi-file foundation in the RauMa-written
 combined bridge C file. Fixed point is still later; this is only the first
 module graph step.
 
+v0.0.9c uses that foundation to build a real-ish `rmc` module group probe with
+nested local modules such as `cli.help`, `source.span`, and `lex.token`.
+This validates the architecture direction without building the full real `rmc`
+or claiming fixed point.
+
 ## Bootstrap Stages
 
 ### Stage 0: rmb (Bootstrap Compiler)

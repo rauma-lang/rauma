@@ -174,6 +174,14 @@ can now discover top-level local `use` statements, resolve modules relative to
 the entry file directory, emit all discovered modules into one bridge C file,
 and compile/link that file through the existing `cc_compile` bridge.
 
+v0.0.9c extends that foundation with the `rmb/tests/rmc_group_probe/` fixture,
+which mirrors real `rmc` module shapes. Nested paths such as `source.span` and
+`lex.token` resolve to `source/span.rm` and `lex/token.rm` beside the entry
+file, and qualified calls such as `lex.token.print_token_name(...)` are emitted
+with module-mangled C symbols. The bridge also handles the small transitive
+dependencies used by the probe, for example `lex/lexer.rm` importing
+`lex.token` and `source.source`.
+
 Current `rmc` multi-file limitations:
 
 - local modules only
@@ -182,7 +190,8 @@ Current `rmc` multi-file limitations:
 - no package lookup
 - no stdlib lookup
 - no chunk cache or incremental rebuild
-- no cycle handling beyond rejecting unsupported/missing modules
+- limited duplicate/cycle handling beyond rejecting unsupported/missing modules
+- no real module interface or cross-module type checking yet
 
 ## Chunk-Based Architecture
 
