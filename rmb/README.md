@@ -246,6 +246,12 @@ The user-facing copy lives at `examples/selfbuild/rmc-mini.rm`. It is a
 single-file, import-free compiler-like CLI built by the RauMa-written `rmc`.
 This is still not fixed-point self-hosting.
 
+v0.0.8z stabilizes the bridge verification flow from `rmb/`. The canonical
+checklist is documented in `docs/compiler/v008-stabilization.md` and covers
+`rmb -> rmc -> rmc-mini`, tiny/tool/probe targets, bridge regressions, and the
+existing `rmb` smoke tests. v0.0.9 planning is captured in
+`docs/compiler/v009-plan.md`.
+
 ### Output
 The compiler executable is built at:
 ```

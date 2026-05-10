@@ -50,7 +50,7 @@
 - Link chunk objects into one executable
 - Defer full incremental rebuilds and multiple compilation targets
 
-### v0.0.8 Write `rmc` in RauMa
+### v0.0.8 Write `rmc` in RauMa ✓ DONE
 - v0.0.8a rmc skeleton ✓ DONE
 - v0.0.8b rmc source/span/token ✓ DONE
 - v0.0.8c rmc lexer smoke ✓ DONE
@@ -76,18 +76,20 @@
 - v0.0.8w rmc bridge consolidation ✓ DONE
 - v0.0.8x self-build readiness audit ✓ DONE
 - v0.0.8y rmc-mini standalone target ✓ DONE
-- v0.0.8z v0.0.8 stabilization
-- Port compiler from C to RauMa
-- Implement self-hosting compiler core
-- Test compiler bootstrapping
-- Ensure feature parity with `rmb`
+- v0.0.8z v0.0.8 stabilization ✓ DONE
+- Complete the `rmc` bridge milestone: `rmb` builds `rmc`, and `rmc` builds
+  supported single-file targets including tiny/tool/rmc-mini.
+- Defer real self-host fixed point, multi-file `rmc build`, HIR/MIR, and full
+  backend work to v0.0.9 and later.
 
 ### v0.0.9 Self-host Fixed Point
-- Achieve self-hosting compilation
-- `rmb` builds `rmc1`
-- `rmc1` builds `rmc2`
-- `rmc2` builds `rmc3`
-- Verify `rmc2` and `rmc3` produce identical output
+- v0.0.9a standalone rmc-mini hardening
+- v0.0.9b rmc source partition audit
+- v0.0.9c single-file bundled rmc experiment
+- v0.0.9d multi-file/chunk plan
+- v0.0.9e fixed-point candidate
+- Do not claim fixed point until the staged compiler build and comparison
+  strategy are stable.
 
 ### v0.1.0 Usable Compiler
 - Stable self-hosting compiler

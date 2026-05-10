@@ -9,6 +9,8 @@ The current bootstrap chain is:
 - `rmc` can build `examples/selfbuild/tiny.rm`.
 - `rmc` can build `examples/selfbuild/tool.rm`.
 - `rmc` can build `examples/selfbuild/rmc-mini.rm`.
+- v0.0.8z stabilizes the bridge milestone and points fixed-point work to
+  `docs/compiler/v009-plan.md`.
 - This is not self-hosting yet.
 
 `rmc build` is currently a bridge: it reads a single file, runs lightweight checks, emits C text, writes `build/rmc_build_out.c`, invokes the external C compiler through the temporary `cc_compile` builtin, and produces `build/rmc_build_out`.
@@ -113,12 +115,12 @@ v0.0.8y created a standalone `rmc-mini.rm` target that mimics a tiny compiler co
 - no multi-file
 - buildable by `rmc build`
 
-The next milestone should be v0.0.8z stabilization. It should freeze the v0.0.8
-bridge behavior, review docs/tests, and prepare clean v0.0.9 fixed-point
-planning without claiming self-hosting.
+The next milestone should be v0.0.9a standalone `rmc-mini` hardening. It should
+keep the target single-file, add stricter regressions around the verified bridge
+subset, and avoid jumping directly to full self-hosting.
 
 ## Not yet self-hosting
 
-v0.0.8x is not self-hosting.
+v0.0.8z is not self-hosting.
 
 `rmc` does not build itself yet. `rmc` does not have multi-file chunk builds, HIR/MIR, a full backend, or fixed-point verification. v0.0.9 remains the self-host fixed-point milestone.

@@ -11,6 +11,21 @@ RauMa is a compiled, no-runtime, server-side-oriented programming language.
 - Future ownership/safety model based on Interference Ownership / Interference Type
 - Compiler is designed to self-host
 
+## Current Status
+
+RauMa has two compiler tracks:
+
+- `rmb` is the C11 bootstrap compiler and remains the authoritative build path.
+- `rmc` is the RauMa-written bridge compiler built by `rmb`.
+
+As of v0.0.8z, `rmc build` supports a limited single-file bridge subset. It can
+build the proto self-build targets under `examples/selfbuild/`, including
+`tiny.rm`, `tool.rm`, and `rmc-mini.rm`. This proves the bridge chain, but it is
+not self-hosting yet: `rmc` does not build the real multi-file `rmc` tree.
+
+See `docs/compiler/v008-stabilization.md` for the stabilized bridge checklist
+and `docs/compiler/v009-plan.md` for fixed-point planning boundaries.
+
 ## Repository Structure
 
 - `rmb/` - RauMa Bootstrap Compiler (C11)

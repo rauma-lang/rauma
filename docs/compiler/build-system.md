@@ -159,6 +159,12 @@ produce a standalone command binary with help/version/demo/check-style commands,
 but the output path is still `build/rmc_build_out.c` / `build/rmc_build_out`
 and there is still no multi-file `rmc` build graph.
 
+v0.0.8z stabilizes this single-file bridge as the completed v0.0.8 behavior.
+The stable bridge can build tiny/tool/probe/rmc-mini targets, but real chunk
+builds in `rmc` remain future work. The verification checklist is captured in
+`docs/compiler/v008-stabilization.md`, and the next fixed-point planning
+boundary is `docs/compiler/v009-plan.md`.
+
 ## Chunk-Based Architecture
 
 ### What is a Chunk?

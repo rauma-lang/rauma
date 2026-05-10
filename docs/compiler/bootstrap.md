@@ -4,6 +4,14 @@
 
 RauMa's bootstrap process enables the compiler to build itself, ensuring the language implementation is correct and consistent.
 
+v0.0.8 is now stabilized as the `rmc` bridge milestone. `rmb` builds the
+RauMa-written `rmc`; that generated `rmc` can build limited single-file targets
+including `tiny.rm`, `tool.rm`, and `rmc-mini.rm`. This is still not fixed-point
+self-hosting.
+
+See `docs/compiler/v008-stabilization.md` for the verified bridge chain and
+`docs/compiler/v009-plan.md` for the next fixed-point planning phase.
+
 ## Bootstrap Stages
 
 ### Stage 0: rmb (Bootstrap Compiler)

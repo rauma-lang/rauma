@@ -55,6 +55,10 @@ RauMa-written `rmc`; the produced binary behaves like a tiny compiler CLI with
 `version`, `lex-demo`, `parse-demo`, and `check-demo` commands. This is still
 not self-hosting.
 
+v0.0.8z stabilizes the v0.0.8 bridge milestone. The supported bridge behavior,
+verification chain, and fixed-point boundaries are documented in
+`docs/compiler/v008-stabilization.md` and `docs/compiler/v009-plan.md`.
+
 The pipeline is now:
 
 ```bash
@@ -265,7 +269,14 @@ Native PowerShell `>` redirection writes UTF-16 by default, which `gcc` cannot
 parse. On Windows, use bash (the redirection above is plain `>`), or invoke via
 `cmd /c "... > out.c"` so the output stays as plain bytes.
 
-## Later v0.0.8 Work
+## v0.0.8 Stabilized Targets
 
-v0.0.8z should stabilize v0.0.8 and prepare the transition toward v0.0.9
-fixed-point planning. Self-host fixed point remains v0.0.9.
+The stabilized proto self-build targets are:
+
+- `examples/selfbuild/tiny.rm`
+- `examples/selfbuild/tool.rm`
+- `examples/selfbuild/rmc-mini.rm`
+
+`rmb` builds `rmc`, and `rmc` builds each target through the single-file bridge.
+The real multi-file `rmc` compiler is still not built by `rmc`; fixed-point
+self-hosting remains future v0.0.9 work.

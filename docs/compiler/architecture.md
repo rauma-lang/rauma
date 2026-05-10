@@ -4,7 +4,7 @@
 
 RauMa uses a multi-stage compiler architecture designed for incremental development and self-hosting.
 
-### Bootstrap pipeline status (v0.0.8y)
+### Bootstrap pipeline status (v0.0.8z)
 
 The full pipeline (Resolver → HIR → MIR → multi-backend) is the long-term design.
 The v0.0.7 bootstrap compiler `rmb` deliberately skips most of these stages and
@@ -85,6 +85,11 @@ still emits C directly from checked AST chunks:
   target with no imports. `rmb` builds `rmc`, `rmc` builds `rmc-mini`, and the
   produced binary handles version, lexer demo, parser demo, and check demo
   commands. This is still not fixed-point self-hosting.
+
+  v0.0.8z stabilizes the bridge architecture and documents the completed
+  v0.0.8 verification chain in `docs/compiler/v008-stabilization.md`. The
+  v0.0.9 boundary is planned in `docs/compiler/v009-plan.md`. There is still no
+  HIR/MIR-backed `rmc` backend and no fixed-point self-hosting.
 
 ## Compilation Pipeline
 
@@ -238,7 +243,7 @@ build/debug/native/bin/main
 - Multiple backends
 - Self-hosting
 - Active development
-- In v0.0.8y, `rmc` has a minimal CLI skeleton plus early data modules:
+- In v0.0.8z, `rmc` has a minimal CLI skeleton plus early data modules:
   `source/span`, `source/source`, `lex/token`, `lex/lexer`, `ast/ast`,
   `lex/stream`, `parse/parser`, `type/checker`, `cgen/cgen`, `diag/output`,
   `cli/args`, and `cli/file`.
@@ -259,7 +264,8 @@ build/debug/native/bin/main
   HIR/MIR-backed backend. The readiness audit identifies the next likely target
   as a standalone `rmc-mini.rm`, not the real multi-file `rmc` tree. v0.0.8y
   verifies that target, but the real `rmc` tree still requires module/chunk
-  support before it can be built by `rmc`.
+  support before it can be built by `rmc`. v0.0.8z closes this as the bridge
+  milestone and defers the next self-host path to v0.0.9 planning.
 
 ## Self-Hosting Process
 
