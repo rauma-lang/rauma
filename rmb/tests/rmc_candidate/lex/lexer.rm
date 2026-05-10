@@ -18,4 +18,5 @@ fn run_lex_demo() {
     }
 
     source.span.print_span(0, source.source.source_len());
-}
+
+    }

@@ -5,10 +5,7 @@ use diag.output;
 fn run_check_demo() {
     print("candidate check demo:\n");
     type.types.print_type(type.types.type_int());
-    parse.parser.run_parse_demo();
-    print("check ok\n");
+        parse.parser.run_parse_demo();
+        print("check ok\n");
 }
 
-fn run_check_error() {
-    diag.output.error(99);
-}

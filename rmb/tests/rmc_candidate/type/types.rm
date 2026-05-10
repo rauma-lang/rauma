@@ -2,9 +2,6 @@ fn type_int() int {
     return 1;
 }
 
-fn type_str() int {
-    return 2;
-}
 
 fn print_type(kind int) {
     if (kind == 1) {

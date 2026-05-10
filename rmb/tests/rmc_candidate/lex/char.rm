@@ -14,12 +14,3 @@ fn is_alpha(ch int) int {
     return 0;
 }
 
-fn is_digit(ch int) int {
-    if (ch >= 48) {
-        if (ch <= 57) {
-            return 1;
-        }
-    }
-
-    return 0;
-}

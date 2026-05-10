@@ -9,8 +9,3 @@ fn run_parse_demo() {
     parse.ast.print_statement();
     diag.output.ok();
 }
-
-fn run_parse_with_lex() {
-    lex.lexer.run_lex_demo();
-    run_parse_demo();
-}
