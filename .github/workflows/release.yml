@@ -26,6 +26,7 @@ jobs:
           install: >-
             make
             mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-python
 
       - name: Build release package
         shell: msys2 {0}
