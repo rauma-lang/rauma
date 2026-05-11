@@ -63,6 +63,7 @@ arch="$(uname -m | tr '[:upper:]' '[:lower:]')"
 case "$os" in
     linux*) platform_os="linux" ;;
     darwin*) platform_os="macos" ;;
+    mingw*|msys*|cygwin*) platform_os="windows" ;;
     *) echo "unsupported OS: $os" >&2; exit 1 ;;
 esac
 
@@ -73,17 +74,28 @@ case "$arch" in
 esac
 
 case "$platform_os-$platform_arch" in
-    linux-x64|linux-arm64|macos-arm64) ;;
+    windows-x64|windows-arm64|linux-x64|linux-arm64|macos-arm64) ;;
     macos-x64)
         echo "macos-x64 release asset is not produced by the current CI" >&2
         exit 1
         ;;
+    *)
+        echo "unsupported target: $platform_os-$platform_arch" >&2
+        exit 1
+        ;;
 esac
 
-asset="rmc-$platform_os-$platform_arch"
+exe_suffix=""
+archive_suffix="tar.gz"
+if [ "$platform_os" = "windows" ]; then
+    exe_suffix=".exe"
+    archive_suffix="zip"
+fi
+
+asset="rmc-$platform_os-$platform_arch$exe_suffix"
 version_tag="$(normalize_tag "$VERSION")"
 version_number="$(normalize_number "$VERSION")"
-archive="rauma-v$version_number-$platform_os-$platform_arch.tar.gz"
+archive="rauma-v$version_number-$platform_os-$platform_arch.$archive_suffix"
 if [ "$VERSION" = "latest" ]; then
     base_url="https://github.com/$OWNER/$REPO/releases/latest/download"
 else
@@ -106,23 +118,33 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
 if command -v curl >/dev/null 2>&1; then
-    curl -fsSL "$url" -o "$tmp/rauma.tar.gz"
+    curl -fsSL "$url" -o "$tmp/rauma.$archive_suffix"
 elif command -v wget >/dev/null 2>&1; then
-    wget -q "$url" -O "$tmp/rauma.tar.gz"
+    wget -q "$url" -O "$tmp/rauma.$archive_suffix"
 else
     echo "curl or wget is required" >&2
     exit 1
 fi
 
 mkdir -p "$tmp/pkg" "$PREFIX"
-tar -xzf "$tmp/rauma.tar.gz" -C "$tmp/pkg"
-cp "$tmp/pkg/$asset" "$PREFIX/rmc"
-chmod +x "$PREFIX/rmc"
+if [ "$archive_suffix" = "zip" ]; then
+    if command -v unzip >/dev/null 2>&1; then
+        unzip -q "$tmp/rauma.$archive_suffix" -d "$tmp/pkg"
+    else
+        echo "unzip is required for Windows release archives" >&2
+        exit 1
+    fi
+else
+    tar -xzf "$tmp/rauma.$archive_suffix" -C "$tmp/pkg"
+fi
+
+cp "$tmp/pkg/$asset" "$PREFIX/rmc$exe_suffix"
+chmod +x "$PREFIX/rmc$exe_suffix"
 
 case ":$PATH:" in
     *":$PREFIX:"*) ;;
     *) echo "add this to PATH: $PREFIX" ;;
 esac
 
-"$PREFIX/rmc" version
+"$PREFIX/rmc$exe_suffix" version
 echo "rauma setup complete"
