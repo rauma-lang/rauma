@@ -353,7 +353,7 @@ RmbAstExpr* rmb_ast_expr_none(RmbSpan span);
 RmbAstExpr* rmb_ast_expr_call(RmbSpan span, RmbAstExpr* callee, RmbAstExpr** args, size_t arg_count);
 RmbAstExpr* rmb_ast_expr_field(RmbSpan span, RmbAstExpr* object, rmb_string field);
 RmbAstExpr* rmb_ast_expr_unary(RmbSpan span, RmbTokenKind op, RmbAstExpr* operand);
-RmbAstExpr* rmb_ast_expr_binary(RmbSpan span, RmbTokenKind op, RmbAstExpr* left, RmbAstExpr* right);
+RmbAstExpr* rmb_ast_expr_binary(RmbSpan span, RmbAstExpr* left, RmbAstExpr* right);
 RmbAstExpr* rmb_ast_expr_error_prop(RmbSpan span, RmbAstExpr* operand);
 RmbAstExpr* rmb_ast_expr_error_panic(RmbSpan span, RmbAstExpr* operand);
 RmbAstExpr* rmb_ast_expr_else(RmbSpan span, RmbAstExpr* value, RmbAstExpr* fallback);
