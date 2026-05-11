@@ -222,3 +222,18 @@ the verified command set.
 
 The remaining readiness work is release hardening and architecture expansion,
 not another determinism blocker in the current bridge chain.
+
+## v0.1.0 release readiness
+
+v0.1.0 completes the release-hardening step for the current bridge compiler:
+
+- `rmc 0.1.0` is the visible compiler version
+- GitHub Actions CI rebuilds `rmb`, `rmc`, and the deterministic self-host chain
+- GitHub Actions release packaging publishes `rauma-rmc`, `rauma-rmb`, and
+  `rauma-setup`
+- `rauma-setup` is written in RauMa and built by the verified compiler
+
+The compiler is usable for the supported bridge subset and local module graph.
+The remaining readiness gaps are broader language/tooling work: package
+management, stdlib lookup, HIR/MIR, LLVM/rmgen/rmlink, and release polish beyond
+the first binary distribution.

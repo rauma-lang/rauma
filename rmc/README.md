@@ -433,3 +433,44 @@ version, help, demo lex/parse, file lex/parse/check, emit-c, candidate build
 plus self-test, and `wat`.
 
 The next work is v0.1.0 stabilization and release hardening.
+
+## v0.1.0 Release
+
+`rmc` is now the released self-hosted RauMa compiler. The visible version is:
+
+```text
+rmc 0.1.0
+```
+
+The release binary is named `rauma-rmc` with platform suffixes in GitHub
+Releases, for example `rauma-rmc-windows-x64.exe`.
+
+Supported release commands:
+
+```text
+version
+help
+demo-lex
+demo-parse
+demo-file
+lex <path>
+parse <path>
+check <path>
+emit-c <path>
+build <path>
+```
+
+Typical project build:
+
+```bash
+rauma-rmc-windows-x64.exe build path/to/main.rm
+./build/rmc_build_out.exe
+```
+
+The v0.1.0 release archive also includes `rauma-rmb` for bootstrap recovery and
+`rauma-setup`, a RauMa-written setup helper. Future releases should prefer the
+released `rauma-rmc` binary to build RauMa projects and future compiler stages,
+with `rmb` retained as the recovery path.
+
+Current limitations remain explicit: local module graph only, bridge C backend,
+no package manager, no stdlib lookup, no HIR/MIR, and no LLVM/rmgen/rmlink.

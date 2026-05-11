@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  windows:
+    name: Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2 toolchain
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            make
+            mingw-w64-ucrt-x86_64-gcc
+
+      - name: Build rmb and rmc
+        shell: msys2 {0}
+        working-directory: rmb
+        run: |
+          make clean
+          make
+          ./build/rmb version
+          ./build/rmb build ../rmc/main.rm
+          ./build/debug/native/bin/main version
+
+      - name: Run rmb test suite
+        shell: msys2 {0}
+        working-directory: rmb
+        run: make test
+
+      - name: Verify deterministic self-host chain
+        shell: msys2 {0}
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release/verify-self-host.ps1
+
+      - name: Build and smoke rauma-setup
+        shell: msys2 {0}
+        working-directory: rmb
+        run: |
+          ./build/rmc3-real.exe build ../examples/setup/rauma-setup.rm
+          ./build/rmc_build_out.exe
+          ./build/rmc_build_out.exe version
+          ./build/rmc_build_out.exe doctor
+          ./build/rmc_build_out.exe install-info
+          ./build/rmc_build_out.exe wat
+
+  linux:
+    name: Linux smoke
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y build-essential
+
+      - name: Build rmb and run core smoke
+        working-directory: rmb
+        run: |
+          make clean
+          make
+          ./build/rmb version
+          ./build/rmb build ../rmc/main.rm
+          ./build/debug/native/bin/main version
+          make test

@@ -89,3 +89,18 @@ This is deterministic bridge self-host verification, not a full compiler
 architecture milestone. RauMa still does not have package management, stdlib
 lookup, HIR/MIR, LLVM/rmgen/rmlink, release polish, or a general module graph
 algorithm beyond the current local bridge needs.
+
+## v0.1.0 release carry-forward
+
+v0.1.0 carries this deterministic chain into release automation. GitHub Actions
+CI runs the verification script, and the release workflow packages the final
+verified compiler as `rauma-rmc`.
+
+The release also includes:
+
+- `rauma-rmb` for bootstrap recovery
+- `rauma-setup`, built from `examples/setup/rauma-setup.rm`
+- `SHA256SUMS.txt` for release asset verification
+
+The generated C comparison and behavior comparison remain the release gate for
+the current self-hosted bridge compiler.

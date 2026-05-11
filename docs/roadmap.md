@@ -130,11 +130,15 @@
   architecture limitations explicit.
 
 ### v0.1.0 Usable Compiler
-- Stable self-hosting compiler
-- Comprehensive test suite
-- Documentation
-- Example programs
-- Ready for community use
+- Stable self-hosting compiler ✓ DONE
+- Deterministic generated C comparison ✓ DONE
+- Behavior comparison across real self-host stages ✓ DONE
+- GitHub Actions CI and release automation ✓ DONE
+- Release packages include `rauma-rmc`, `rauma-rmb`, `rauma-setup`, and
+  `SHA256SUMS.txt` ✓ DONE
+- Documentation, install notes, and release process ✓ DONE
+- Still limited to bridge C backend and local module graph; package manager,
+  stdlib lookup, HIR/MIR, LLVM, rmgen, and rmlink remain future work.
 
 ## Future Considerations
 

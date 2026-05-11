@@ -193,3 +193,18 @@ candidate build plus candidate self-test, and `wat`.
 No deterministic source fix was needed. The remaining limitation is release
 hardening: the architecture is still bridge-based and still lacks package
 lookup, stdlib lookup, HIR/MIR, LLVM, and release polish.
+
+## v0.1.0 release result
+
+v0.1.0 turns the verified real self-host chain into release automation. CI runs
+the deterministic self-host verification, and the release workflow publishes:
+
+- `rauma-rmc-windows-x64.exe`
+- `rauma-rmb-windows-x64.exe`
+- `rauma-setup-windows-x64.exe`
+- `rauma-v0.1.0-windows-x64.zip`
+- `SHA256SUMS.txt`
+
+`rmc` now reports `rmc 0.1.0`. The release remains bridge-based and local
+module graph only; package management, stdlib lookup, HIR/MIR, LLVM, rmgen, and
+rmlink remain future work.

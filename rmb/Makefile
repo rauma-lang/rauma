@@ -196,6 +196,9 @@ test-rmc-emit-workflow: debug
 	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(BUILD_DIR)/rmc_emit_workflow_add']).decode().replace('\r\n','\n'); want='42\n'; print('SUCCESS: add workflow output matches' if out==want else 'ERROR: add got %r want %r' % (out,want)); sys.exit(0 if out==want else 1)"
 	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(RMC_BIN)','emit-c','tests/rmc_emit_workflow_fail.rm']).decode(); ok=('check failed' in out); print('SUCCESS: fail workflow rejected as expected' if ok else 'ERROR: fail workflow output: %r' % out); sys.exit(0 if ok else 1)"
 
+self-host-test:
+	powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/release/verify-self-host.ps1
+
 # Show help
 help:
 	@echo "RauMa Bootstrap Compiler Makefile"
@@ -206,9 +209,10 @@ help:
 	@echo "  run         Build and run the compiler"
 	@echo "  test        Run lexer tests"
 	@echo "  test-rmc-emit-workflow  Verify rmc emit-c -> gcc -> run pipeline"
+	@echo "  self-host-test  Verify deterministic real rmc self-host chain"
 	@echo "  clean       Remove build artifacts"
 	@echo "  help        Show this help"
 	@echo ""
 	@echo "The executable will be at: $(TARGET)"
 
-.PHONY: all debug release run test clean help test-rmc-emit-workflow
+.PHONY: all debug release run test clean help test-rmc-emit-workflow self-host-test

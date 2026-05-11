@@ -570,6 +570,21 @@ SHA-256 `34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27`
 and size `207067`. Behavior comparison across `rmc1-real`, `rmc2-real`, and
 `rmc3-real` also passes.
 
+## v0.1.0 Release Build
+
+The v0.1.0 GitHub Actions release workflow uses the same bridge build path:
+
+1. build `rmb`
+2. build `rmc0`
+3. verify `rmc0 -> rmc1-real -> rmc2-real -> rmc3-real`
+4. compare generated C artifacts
+5. compare behavior across real stages
+6. build `examples/setup/rauma-setup.rm`
+7. package `rauma-rmc`, `rauma-rmb`, `rauma-setup`, and checksums
+
+The release workflow does not commit generated binaries. It publishes assets to
+GitHub Releases using `GITHUB_TOKEN` and `gh release create`.
+
 ### Distributed Builds
 - Share compilation across network
 - Build farm support

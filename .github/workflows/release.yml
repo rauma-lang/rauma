@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows-release:
+    name: Windows release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2 toolchain
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            make
+            mingw-w64-ucrt-x86_64-gcc
+
+      - name: Build release package
+        shell: msys2 {0}
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release/package.ps1 -Version 0.1.0
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rauma-v0.1.0-windows-x64
+          path: |
+            dist/rauma-rmb-windows-x64.exe
+            dist/rauma-rmc-windows-x64.exe
+            dist/rauma-setup-windows-x64.exe
+            dist/rauma-v0.1.0-windows-x64.zip
+            dist/SHA256SUMS.txt
+
+      - name: Write release notes
+        shell: pwsh
+        run: |
+          @'
+          # RauMa v0.1.0
+
+          First self-hosted RauMa compiler release.
+
+          ## Included binaries
+
+          - `rauma-rmc` - self-hosted RauMa compiler
+          - `rauma-rmb` - C11 bootstrap compiler for recovery
+          - `rauma-setup` - RauMa-written setup helper
+
+          ## Verified bootstrap chain
+
+          `rmb -> rmc0 -> rmc1-real -> rmc2-real -> rmc3-real`
+
+          Generated C exact comparison: PASS
+          Behavior comparison: PASS
+
+          ## Install
+
+          Download the archive for your platform.
+          Put `rauma-rmc` on PATH.
+          Run `rauma-setup doctor`.
+
+          ## Known limitations
+
+          - local module graph only
+          - bridge C backend
+          - no package manager
+          - no stdlib lookup
+          - no HIR/MIR
+          - no LLVM/rmgen/rmlink
+          '@ | Set-Content -Encoding UTF8 RELEASE_NOTES.md
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $tag = "v0.1.0"
+          }
+          $assets = @(
+            "dist/rauma-v0.1.0-windows-x64.zip",
+            "dist/rauma-rmb-windows-x64.exe",
+            "dist/rauma-rmc-windows-x64.exe",
+            "dist/rauma-setup-windows-x64.exe",
+            "dist/SHA256SUMS.txt"
+          )
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --title "RauMa v0.1.0" --notes-file RELEASE_NOTES.md
+          }
+          gh release upload $tag @assets --clobber

@@ -1,0 +1,54 @@
+fn version() {
+    print("rauma-setup 0.1.0\n");
+}
+
+fn help() {
+    print("rauma-setup <command>\n");
+    print("commands:\n");
+    print("  version\n");
+    print("  doctor\n");
+    print("  install-info\n");
+}
+
+fn doctor() {
+    print("rauma setup doctor\n");
+    print("compiler: rauma-rmc\n");
+    print("status: ok\n");
+}
+
+fn install_info() {
+    print("install info\n");
+    print("copy rauma-rmc to a directory on PATH\n");
+    print("keep rauma-rmb for bootstrap recovery\n");
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        help();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+
+    if (str_eq(cmd, "help")) {
+        help();
+        return;
+    }
+
+    if (str_eq(cmd, "version")) {
+        version();
+        return;
+    }
+
+    if (str_eq(cmd, "doctor")) {
+        doctor();
+        return;
+    }
+
+    if (str_eq(cmd, "install-info")) {
+        install_info();
+        return;
+    }
+
+    print("unknown command\n");
+}

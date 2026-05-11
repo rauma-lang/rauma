@@ -623,6 +623,30 @@ Behavior comparison also passes across `rmc1-real`, `rmc2-real`, and
 self-host chain is stable across stages, while still leaving release hardening
 and broader architecture work for later.
 
+## v0.1.0 Release Chain
+
+v0.1.0 ships the verified self-host chain as release automation:
+
+```text
+rmb -> rmc0 -> rmc1-real -> rmc2-real -> rmc3-real
+```
+
+The release compiler binary is copied from the final verified real compiler
+stage and published as `rauma-rmc-<platform>`. The bootstrap compiler is also
+published as `rauma-rmb-<platform>` so the source tree can still be rebuilt
+from the C11 recovery path.
+
+GitHub Actions release packages include:
+
+- `rauma-rmc-windows-x64.exe`
+- `rauma-rmb-windows-x64.exe`
+- `rauma-setup-windows-x64.exe`
+- `rauma-v0.1.0-windows-x64.zip`
+- `SHA256SUMS.txt`
+
+`rauma-setup` is written in RauMa and built by the verified self-hosted
+compiler during release packaging.
+
 ### Cross-Compilation Support
 - Bootstrap compiler can target multiple architectures
 - Support for embedded systems

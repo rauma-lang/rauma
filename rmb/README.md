@@ -404,8 +404,23 @@ use to `tests/project_nested/app/util.rm`. Dots map to path separators and
   `rmc0`, `rmc1-real`, and `rmc2-real` matches byte-for-byte with SHA-256
   `34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27`, and
   behavior matches across `rmc1-real`, `rmc2-real`, and `rmc3-real`.
+- v0.1.0 ships `rauma-rmc` as the self-hosted compiler and still includes
+  `rauma-rmb` in release archives as the bootstrap recovery compiler.
+  `rauma-rmb` builds `rmc` from source with
+  `./build/rmb build ../rmc/main.rm`.
 - Full language support, package lookup, stdlib lookup, HIR/MIR, and release
   hardening are later milestones.
+
+### v0.1.0 release role
+
+Release archives include both compilers:
+
+- `rauma-rmc` - self-hosted RauMa compiler for normal use
+- `rauma-rmb` - C11 bootstrap compiler for recovery and source rebuilds
+- `rauma-setup` - RauMa-written setup helper
+
+`rmb` remains intentionally small and stable. New language/tooling work should
+prefer the released `rauma-rmc` path unless bootstrap recovery is needed.
 
 ### Tests
 - Located in `rmb/tests/`
