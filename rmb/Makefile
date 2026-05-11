@@ -1,7 +1,7 @@
 # RauMa Bootstrap Compiler Makefile
 
 # Compiler and flags
-CC = gcc
+CC ?= gcc
 CFLAGS = -std=c11 -Wall -Wextra -Werror -pedantic -fno-strict-aliasing
 CFLAGS += -Iinclude
 
@@ -182,7 +182,7 @@ test: debug
 	@python -c "import subprocess, sys; rc=subprocess.run(['./$(TARGET)','build','tests/project_errors/missing.rm'], stderr=subprocess.DEVNULL).returncode; print('SUCCESS: project_errors/missing.rm failed as expected' if rc else 'ERROR: Expected project_errors/missing.rm to fail but it succeeded'); sys.exit(0 if rc else 1)"
 	@$(MAKE) test-rmc-emit-workflow
 
-# External rmc emit-c -> gcc -> run workflow
+# External rmc emit-c -> compiler -> run workflow
 RMC_BIN = $(BUILD_DIR)/debug/native/bin/main
 test-rmc-emit-workflow: debug
 	@echo ""
@@ -190,10 +190,10 @@ test-rmc-emit-workflow: debug
 	@./$(TARGET) build ../rmc/main.rm
 	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(RMC_BIN)','emit-c','tests/rmc_emit_workflow_hello.rm']); open('$(BUILD_DIR)/rmc_emit_workflow_hello.c','wb').write(out)"
 	@$(CC) -std=c11 -Wall -Wextra -Werror -pedantic $(BUILD_DIR)/rmc_emit_workflow_hello.c -o $(BUILD_DIR)/rmc_emit_workflow_hello
-	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(BUILD_DIR)/rmc_emit_workflow_hello']).decode().replace('\r\n','\n'); want='hello from rmc\n'; print('SUCCESS: hello workflow output matches' if out==want else 'ERROR: hello got %r want %r' % (out,want)); sys.exit(0 if out==want else 1)"
+	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(BUILD_DIR)/rmc_emit_workflow_hello']).decode().replace('\\r\\n','\\n'); want='hello from rmc\\n'; print('SUCCESS: hello workflow output matches' if out==want else 'ERROR: hello got %r want %r' % (out,want)); sys.exit(0 if out==want else 1)"
 	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(RMC_BIN)','emit-c','tests/rmc_emit_workflow_add.rm']); open('$(BUILD_DIR)/rmc_emit_workflow_add.c','wb').write(out)"
 	@$(CC) -std=c11 -Wall -Wextra -Werror -pedantic $(BUILD_DIR)/rmc_emit_workflow_add.c -o $(BUILD_DIR)/rmc_emit_workflow_add
-	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(BUILD_DIR)/rmc_emit_workflow_add']).decode().replace('\r\n','\n'); want='42\n'; print('SUCCESS: add workflow output matches' if out==want else 'ERROR: add got %r want %r' % (out,want)); sys.exit(0 if out==want else 1)"
+	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(BUILD_DIR)/rmc_emit_workflow_add']).decode().replace('\\r\\n','\\n'); want='42\\n'; print('SUCCESS: add workflow output matches' if out==want else 'ERROR: add got %r want %r' % (out,want)); sys.exit(0 if out==want else 1)"
 	@python -c "import subprocess, sys; out=subprocess.check_output(['./$(RMC_BIN)','emit-c','tests/rmc_emit_workflow_fail.rm']).decode(); ok=('check failed' in out); print('SUCCESS: fail workflow rejected as expected' if ok else 'ERROR: fail workflow output: %r' % out); sys.exit(0 if ok else 1)"
 
 self-host-test:
@@ -208,7 +208,7 @@ help:
 	@echo "  release     Build release version"
 	@echo "  run         Build and run the compiler"
 	@echo "  test        Run lexer tests"
-	@echo "  test-rmc-emit-workflow  Verify rmc emit-c -> gcc -> run pipeline"
+	@echo "  test-rmc-emit-workflow  Verify rmc emit-c -> compiler -> run pipeline"
 	@echo "  self-host-test  Verify deterministic real rmc self-host chain"
 	@echo "  clean       Remove build artifacts"
 	@echo "  help        Show this help"
