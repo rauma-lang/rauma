@@ -5,100 +5,160 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      version:
+        description: Release tag to package and publish
+        required: true
+        default: v0.1.0
 
 permissions:
   contents: write
 
 jobs:
-  windows-release:
-    name: Windows release
-    runs-on: windows-latest
+  build-release:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.runs_on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64
+            runs_on: windows-latest
+            platform_os: windows
+            platform_arch: x64
+            cc: gcc
+            python_cmd: python
+            shell: msys2 {0}
+            msystem: UCRT64
+            msys_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-gcc
+              mingw-w64-ucrt-x86_64-python
+          - name: Windows ARM64
+            runs_on: windows-11-arm
+            platform_os: windows
+            platform_arch: arm64
+            cc: gcc
+            python_cmd: python
+            shell: msys2 {0}
+            msystem: CLANGARM64
+            msys_packages: >-
+              make
+              mingw-w64-clang-aarch64-clang
+              mingw-w64-clang-aarch64-gcc-compat
+              mingw-w64-clang-aarch64-python
+          - name: Linux x64
+            runs_on: ubuntu-latest
+            platform_os: linux
+            platform_arch: x64
+            cc: gcc
+            python_cmd: python3
+            shell: bash
+          - name: Linux ARM64
+            runs_on: ubuntu-24.04-arm
+            platform_os: linux
+            platform_arch: arm64
+            cc: gcc
+            python_cmd: python3
+            shell: bash
+          - name: macOS ARM64
+            runs_on: macos-15
+            platform_os: macos
+            platform_arch: arm64
+            cc: clang
+            python_cmd: python3
+            shell: bash
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up MSYS2 toolchain
+        if: matrix.platform_os == 'windows'
         uses: msys2/setup-msys2@v2
         with:
-          msystem: UCRT64
+          msystem: ${{ matrix.msystem }}
           update: true
-          install: >-
-            make
-            mingw-w64-ucrt-x86_64-gcc
-            mingw-w64-ucrt-x86_64-python
+          install: ${{ matrix.msys_packages }}
+
+      - name: Install Linux build tools
+        if: matrix.platform_os == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential python3
+
+      - name: Resolve release version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            version="${{ inputs.version }}"
+          else
+            version="${{ github.ref_name }}"
+          fi
+          echo "RELEASE_VERSION=$version" >> "$GITHUB_ENV"
+          echo "CC=${{ matrix.cc }}" >> "$GITHUB_ENV"
 
       - name: Build release package
-        shell: msys2 {0}
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release/package.ps1 -Version 0.1.0
+        shell: ${{ matrix.shell }}
+        run: |
+          ${{ matrix.python_cmd }} scripts/release/package.py \
+            --version "$RELEASE_VERSION" \
+            --platform-os "${{ matrix.platform_os }}" \
+            --platform-arch "${{ matrix.platform_arch }}"
 
-      - name: Upload workflow artifact
+      - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: rauma-v0.1.0-windows-x64
+          name: release-${{ matrix.platform_os }}-${{ matrix.platform_arch }}
           path: |
-            dist/rmb-windows-x64-gcc.exe
-            dist/rmc-windows-x64-gcc.exe
-            dist/rauma-setup.ps1
-            dist/rauma-setup.sh
-            dist/rauma-v0.1.0-windows-x64-gcc.zip
-            dist/SHA256SUMS.txt
+            dist/rauma-v*-${{ matrix.platform_os }}-${{ matrix.platform_arch }}.*
+            dist/SHA256SUMS-${{ matrix.platform_os }}-${{ matrix.platform_arch }}.txt
+
+  publish-release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-release
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Resolve release version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            tag="${{ inputs.version }}"
+          else
+            tag="${{ github.ref_name }}"
+          fi
+          case "$tag" in
+            v*) ;;
+            *) tag="v$tag" ;;
+          esac
+          echo "RELEASE_TAG=$tag" >> "$GITHUB_ENV"
 
       - name: Write release notes
-        shell: pwsh
+        shell: bash
         run: |
-          @'
-          # RauMa v0.1.0
+          cat > RELEASE_NOTES.md <<'EOF'
+          # RauMa release
 
-          First self-hosted RauMa compiler release.
+          Self-hosted RauMa compiler release with verified multi-platform packaging.
 
-          ## Included binaries
+          Targets:
+          - Windows x64
+          - Windows ARM64
+          - Linux x64
+          - Linux ARM64
+          - macOS ARM64
 
-          - `rmc` - self-hosted RauMa compiler
-          - `rmb` - C11 bootstrap compiler for recovery
-          - `rauma-setup.sh` / `rauma-setup.ps1` - script installers
+          Includes rmc, rmb, rauma-setup.sh, and rauma-setup.ps1.
+          EOF
 
-          ## Verified bootstrap chain
-
-          `rmb -> rmc0 -> rmc1-real -> rmc2-real -> rmc3-real`
-
-          Generated C exact comparison: PASS
-          Behavior comparison: PASS
-
-          ## Install
-
-          Download the archive for your platform.
-          Put `rmc` on PATH, or run the setup script for your platform.
-
-          ## Known limitations
-
-          - local module graph only
-          - bridge C backend
-          - no package manager
-          - no stdlib lookup
-          - no HIR/MIR
-          - no LLVM/rmgen/rmlink
-          '@ | Set-Content -Encoding UTF8 RELEASE_NOTES.md
-
-      - name: Publish GitHub Release
-        shell: pwsh
+      - name: Publish release assets
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "${{ github.ref_name }}"
-          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-            $tag = "v0.1.0"
-          }
-          $assets = @(
-            "dist/rauma-v0.1.0-windows-x64-gcc.zip",
-            "dist/rmb-windows-x64-gcc.exe",
-            "dist/rmc-windows-x64-gcc.exe",
-            "dist/rauma-setup.ps1",
-            "dist/rauma-setup.sh",
-            "dist/SHA256SUMS.txt"
-          )
-          gh release view $tag *> $null
-          if ($LASTEXITCODE -ne 0) {
-            gh release create $tag --title "RauMa v0.1.0" --notes-file RELEASE_NOTES.md
-          }
-          gh release upload $tag @assets --clobber
+          gh release view "$RELEASE_TAG" >/dev/null 2>&1 || gh release create "$RELEASE_TAG" --target "${{ github.sha }}" --title "RauMa $RELEASE_TAG" --notes-file RELEASE_NOTES.md
+          find artifacts -type f -print0 | xargs -0 gh release upload "$RELEASE_TAG" --clobber
