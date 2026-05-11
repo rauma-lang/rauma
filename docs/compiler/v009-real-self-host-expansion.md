@@ -199,10 +199,11 @@ lookup, stdlib lookup, HIR/MIR, LLVM, and release polish.
 v0.1.0 turns the verified real self-host chain into release automation. CI runs
 the deterministic self-host verification, and the release workflow publishes:
 
-- `rauma-rmc-windows-x64.exe`
-- `rauma-rmb-windows-x64.exe`
-- `rauma-setup-windows-x64.exe`
-- `rauma-v0.1.0-windows-x64.zip`
+- `rmc-windows-x64-gcc.exe`
+- `rmb-windows-x64-gcc.exe`
+- `rauma-setup.sh`
+- `rauma-setup.ps1`
+- `rauma-v0.1.0-windows-x64-gcc.zip`
 - `SHA256SUMS.txt`
 
 `rmc` now reports `rmc 0.1.0`. The release remains bridge-based and local

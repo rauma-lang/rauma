@@ -43,16 +43,11 @@ jobs:
         shell: msys2 {0}
         run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release/verify-self-host.ps1
 
-      - name: Build and smoke rauma-setup
+      - name: Dry-run setup scripts
         shell: msys2 {0}
-        working-directory: rmb
         run: |
-          ./build/rmc3-real.exe build ../examples/setup/rauma-setup.rm
-          ./build/rmc_build_out.exe
-          ./build/rmc_build_out.exe version
-          ./build/rmc_build_out.exe doctor
-          ./build/rmc_build_out.exe install-info
-          ./build/rmc_build_out.exe wat
+          powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install/rauma-setup.ps1 -DryRun -Version v0.1.0
+          bash scripts/install/rauma-setup.sh --dry-run --version v0.1.0
 
   linux:
     name: Linux smoke
@@ -74,3 +69,6 @@ jobs:
           ./build/rmb build ../rmc/main.rm
           ./build/debug/native/bin/main version
           make test
+
+      - name: Dry-run setup script
+        run: bash scripts/install/rauma-setup.sh --dry-run --version v0.1.0

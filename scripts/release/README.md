@@ -13,7 +13,7 @@ The Windows job:
 5. runs `make test`
 6. runs deterministic self-host verification with
    `scripts/release/verify-self-host.ps1`
-7. builds and smokes `examples/setup/rauma-setup.rm`
+7. dry-runs the script installers
 
 ## Release workflow
 
@@ -28,14 +28,26 @@ upload` as `github-actions[bot]`.
 
 For v0.1.0 the Windows release produces:
 
-- `rauma-rmb-windows-x64.exe`
-- `rauma-rmc-windows-x64.exe`
-- `rauma-setup-windows-x64.exe`
-- `rauma-v0.1.0-windows-x64.zip`
+- `rmb-windows-x64-gcc.exe`
+- `rmc-windows-x64-gcc.exe`
+- `rauma-setup.sh`
+- `rauma-setup.ps1`
+- `rauma-v0.1.0-windows-x64-gcc.zip`
 - `SHA256SUMS.txt`
 
-`rauma-rmc` is the self-hosted RauMa compiler. `rauma-rmb` is the bootstrap
-compiler retained for recovery. `rauma-setup` is a RauMa-written setup helper.
+`rmc` is the self-hosted RauMa compiler. `rmb` is the bootstrap compiler
+retained for recovery. The official v0.1.0 installer is script-based. Native
+RauMa installer work is deferred until stdlib/process/http support exists.
+
+Planned target names:
+
+- `linux-x64`: `rmc-linux-x64`, `rmb-linux-x64`
+- `linux-arm64`: `rmc-linux-arm64`, `rmb-linux-arm64`
+- `windows-x64-gcc`: `rmc-windows-x64-gcc.exe`, `rmb-windows-x64-gcc.exe`
+- `windows-arm64-gcc`: planned until native runner or reliable cross-compile exists
+- `macos-arm64`: planned until native runner coverage is added
+
+Do not upload x64 binaries under arm64 names.
 
 ## Cut a release
 
@@ -45,8 +57,8 @@ compiler retained for recovery. `rauma-setup` is a RauMa-written setup helper.
 4. create the tag: `git tag v0.1.0`
 5. push the tag: `git push origin v0.1.0`
 6. wait for GitHub Actions to create the release assets
-7. download the archive and smoke-test `rauma-rmc version` and
-   `rauma-setup doctor`
+7. download the archive and smoke-test `rmc version`, installer dry-run, and
+   `rmc build` on a small program
 
 Do not commit generated files from `rmb/build/` or `dist/`.
 

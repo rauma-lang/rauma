@@ -354,15 +354,17 @@ stdlib lookup, no HIR/MIR, no LLVM/rmgen/rmlink, and no release polish yet.
 
 v0.1.0 keeps that architecture and ships it as the first usable self-hosted
 release. The release hardening adds CI, deterministic self-host verification,
-release packaging, and a RauMa-written setup helper. It does not add package
-management, stdlib lookup, HIR/MIR, LLVM, rmgen, rmlink, or large language
-features.
+release packaging, and script installers. It does not add package management,
+stdlib lookup, HIR/MIR, LLVM, rmgen, rmlink, or large language features.
 
 Released binaries have clear roles:
 
-- `rauma-rmc` is the self-hosted RauMa compiler
-- `rauma-rmb` is the bootstrap recovery compiler
-- `rauma-setup` is the RauMa-written installer/setup helper
+- `rmc` is the self-hosted RauMa compiler
+- `rmb` is the bootstrap recovery compiler
+- `rauma-setup.sh` and `rauma-setup.ps1` are the official v0.1.0 installers
+
+A native RauMa installer is deferred until stdlib process and HTTP/fetch support
+exists.
 
 ## Error Reporting
 

@@ -94,13 +94,16 @@ algorithm beyond the current local bridge needs.
 
 v0.1.0 carries this deterministic chain into release automation. GitHub Actions
 CI runs the verification script, and the release workflow packages the final
-verified compiler as `rauma-rmc`.
+verified compiler as `rmc`.
 
 The release also includes:
 
-- `rauma-rmb` for bootstrap recovery
-- `rauma-setup`, built from `examples/setup/rauma-setup.rm`
+- `rmb` for bootstrap recovery
+- `rauma-setup.sh` and `rauma-setup.ps1` script installers
 - `SHA256SUMS.txt` for release asset verification
+
+The RauMa setup source remains only a future native installer example until
+stdlib/process/http support exists.
 
 The generated C comparison and behavior comparison remain the release gate for
 the current self-hosted bridge compiler.

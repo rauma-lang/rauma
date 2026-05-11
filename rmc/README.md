@@ -442,8 +442,8 @@ The next work is v0.1.0 stabilization and release hardening.
 rmc 0.1.0
 ```
 
-The release binary is named `rauma-rmc` with platform suffixes in GitHub
-Releases, for example `rauma-rmc-windows-x64.exe`.
+The release binary is named `rmc` with platform suffixes in GitHub Releases,
+for example `rmc-windows-x64-gcc.exe`.
 
 Supported release commands:
 
@@ -463,14 +463,19 @@ build <path>
 Typical project build:
 
 ```bash
-rauma-rmc-windows-x64.exe build path/to/main.rm
+rmc-windows-x64-gcc.exe build path/to/main.rm
 ./build/rmc_build_out.exe
 ```
 
-The v0.1.0 release archive also includes `rauma-rmb` for bootstrap recovery and
-`rauma-setup`, a RauMa-written setup helper. Future releases should prefer the
-released `rauma-rmc` binary to build RauMa projects and future compiler stages,
-with `rmb` retained as the recovery path.
+The v0.1.0 release archive also includes `rmb` for bootstrap recovery and
+script installers named `rauma-setup.sh` and `rauma-setup.ps1`. Future releases
+should prefer the released `rmc` binary to build RauMa projects and future
+compiler stages, with `rmb` retained as the recovery path.
+
+The RauMa source at `examples/setup/rauma-setup.rm` is a future native
+installer example only. It is not packaged as the official v0.1.0 installer
+because RauMa does not yet have stdlib process, HTTP/fetch, or archive
+extraction support.
 
 Current limitations remain explicit: local module graph only, bridge C backend,
 no package manager, no stdlib lookup, no HIR/MIR, and no LLVM/rmgen/rmlink.

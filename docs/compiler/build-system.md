@@ -579,8 +579,8 @@ The v0.1.0 GitHub Actions release workflow uses the same bridge build path:
 3. verify `rmc0 -> rmc1-real -> rmc2-real -> rmc3-real`
 4. compare generated C artifacts
 5. compare behavior across real stages
-6. build `examples/setup/rauma-setup.rm`
-7. package `rauma-rmc`, `rauma-rmb`, `rauma-setup`, and checksums
+6. copy script installers
+7. package `rmc`, `rmb`, setup scripts, and checksums
 
 The release workflow does not commit generated binaries. It publishes assets to
 GitHub Releases using `GITHUB_TOKEN` and `gh release create`.

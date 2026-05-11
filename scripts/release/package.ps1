@@ -42,25 +42,25 @@ Set-Location (Join-Path $root "rmb")
 $rmb = Native-Exe "build/rmb"
 $rmc = Native-Exe "build/rmc3-real"
 
-Copy-Item -Force $rmb (Join-Path $dist "rauma-rmb-windows-x64.exe")
-Copy-Item -Force $rmc (Join-Path $dist "rauma-rmc-windows-x64.exe")
-
-Run-Cmd $rmc @("build", "../examples/setup/rauma-setup.rm") | Out-Null
-$setup = Native-Exe "build/rmc_build_out"
-Copy-Item -Force $setup (Join-Path $dist "rauma-setup-windows-x64.exe")
+Copy-Item -Force $rmb (Join-Path $dist "rmb-windows-x64-gcc.exe")
+Copy-Item -Force $rmc (Join-Path $dist "rmc-windows-x64-gcc.exe")
+Copy-Item -Force (Join-Path $root "scripts/install/rauma-setup.ps1") (Join-Path $dist "rauma-setup.ps1")
+Copy-Item -Force (Join-Path $root "scripts/install/rauma-setup.sh") (Join-Path $dist "rauma-setup.sh")
 
 Set-Location $dist
-$zip = "rauma-v$Version-windows-x64.zip"
+$zip = "rauma-v$Version-windows-x64-gcc.zip"
 Compress-Archive -Force -Path `
-    "rauma-rmb-windows-x64.exe", `
-    "rauma-rmc-windows-x64.exe", `
-    "rauma-setup-windows-x64.exe" `
+    "rmb-windows-x64-gcc.exe", `
+    "rmc-windows-x64-gcc.exe", `
+    "rauma-setup.ps1", `
+    "rauma-setup.sh" `
     -DestinationPath $zip
 
 $assetNames = @(
-    "rauma-rmb-windows-x64.exe",
-    "rauma-rmc-windows-x64.exe",
-    "rauma-setup-windows-x64.exe",
+    "rmb-windows-x64-gcc.exe",
+    "rmc-windows-x64-gcc.exe",
+    "rauma-setup.ps1",
+    "rauma-setup.sh",
     $zip
 )
 

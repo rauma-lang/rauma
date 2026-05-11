@@ -632,20 +632,22 @@ rmb -> rmc0 -> rmc1-real -> rmc2-real -> rmc3-real
 ```
 
 The release compiler binary is copied from the final verified real compiler
-stage and published as `rauma-rmc-<platform>`. The bootstrap compiler is also
-published as `rauma-rmb-<platform>` so the source tree can still be rebuilt
-from the C11 recovery path.
+stage and published as `rmc-<platform>`. The bootstrap compiler is also
+published as `rmb-<platform>` so the source tree can still be rebuilt from the
+C11 recovery path.
 
 GitHub Actions release packages include:
 
-- `rauma-rmc-windows-x64.exe`
-- `rauma-rmb-windows-x64.exe`
-- `rauma-setup-windows-x64.exe`
-- `rauma-v0.1.0-windows-x64.zip`
+- `rmc-windows-x64-gcc.exe`
+- `rmb-windows-x64-gcc.exe`
+- `rauma-setup.sh`
+- `rauma-setup.ps1`
+- `rauma-v0.1.0-windows-x64-gcc.zip`
 - `SHA256SUMS.txt`
 
-`rauma-setup` is written in RauMa and built by the verified self-hosted
-compiler during release packaging.
+The official v0.1.0 installer is script-based. A native RauMa installer is
+deferred until stdlib process, HTTP/fetch, and archive extraction support
+exists.
 
 ### Cross-Compilation Support
 - Bootstrap compiler can target multiple architectures

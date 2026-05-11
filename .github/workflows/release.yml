@@ -36,10 +36,11 @@ jobs:
         with:
           name: rauma-v0.1.0-windows-x64
           path: |
-            dist/rauma-rmb-windows-x64.exe
-            dist/rauma-rmc-windows-x64.exe
-            dist/rauma-setup-windows-x64.exe
-            dist/rauma-v0.1.0-windows-x64.zip
+            dist/rmb-windows-x64-gcc.exe
+            dist/rmc-windows-x64-gcc.exe
+            dist/rauma-setup.ps1
+            dist/rauma-setup.sh
+            dist/rauma-v0.1.0-windows-x64-gcc.zip
             dist/SHA256SUMS.txt
 
       - name: Write release notes
@@ -52,9 +53,9 @@ jobs:
 
           ## Included binaries
 
-          - `rauma-rmc` - self-hosted RauMa compiler
-          - `rauma-rmb` - C11 bootstrap compiler for recovery
-          - `rauma-setup` - RauMa-written setup helper
+          - `rmc` - self-hosted RauMa compiler
+          - `rmb` - C11 bootstrap compiler for recovery
+          - `rauma-setup.sh` / `rauma-setup.ps1` - script installers
 
           ## Verified bootstrap chain
 
@@ -66,8 +67,7 @@ jobs:
           ## Install
 
           Download the archive for your platform.
-          Put `rauma-rmc` on PATH.
-          Run `rauma-setup doctor`.
+          Put `rmc` on PATH, or run the setup script for your platform.
 
           ## Known limitations
 
@@ -89,10 +89,11 @@ jobs:
             $tag = "v0.1.0"
           }
           $assets = @(
-            "dist/rauma-v0.1.0-windows-x64.zip",
-            "dist/rauma-rmb-windows-x64.exe",
-            "dist/rauma-rmc-windows-x64.exe",
-            "dist/rauma-setup-windows-x64.exe",
+            "dist/rauma-v0.1.0-windows-x64-gcc.zip",
+            "dist/rmb-windows-x64-gcc.exe",
+            "dist/rmc-windows-x64-gcc.exe",
+            "dist/rauma-setup.ps1",
+            "dist/rauma-setup.sh",
             "dist/SHA256SUMS.txt"
           )
           gh release view $tag *> $null

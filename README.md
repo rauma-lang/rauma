@@ -15,9 +15,9 @@ RauMa is a compiled, no-runtime, server-side-oriented programming language.
 
 RauMa has two compiler tracks:
 
-- `rauma-rmc` / `rmc` is the self-hosted RauMa compiler written in RauMa.
-- `rauma-rmb` / `rmb` is the C11 bootstrap compiler kept for recovery.
-- `rauma-setup` is a RauMa-written setup helper.
+- `rmc` is the self-hosted RauMa compiler written in RauMa.
+- `rmb` is the C11 bootstrap compiler kept for recovery.
+- `rauma-setup.sh` and `rauma-setup.ps1` are the v0.1.0 installer scripts.
 
 As of v0.1.0, the real self-host chain is verified:
 
@@ -86,13 +86,15 @@ See `docs/compiler/v009-deterministic-self-host.md` and
 
 ### Download
 
-Download `rauma-v0.1.0-windows-x64.zip` from GitHub Releases, unpack it, and
-put `rauma-rmc-windows-x64.exe` on `PATH`.
+Download `rauma-v0.1.0-windows-x64-gcc.zip` from GitHub Releases, unpack it,
+and put `rmc-windows-x64-gcc.exe` on `PATH` as `rmc`.
 
 ```bash
-rauma-rmc-windows-x64.exe version
-rauma-setup-windows-x64.exe doctor
+rmc version
 ```
+
+Linux/macOS can use `rauma-setup.sh`; Windows can use `rauma-setup.ps1`.
+Both scripts support dry-run mode and install the compiler as `rmc`.
 
 ### Build from source
 
@@ -108,13 +110,16 @@ make
 # Verify the real self-host chain
 powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/release/verify-self-host.ps1
 
-# Build the RauMa-written setup helper
-./build/debug/native/bin/main build ../examples/setup/rauma-setup.rm
-./build/rmc_build_out doctor
+# Dry-run the script installer
+powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/install/rauma-setup.ps1 -DryRun -Version v0.1.0
 ```
 
 Release packages are produced by GitHub Actions from tag `v0.1.0`; generated
 binaries are not committed to the repository.
+
+The RauMa source at `examples/setup/rauma-setup.rm` is only a future native
+installer example. It is not the official v0.1.0 installer because RauMa does
+not yet provide stdlib process, HTTP/fetch, or archive extraction APIs.
 
 ## License
 

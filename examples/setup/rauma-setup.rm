@@ -1,9 +1,9 @@
 fn version() {
-    print("rauma-setup 0.1.0\n");
+    print("rauma setup future example 0.1.0\n");
 }
 
 fn help() {
-    print("rauma-setup <command>\n");
+    print("rauma setup future example <command>\n");
     print("commands:\n");
     print("  version\n");
     print("  doctor\n");
@@ -11,15 +11,15 @@ fn help() {
 }
 
 fn doctor() {
-    print("rauma setup doctor\n");
-    print("compiler: rauma-rmc\n");
-    print("status: ok\n");
+    print("future native setup example\n");
+    print("official v0.1.0 installer is script-based\n");
+    print("status: example only\n");
 }
 
 fn install_info() {
-    print("install info\n");
-    print("copy rauma-rmc to a directory on PATH\n");
-    print("keep rauma-rmb for bootstrap recovery\n");
+    print("future install info\n");
+    print("native installer needs stdlib process and http support\n");
+    print("use rauma-setup.sh or rauma-setup.ps1 for v0.1.0\n");
 }
 
 fn main(args Args) {

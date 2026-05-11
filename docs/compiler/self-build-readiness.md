@@ -229,9 +229,10 @@ v0.1.0 completes the release-hardening step for the current bridge compiler:
 
 - `rmc 0.1.0` is the visible compiler version
 - GitHub Actions CI rebuilds `rmb`, `rmc`, and the deterministic self-host chain
-- GitHub Actions release packaging publishes `rauma-rmc`, `rauma-rmb`, and
-  `rauma-setup`
-- `rauma-setup` is written in RauMa and built by the verified compiler
+- GitHub Actions release packaging publishes `rmc`, `rmb`, and script
+  installers
+- native RauMa installer work is deferred until stdlib/process/http support
+  exists
 
 The compiler is usable for the supported bridge subset and local module graph.
 The remaining readiness gaps are broader language/tooling work: package

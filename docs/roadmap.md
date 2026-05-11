@@ -134,7 +134,7 @@
 - Deterministic generated C comparison ✓ DONE
 - Behavior comparison across real self-host stages ✓ DONE
 - GitHub Actions CI and release automation ✓ DONE
-- Release packages include `rauma-rmc`, `rauma-rmb`, `rauma-setup`, and
+- Release packages include `rmc`, `rmb`, script installers, and
   `SHA256SUMS.txt` ✓ DONE
 - Documentation, install notes, and release process ✓ DONE
 - Still limited to bridge C backend and local module graph; package manager,
