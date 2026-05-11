@@ -19,7 +19,6 @@ jobs:
             platform_os: windows
             platform_arch: x64
             cc: gcc
-            shell: msys2 {0}
             msystem: UCRT64
             msys_packages: >-
               make
@@ -31,7 +30,6 @@ jobs:
             platform_os: windows
             platform_arch: arm64
             cc: gcc
-            shell: msys2 {0}
             msystem: CLANGARM64
             msys_packages: >-
               make
@@ -44,21 +42,18 @@ jobs:
             platform_os: linux
             platform_arch: x64
             cc: gcc
-            shell: bash
             full_test: true
           - name: Linux ARM64
             runs_on: ubuntu-24.04-arm
             platform_os: linux
             platform_arch: arm64
             cc: gcc
-            shell: bash
             full_test: true
           - name: macOS ARM64
             runs_on: macos-15
             platform_os: macos
             platform_arch: arm64
             cc: clang
-            shell: bash
             full_test: false
 
     steps:
@@ -81,30 +76,36 @@ jobs:
         shell: bash
         run: echo "CC=${{ matrix.cc }}" >> "$GITHUB_ENV"
 
-      - name: Verify deterministic self-host chain
+      - name: Verify deterministic self-host chain on Windows
         if: matrix.platform_os == 'windows'
-        shell: ${{ matrix.shell }}
+        shell: msys2 {0}
         run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release/verify-self-host.ps1
 
-      - name: Verify deterministic self-host chain
+      - name: Verify deterministic self-host chain on non-Windows
         if: matrix.platform_os != 'windows'
-        shell: ${{ matrix.shell }}
+        shell: bash
         run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/release/verify-self-host.ps1
 
-      - name: Run bootstrap test suite
-        if: matrix.full_test
-        shell: ${{ matrix.shell }}
+      - name: Run bootstrap test suite on Windows
+        if: matrix.platform_os == 'windows' && matrix.full_test
+        shell: msys2 {0}
         working-directory: rmb
         run: make test
 
-      - name: Dry-run setup scripts
+      - name: Run bootstrap test suite on non-Windows
+        if: matrix.platform_os != 'windows' && matrix.full_test
+        shell: bash
+        working-directory: rmb
+        run: make test
+
+      - name: Dry-run setup scripts on non-Windows
         if: matrix.platform_os != 'windows'
-        shell: ${{ matrix.shell }}
+        shell: bash
         run: bash scripts/install/rauma-setup.sh --dry-run --version v0.1.0
 
-      - name: Dry-run setup scripts
+      - name: Dry-run setup scripts on Windows
         if: matrix.platform_os == 'windows'
-        shell: ${{ matrix.shell }}
+        shell: msys2 {0}
         run: |
           powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install/rauma-setup.ps1 -DryRun -Version v0.1.0
           bash scripts/install/rauma-setup.sh --dry-run --version v0.1.0
