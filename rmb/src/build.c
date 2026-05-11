@@ -151,7 +151,7 @@ static bool mkdir_one(const char* path) {
     if (mkdir(path, 0755) == 0) return true;
 #endif
     struct stat st;
-    return stat(path, &st) == 0 && (st.st_mode & S_IFDIR);
+    return stat(path, &st) == 0 && S_ISDIR(st.st_mode);
 }
 
 static bool mkdir_p(const char* path) {
@@ -403,25 +403,32 @@ static int run_command(const char* cmd) {
     return system(cmd);
 }
 
+static const char* c_compiler(void) {
+    const char* cc = getenv("CC");
+    return (cc && cc[0] != '\0') ? cc : "gcc";
+}
+
 static bool compile_chunk(BuildChunk* chunk) {
+    const char* cc = c_compiler();
     char cmd[4096];
     snprintf(cmd, sizeof(cmd),
-        "gcc -std=c11 -Wall -Wextra -Werror -pedantic -fno-strict-aliasing -c \"%s\" -o \"%s\"",
-        chunk->c_path, chunk->o_path);
+        "%s -std=c11 -Wall -Wextra -Werror -pedantic -fno-strict-aliasing -c \"%s\" -o \"%s\"",
+        cc, chunk->c_path, chunk->o_path);
     int rc = run_command(cmd);
     if (rc != 0) {
-        rmb_diag_error("gcc failed for %s (exit %d)", chunk->c_path, rc);
+        rmb_diag_error("%s failed for %s (exit %d)", cc, chunk->c_path, rc);
         return false;
     }
     return true;
 }
 
 static bool link_chunks(BuildContext* ctx, const char* exe_path) {
-    size_t cap = 1024;
+    const char* cc = c_compiler();
+    size_t cap = strlen(cc) + 1024;
     for (size_t i = 0; i < ctx->order_count; i++) cap += strlen(ctx->order[i]->o_path) + 4;
     char* cmd = malloc(cap);
     if (!cmd) return false;
-    snprintf(cmd, cap, "gcc");
+    snprintf(cmd, cap, "%s", cc);
     for (size_t i = 0; i < ctx->order_count; i++) {
         strncat(cmd, " \"", cap - strlen(cmd) - 1);
         strncat(cmd, ctx->order[i]->o_path, cap - strlen(cmd) - 1);
@@ -433,7 +440,7 @@ static bool link_chunks(BuildContext* ctx, const char* exe_path) {
     int rc = run_command(cmd);
     free(cmd);
     if (rc != 0) {
-        rmb_diag_error("gcc link failed (exit %d)", rc);
+        rmb_diag_error("%s link failed (exit %d)", cc, rc);
         return false;
     }
     return true;
