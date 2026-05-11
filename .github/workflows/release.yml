@@ -23,7 +23,6 @@ jobs:
             archive_format: zip
             runs_on: windows-latest
             cc: gcc
-            shell: msys2 {0}
             msystem: UCRT64
             msys_packages: >-
               make
@@ -35,7 +34,6 @@ jobs:
             archive_format: zip
             runs_on: windows-11-arm
             cc: gcc
-            shell: msys2 {0}
             msystem: CLANGARM64
             msys_packages: >-
               make
@@ -48,21 +46,18 @@ jobs:
             archive_format: tar.gz
             runs_on: ubuntu-latest
             cc: gcc
-            shell: bash
           - name: Linux ARM64
             platform_os: linux
             platform_arch: arm64
             archive_format: tar.gz
             runs_on: ubuntu-24.04-arm
             cc: gcc
-            shell: bash
           - name: macOS ARM64
             platform_os: macos
             platform_arch: arm64
             archive_format: tar.gz
             runs_on: macos-15
             cc: clang
-            shell: bash
 
     steps:
       - name: Checkout
@@ -84,9 +79,9 @@ jobs:
         shell: bash
         run: echo "CC=${{ matrix.cc }}" >> "$GITHUB_ENV"
 
-      - name: Build release package
+      - name: Build release package on Windows
         if: matrix.platform_os == 'windows'
-        shell: ${{ matrix.shell }}
+        shell: msys2 {0}
         run: >
           powershell -NoProfile -ExecutionPolicy Bypass
           -File scripts/release/package.ps1
@@ -95,9 +90,9 @@ jobs:
           -PlatformArch ${{ matrix.platform_arch }}
           -ArchiveFormat ${{ matrix.archive_format }}
 
-      - name: Build release package
+      - name: Build release package on non-Windows
         if: matrix.platform_os != 'windows'
-        shell: ${{ matrix.shell }}
+        shell: bash
         run: >
           pwsh -NoProfile -ExecutionPolicy Bypass
           -File scripts/release/package.ps1
