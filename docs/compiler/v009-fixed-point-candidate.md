@@ -96,6 +96,12 @@ candidate commands listed above.
   `rmc3-real` whose `version` and `help` commands pass. The highest verified
   real tier is Tier 4, but deterministic real artifact comparison is still
   pending.
+- v0.0.9i completes deterministic real self-host verification for the bridge:
+  `real_from_rmc0.c`, `real_from_rmc1.c`, and `real_from_rmc2.c` match
+  byte-for-byte with SHA-256
+  `34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27`
+  and size `207067`. Behavior comparison across `rmc1-real`, `rmc2-real`,
+  and `rmc3-real` also passes.
 - Preserve candidate build outputs under distinct paths for staged comparison.
 - Expand real `rmc` source coverage beyond controlled fixtures.
 - Add robust cross-module checking and diagnostics.

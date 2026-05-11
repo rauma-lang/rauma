@@ -415,5 +415,21 @@ current real graph, unused static helper handling under `-Werror`, and
 string-aware `RmStr` local/print lowering.
 
 This does not add a package manager, stdlib lookup, HIR/MIR, or a new backend.
-The next step is deterministic real artifact comparison across the produced
-tiers.
+The immediate next step after fix4 was deterministic real artifact comparison
+across the produced tiers.
+
+## v0.0.9i Deterministic Verification
+
+The deterministic real bridge check now passes. Generated C from `rmc0`,
+`rmc1-real`, and `rmc2-real` matches exactly:
+
+```text
+SHA-256 34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27
+size    207067
+```
+
+`rmc1-real`, `rmc2-real`, and `rmc3-real` behavior also matches for no-args,
+version, help, demo lex/parse, file lex/parse/check, emit-c, candidate build
+plus self-test, and `wat`.
+
+The next work is v0.1.0 stabilization and release hardening.

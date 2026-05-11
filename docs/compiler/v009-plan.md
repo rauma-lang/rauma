@@ -148,13 +148,24 @@ build command is path-specific and does not build the real `rmc/main.rm`.
 - controlled candidate chain, previous frontend/probe/mini fixtures, the bool
   bridge fixture, old rmc smokes, project smokes, and `make test` still pass
 
+### v0.0.9i deterministic real self-host verification ✓ DONE
+
+- rebuilt the real chain from `rmb` through `rmc3-real`
+- captured generated C from `rmc0`, `rmc1-real`, and `rmc2-real`
+- exact generated C comparison passed:
+  SHA-256 `34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27`,
+  size `207067`
+- behavior comparison passed across `rmc1-real`, `rmc2-real`, and `rmc3-real`
+  for no-args, version, help, demo lex/parse, lex, parse, check, emit-c,
+  candidate build plus self-test, and `wat`
+- controlled candidate chain, previous fixtures, old rmc smokes, project
+  smokes, and `make test` still pass
+
 ## Next options
 
-- add deterministic C/binary artifact comparison for the real Tier 4 chain.
 - harden bridge module dependency emission beyond the current real graph before
   treating it as a general package or stdlib lookup.
-- v0.1.0 stabilization planning remains premature until real fixed-point
-  comparison is defined and verified.
+- begin v0.1.0 stabilization/release hardening.
 
 ## Compressed remaining v0.0.9 path
 

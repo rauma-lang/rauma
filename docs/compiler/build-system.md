@@ -564,6 +564,12 @@ hardens generated-C graph emission for the current real compiler graph:
 function prototypes, scoped compatibility macros, nested dependency emission,
 unused static helper handling, and string-aware `RmStr` lowering.
 
+v0.0.9i verifies that this bridge path is deterministic for the real graph.
+Generated C from `rmc0`, `rmc1-real`, and `rmc2-real` matches exactly with
+SHA-256 `34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27`
+and size `207067`. Behavior comparison across `rmc1-real`, `rmc2-real`, and
+`rmc3-real` also passes.
+
 ### Distributed Builds
 - Share compilation across network
 - Build farm support

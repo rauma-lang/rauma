@@ -343,6 +343,15 @@ The architecture is still unchanged: this is generated-C bridge hardening, not
 HIR/MIR, LLVM, package management, or stdlib lookup. Deterministic real
 artifact comparison is the next architecture-level blocker.
 
+v0.0.9i removes that blocker for the current bridge chain. Generated C from
+`rmc0`, `rmc1-real`, and `rmc2-real` matches byte-for-byte with SHA-256
+`34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27` and size
+`207067`. `rmc1-real`, `rmc2-real`, and `rmc3-real` behavior also matches for
+the verified commands.
+
+The remaining architecture limitations are explicit: no package manager, no
+stdlib lookup, no HIR/MIR, no LLVM/rmgen/rmlink, and no release polish yet.
+
 ## Error Reporting
 
 ### Diagnostic System

@@ -400,8 +400,12 @@ use to `tests/project_nested/app/util.rm`. Dots map to path separators and
 - The fix4 scope is generated-C graph correctness only: prototypes, scoped
   compatibility macros, nested dependency emission, unused static helper
   handling, and string-aware `RmStr` lowering.
-- Full language support, package lookup, stdlib lookup, HIR/MIR, and
-  deterministic real fixed-point comparison are later milestones.
+- v0.0.9i verifies deterministic real bridge self-hosting: generated C from
+  `rmc0`, `rmc1-real`, and `rmc2-real` matches byte-for-byte with SHA-256
+  `34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27`, and
+  behavior matches across `rmc1-real`, `rmc2-real`, and `rmc3-real`.
+- Full language support, package lookup, stdlib lookup, HIR/MIR, and release
+  hardening are later milestones.
 
 ### Tests
 - Located in `rmb/tests/`

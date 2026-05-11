@@ -607,6 +607,22 @@ string locals.
 This is still bridge self-host progress, not a complete bootstrap proof.
 Deterministic real artifact comparison remains the next required step.
 
+## v0.0.9i Deterministic Verification
+
+v0.0.9i performs that comparison. The generated C produced by `rmc0`,
+`rmc1-real`, and `rmc2-real` while building the real `rmc/main.rm` source
+matches exactly:
+
+```text
+SHA-256 34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27
+size    207067
+```
+
+Behavior comparison also passes across `rmc1-real`, `rmc2-real`, and
+`rmc3-real` for the verified command set. This proves the current bridge
+self-host chain is stable across stages, while still leaving release hardening
+and broader architecture work for later.
+
 ### Cross-Compilation Support
 - Bootstrap compiler can target multiple architectures
 - Support for embedded systems

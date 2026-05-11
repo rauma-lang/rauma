@@ -162,5 +162,34 @@ regressions plus `make test` still pass.
 
 ## Recommended next step
 
-Continue real tier progression by adding deterministic C/binary artifact
-comparison for the real `rmc1-real`, `rmc2-real`, and `rmc3-real` outputs.
+The immediate next step after fix4 was deterministic C and behavior comparison
+for the real `rmc1-real`, `rmc2-real`, and `rmc3-real` outputs.
+
+## v0.0.9i deterministic real self-host verification
+
+v0.0.9i rebuilds the real chain and verifies deterministic generated C across
+the self-host stages:
+
+```text
+rmb -> rmc0
+rmc0 -> rmc1-real
+rmc1-real -> rmc2-real
+rmc2-real -> rmc3-real
+```
+
+The generated C artifacts matched exactly:
+
+```text
+real_from_rmc0.c 34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27 207067
+real_from_rmc1.c 34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27 207067
+real_from_rmc2.c 34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27 207067
+generated_c_compare= PASS
+```
+
+Behavior comparison across `rmc1-real`, `rmc2-real`, and `rmc3-real` also
+passed for no-args, version, help, demo lex/parse, lex, parse, check, emit-c,
+candidate build plus candidate self-test, and `wat`.
+
+No deterministic source fix was needed. The remaining limitation is release
+hardening: the architecture is still bridge-based and still lacks package
+lookup, stdlib lookup, HIR/MIR, LLVM, and release polish.

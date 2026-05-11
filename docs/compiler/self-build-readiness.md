@@ -212,3 +212,13 @@ real graph, unused static helper handling under `-Werror`, and string-aware
 This is not yet a complete fixed-point proof. `rmc` still lacks deterministic
 real artifact comparison, full package or stdlib lookup, HIR/MIR, and a full
 backend.
+
+v0.0.9i adds deterministic verification for the real bridge chain. The
+generated C artifacts from `rmc0`, `rmc1-real`, and `rmc2-real` match
+byte-for-byte with SHA-256
+`34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27` and size
+`207067`. `rmc1-real`, `rmc2-real`, and `rmc3-real` behavior also matches for
+the verified command set.
+
+The remaining readiness work is release hardening and architecture expansion,
+not another determinism blocker in the current bridge chain.

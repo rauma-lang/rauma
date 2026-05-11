@@ -115,9 +115,19 @@
   each build `../rmc/main.rm`; `rmc3-real version/help` pass.
 - Candidate chain, bool fixture, previous frontend/probe/mini regressions, old
   rmc smokes, project smokes, and `make test` still pass.
+- v0.0.9i deterministic real self-host verification ✓ DONE
+- v0.0.9i proves the bridge self-host chain is deterministic for generated C:
+  `real_from_rmc0.c`, `real_from_rmc1.c`, and `real_from_rmc2.c` match exactly
+  with SHA-256
+  `34e3bfe394347d852aa34db5dc753f6f22e63ed1a119d6d54d57b079da93db27`
+  and size `207067`.
+- `rmc1-real`, `rmc2-real`, and `rmc3-real` behavior matches for version,
+  help, demo lex/parse, file lex/parse/check, emit-c, candidate build/self-test,
+  `wat`, and no-args.
 - Do not claim real compiler self-hosting until the staged build applies to the
   real `rmc` source and comparison strategy.
-- Next option: add deterministic real artifact comparison for the Tier 4 chain.
+- Next option: v0.1.0 stabilization/release hardening while keeping the bridge
+  architecture limitations explicit.
 
 ### v0.1.0 Usable Compiler
 - Stable self-hosting compiler
