@@ -15,6 +15,22 @@ Installs the rmc compiler from GitHub Releases.
 USAGE
 }
 
+normalize_tag() {
+    case "$1" in
+        latest) printf '%s\n' latest ;;
+        v*) printf '%s\n' "$1" ;;
+        *) printf 'v%s\n' "$1" ;;
+    esac
+}
+
+normalize_number() {
+    case "$1" in
+        latest) printf '%s\n' latest ;;
+        v*) printf '%s\n' "${1#v}" ;;
+        *) printf '%s\n' "$1" ;;
+    esac
+}
+
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --version)
@@ -59,17 +75,19 @@ esac
 case "$platform_os-$platform_arch" in
     linux-x64|linux-arm64|macos-arm64) ;;
     macos-x64)
-        echo "macos-x64 release asset is not produced by v0.1.0 CI" >&2
+        echo "macos-x64 release asset is not produced by the current CI" >&2
         exit 1
         ;;
 esac
 
 asset="rmc-$platform_os-$platform_arch"
-archive="rauma-v0.1.0-$platform_os-$platform_arch.tar.gz"
+version_tag="$(normalize_tag "$VERSION")"
+version_number="$(normalize_number "$VERSION")"
+archive="rauma-v$version_number-$platform_os-$platform_arch.tar.gz"
 if [ "$VERSION" = "latest" ]; then
     base_url="https://github.com/$OWNER/$REPO/releases/latest/download"
 else
-    base_url="https://github.com/$OWNER/$REPO/releases/download/$VERSION"
+    base_url="https://github.com/$OWNER/$REPO/releases/download/$version_tag"
 fi
 url="$base_url/$archive"
 
