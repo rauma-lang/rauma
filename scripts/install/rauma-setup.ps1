@@ -12,6 +12,18 @@ if (-not $Owner) { $Owner = "rauma-lang" }
 $Repo = $env:RAUMA_GITHUB_REPO
 if (-not $Repo) { $Repo = "rauma" }
 
+function Normalize-Tag([string]$Raw) {
+    if ($Raw -eq "latest") { return "latest" }
+    if ($Raw.StartsWith("v")) { return $Raw }
+    return "v$Raw"
+}
+
+function Normalize-Number([string]$Raw) {
+    if ($Raw -eq "latest") { return "latest" }
+    if ($Raw.StartsWith("v")) { return $Raw.Substring(1) }
+    return $Raw
+}
+
 if ($Help) {
     Write-Host "rauma-setup.ps1 [-Version v0.1.0] [-Prefix DIR] [-AddToPath] [-DryRun]"
     exit 0
@@ -19,17 +31,19 @@ if ($Help) {
 
 $archRaw = $env:PROCESSOR_ARCHITECTURE
 switch ($archRaw) {
-    "AMD64" { $arch = "x64-gcc" }
-    "ARM64" { $arch = "arm64-gcc" }
+    "AMD64" { $arch = "x64" }
+    "ARM64" { $arch = "arm64" }
     default { throw "unsupported architecture: $archRaw" }
 }
 
 $asset = "rmc-windows-$arch.exe"
-$archive = "rauma-v0.1.0-windows-$arch.zip"
+$versionTag = Normalize-Tag $Version
+$versionNumber = Normalize-Number $Version
+$archive = "rauma-v$versionNumber-windows-$arch.zip"
 if ($Version -eq "latest") {
     $baseUrl = "https://github.com/$Owner/$Repo/releases/latest/download"
 } else {
-    $baseUrl = "https://github.com/$Owner/$Repo/releases/download/$Version"
+    $baseUrl = "https://github.com/$Owner/$Repo/releases/download/$versionTag"
 }
 $url = "$baseUrl/$archive"
 
@@ -44,7 +58,7 @@ if ($gcc) {
     Write-Host "gcc: $($gcc.Source)"
 } else {
     Write-Host "gcc: not found"
-    Write-Host "Install MSYS2/MinGW-w64 and ensure gcc is on PATH before using rmc build."
+    Write-Host "Install MSYS2/MinGW-w64 or LLVM and ensure a C compiler is on PATH before using rmc build."
 }
 
 if ($DryRun) {
