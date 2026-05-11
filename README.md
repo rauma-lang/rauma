@@ -86,8 +86,21 @@ See `docs/compiler/v009-deterministic-self-host.md` and
 
 ### Download
 
-Download `rauma-v0.1.0-windows-x64-gcc.zip` from GitHub Releases, unpack it,
-and put `rmc-windows-x64-gcc.exe` on `PATH` as `rmc`.
+Download the archive for your platform from GitHub Releases:
+
+- `rauma-v0.1.0-windows-x64.zip`
+- `rauma-v0.1.0-windows-arm64.zip`
+- `rauma-v0.1.0-linux-x64.tar.gz`
+- `rauma-v0.1.0-linux-arm64.tar.gz`
+- `rauma-v0.1.0-macos-arm64.tar.gz`
+
+Each archive includes:
+
+- `rmc-<platform>` - self-hosted RauMa compiler
+- `rmb-<platform>` - C11 bootstrap compiler for recovery
+- `rauma-setup.sh` / `rauma-setup.ps1` - script installers
+
+Put the matching `rmc` binary on `PATH` as `rmc`.
 
 ```bash
 rmc version
