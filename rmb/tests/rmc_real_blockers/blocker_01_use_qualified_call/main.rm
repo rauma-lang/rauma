@@ -1,0 +1,5 @@
+use dep.helper;
+
+fn main() {
+    dep.helper.print_ok();
+}

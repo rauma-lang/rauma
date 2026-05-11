@@ -327,6 +327,11 @@ producing `rmc1-real` with `build failed: unsupported source`. The architecture
 remains bridge-based and local-module-only; the next blocker is another real
 parser/codegen source shape, not package management, HIR/MIR, or LLVM.
 
+v0.0.9h-fix3 moves the real graph beyond parser/checker blockers. `rmc0 parse`
+and `rmc0 check` now pass for `../rmc/main.rm`; `rmc0 build` emits generated C
+but gcc rejects it. This keeps the architecture intact: no package manager,
+stdlib lookup, HIR/MIR, or alternate backend was introduced.
+
 ## Error Reporting
 
 ### Diagnostic System

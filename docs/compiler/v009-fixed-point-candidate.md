@@ -88,6 +88,9 @@ candidate commands listed above.
   `rmb/tests/rmc_bool_bridge/main.rm`, but the real `rmc/main.rm` graph still
   reaches Tier 0 only: `rmc0 build ../rmc/main.rm` reports
   `build failed: unsupported source`.
+- v0.0.9h-fix3 fixes five more real-rmc bridge blockers. The real graph now
+  parses/checks and reaches generated C compilation, but still remains Tier 0
+  because gcc fails before `rmc1-real` is produced.
 - Preserve candidate build outputs under distinct paths for staged comparison.
 - Expand real `rmc` source coverage beyond controlled fixtures.
 - Add robust cross-module checking and diagnostics.

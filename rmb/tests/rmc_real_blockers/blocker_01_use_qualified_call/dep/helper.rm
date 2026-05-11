@@ -1,0 +1,3 @@
+pub fn print_ok() {
+    print("use qualified ok\n");
+}

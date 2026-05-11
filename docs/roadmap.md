@@ -99,13 +99,18 @@
   expressions in `rmc/cgen/cgen.rm`; the focused
   `rmb/tests/rmc_bool_bridge/main.rm` fixture builds and prints the expected
   five-line output.
+- v0.0.9h-fix3 real-rmc blocker sprint ✓ PARTIAL
+- v0.0.9h-fix3 fixes five focused bridge blockers: top-level `use` parsing,
+  qualified call parsing, parenthesized/unary/additive comparison parsing,
+  `str` return cgen, `bool` parameter cgen, and string builtin/local emission
+  support.
 - Real self-host remains Tier 0: `rmb` still builds `rmc0`, but
-  `rmc0 build ../rmc/main.rm` still reports `build failed: unsupported source`;
-  direct `rmc0 parse/check ../rmc/main.rm` still reports `parser error`.
+  `rmc0 build ../rmc/main.rm` now reaches generated C compilation and reports
+  `build failed: cc failed`; direct `rmc0 parse/check ../rmc/main.rm` now pass.
 - Do not claim real compiler self-hosting until the staged build applies to the
   real `rmc` source and comparison strategy.
-- Next option: isolate the next real-source parser/unsupported-source shape with
-  a small fixture and retry the real chain.
+- Next option: isolate generated-C correctness blockers for the real
+  multi-module graph and retry the real chain.
 
 ### v0.1.0 Usable Compiler
 - Stable self-hosting compiler

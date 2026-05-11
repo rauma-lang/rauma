@@ -1,0 +1,11 @@
+fn choose(ok bool) {
+    if (ok) {
+        print("bool param ok\n");
+    } else {
+        print("bool param bad\n");
+    }
+}
+
+fn main() {
+    choose(true);
+}

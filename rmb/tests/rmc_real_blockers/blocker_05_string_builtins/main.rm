@@ -1,0 +1,6 @@
+fn main() {
+    text := "abcd";
+    part := str_from_slice(text, 1, 3);
+    out := str_concat(part, " ok\n");
+    print_str_slice(out, 0, str_len(out));
+}

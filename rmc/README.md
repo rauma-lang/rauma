@@ -154,6 +154,11 @@ expected five-line output, and emits C with the expected boolean/logical
 operators. Real self-host remains Tier 0 because `rmc0 build ../rmc/main.rm`
 still reports `build failed: unsupported source`.
 
+v0.0.9h-fix3 fixes five additional real-source bridge blockers and adds focused
+fixtures under `rmb/tests/rmc_real_blockers/`. `rmc0 parse ../rmc/main.rm` and
+`rmc0 check ../rmc/main.rm` now pass. `rmc0 build ../rmc/main.rm` reaches gcc
+and fails with `build failed: cc failed`, so no `rmc1-real` exists yet.
+
 `rmc` still does not allocate a full AST, infer types, resolve names, do full
 codegen, implement HIR/MIR, packages, std modules, or self-host.
 

@@ -87,6 +87,38 @@ retry still fails before `rmc1-real`: `rmc0 build ../rmc/main.rm` reports
 ../rmc/main.rm` reports `parser error`. The next milestone should isolate that
 remaining real-source parser/codegen shape with a small fixture.
 
+## v0.0.9h-fix3 blocker sprint
+
+v0.0.9h-fix3 fixes five focused bridge blockers with fixtures under
+`rmb/tests/rmc_real_blockers/`:
+
+- `blocker_01_use_qualified_call`: top-level `use` declarations and qualified
+  call statements in the real parser
+- `blocker_02_unary_additive_compare`: parenthesized expressions, unary `!`,
+  and additive expressions inside comparisons
+- `blocker_03_str_return`: bridge C emission for `str` return functions
+- `blocker_04_bool_param`: bridge C emission for `bool` parameters
+- `blocker_05_string_builtins`: string slice/concat/print-slice runtime calls
+  plus string-like local variable emission
+
+The focused fixtures all build and run. The controlled candidate chain still
+passes through `rmc3`, and the previous frontend/probe/mini/bool regressions
+still pass.
+
+The real `rmc/main.rm` retry progresses further than fix2:
+
+```text
+rmc0 parse ../rmc/main.rm  -> pass
+rmc0 check ../rmc/main.rm  -> pass
+rmc0 build ../rmc/main.rm  -> build failed: cc failed
+```
+
+The highest real self-host tier remains Tier 0 because no `rmc1-real` is
+produced. The next blocker is now generated-C correctness for the real
+multi-module graph: unresolved cross-module forward references, duplicate
+`rm_fn_*` compatibility macros across modules, and remaining string-aware
+local type inference/printing gaps in generated C.
+
 ## What this does not prove
 
 - real `rmc` does not build itself yet

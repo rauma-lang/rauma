@@ -94,6 +94,13 @@ only: `rmb` builds `rmc0`, but `rmc0 build ../rmc/main.rm` still reports
 `build failed: unsupported source`. The local multi-file bridge and controlled
 candidate chain are still the verified build paths.
 
+v0.0.9h-fix3 pushes the same real graph through five additional blockers. The
+bridge now parses/checks real `rmc/main.rm`, but the build still stops before
+Tier 1 because generated C fails to compile. The next build-system blockers are
+generated-C graph issues rather than package lookup: cross-module forward
+references, duplicate compatibility macros, and remaining string-aware local
+typing gaps.
+
 v0.0.8r adds `rmc build <path>`, which wraps the full emit‑c→write‑file→cc‑compile pipeline behind a single command. The command writes generated C to `build/rmc_build_out.c`, compiles it to `build/rmc_build_out`, and reports success. This is still a bridge, not `rmc`’s own backend / link step. Later milestones replace the bridge with `rmc`’s own build system.
 
 v0.0.8s expands that bridge subset while keeping it single-file only. Current

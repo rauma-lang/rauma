@@ -122,10 +122,22 @@ build command is path-specific and does not build the real `rmc/main.rm`.
   `build failed: unsupported source`; direct `parse`/`check` still report
   `parser error`
 
+### v0.0.9h-fix3 real-rmc blocker sprint ✓ PARTIAL
+
+- fixed five bridge blockers with focused fixtures under
+  `rmb/tests/rmc_real_blockers/`
+- real `rmc0 parse ../rmc/main.rm` and `rmc0 check ../rmc/main.rm` now pass
+- real `rmc0 build ../rmc/main.rm` now reaches generated C compilation and
+  fails with `build failed: cc failed`
+- no `rmc1-real` is produced, so the highest real tier remains Tier 0
+- controlled candidate chain, previous frontend/probe/mini fixtures, the bool
+  bridge fixture, and `make test` still pass
+
 ## Next options
 
-- isolate the next real-source parser/unsupported-source shape with a small
-  fixture before retrying real `rmc/main.rm`.
+- isolate generated-C correctness blockers for the real multi-module graph:
+  forward declarations across modules, duplicate `rm_fn_*` compatibility macros,
+  and remaining string-aware local inference/printing gaps.
 - v0.1.0 stabilization planning remains premature until the real self-host
   expansion either reaches a higher tier or is explicitly deferred.
 

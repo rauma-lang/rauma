@@ -30,6 +30,11 @@ logical `&&`, logical `||`, and parenthesized boolean expressions in
 runs successfully, while the real `rmc/main.rm` graph still remains Tier 0 with
 `build failed: unsupported source`.
 
+v0.0.9h-fix3 adds five focused real-blocker fixtures and moves the real graph
+past parse/check. The real build now emits C but still fails during gcc with
+`build failed: cc failed`; the controlled candidate chain and prior regressions
+continue to pass.
+
 ## Design Principles
 
 ### 1. Stay Small

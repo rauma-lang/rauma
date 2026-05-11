@@ -1,0 +1,11 @@
+fn message() str {
+    return "value";
+}
+
+fn main() {
+    if (str_eq(message(), "value")) {
+        print("str return ok\n");
+    } else {
+        print("str return bad\n");
+    }
+}

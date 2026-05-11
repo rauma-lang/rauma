@@ -53,6 +53,10 @@ The current bootstrap chain is:
   `upper/lower/alpha/inline` success lines. Real self-host remains Tier 0:
   `rmc0 build ../rmc/main.rm` still reports `build failed: unsupported source`,
   with direct parse/check still reporting `parser error`.
+- v0.0.9h-fix3 fixes five more bridge blockers and moves real `rmc/main.rm`
+  past parse/check. The real build now fails later during generated C
+  compilation with `build failed: cc failed`. Candidate chain and prior
+  regressions still pass, but no `rmc1-real` is produced.
 - v0.0.8z stabilizes the bridge milestone and points fixed-point work to
   `docs/compiler/v009-plan.md`.
 - This is not self-hosting yet.

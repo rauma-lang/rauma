@@ -64,6 +64,13 @@ does not produce `rmc1-real`: `rmc0 build ../rmc/main.rm` still reports
 `build failed: unsupported source`, and direct parse/check still report
 `parser error`. The highest real self-host tier remains Tier 0.
 
+v0.0.9h-fix3 runs a five-blocker real-rmc sprint. It adds focused fixtures for
+top-level `use` plus qualified calls, unary/additive comparison parsing, `str`
+returns, `bool` parameters, and string builtin/local emission. After the sprint,
+`rmc0 parse ../rmc/main.rm` and `rmc0 check ../rmc/main.rm` pass. The real build
+now reaches generated C compilation and fails with `build failed: cc failed`.
+No `rmc1-real` is produced, so the highest real self-host tier remains Tier 0.
+
 ## Bootstrap Stages
 
 ### Stage 0: rmb (Bootstrap Compiler)
