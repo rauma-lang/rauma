@@ -1,5 +1,9 @@
 param(
-    [string]$Version = "0.1.0"
+    [string]$Version = "0.1.0",
+    [string]$PlatformOs,
+    [string]$PlatformArch,
+    [ValidateSet("zip", "tar.gz")]
+    [string]$ArchiveFormat
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,15 +22,11 @@ function Native-Exe([string]$PathNoExt) {
     throw "missing executable: $PathNoExt"
 }
 
-function Run-Cmd([string]$File, [string[]]$CommandArgs) {
-    $out = & $File @CommandArgs 2>&1
-    $text = ($out | Out-String).Replace("`r`n", "`n")
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host $text
-        throw "command failed: $File $($CommandArgs -join ' ')"
-    }
-    Write-Host $text.TrimEnd()
-    return $text
+if (-not $PlatformOs) {
+    throw "PlatformOs is required"
+}
+if (-not $PlatformArch) {
+    throw "PlatformArch is required"
 }
 
 $root = Repo-Root
@@ -42,34 +42,47 @@ Set-Location (Join-Path $root "rmb")
 $rmb = Native-Exe "build/rmb"
 $rmc = Native-Exe "build/rmc3-real"
 
-Copy-Item -Force $rmb (Join-Path $dist "rmb-windows-x64-gcc.exe")
-Copy-Item -Force $rmc (Join-Path $dist "rmc-windows-x64-gcc.exe")
+$exeSuffix = if ($PlatformOs -eq "windows") { ".exe" } else { "" }
+$target = "$PlatformOs-$PlatformArch"
+$rmbAsset = "rmb-$target$exeSuffix"
+$rmcAsset = "rmc-$target$exeSuffix"
+
+Copy-Item -Force $rmb (Join-Path $dist $rmbAsset)
+Copy-Item -Force $rmc (Join-Path $dist $rmcAsset)
 Copy-Item -Force (Join-Path $root "scripts/install/rauma-setup.ps1") (Join-Path $dist "rauma-setup.ps1")
 Copy-Item -Force (Join-Path $root "scripts/install/rauma-setup.sh") (Join-Path $dist "rauma-setup.sh")
 
 Set-Location $dist
-$zip = "rauma-v$Version-windows-x64-gcc.zip"
-Compress-Archive -Force -Path `
-    "rmb-windows-x64-gcc.exe", `
-    "rmc-windows-x64-gcc.exe", `
-    "rauma-setup.ps1", `
-    "rauma-setup.sh" `
-    -DestinationPath $zip
+$archive = if ($ArchiveFormat -eq "zip") {
+    "rauma-v$Version-$target.zip"
+} else {
+    "rauma-v$Version-$target.tar.gz"
+}
 
-$assetNames = @(
-    "rmb-windows-x64-gcc.exe",
-    "rmc-windows-x64-gcc.exe",
+$archiveMembers = @(
+    $rmbAsset,
+    $rmcAsset,
     "rauma-setup.ps1",
-    "rauma-setup.sh",
-    $zip
+    "rauma-setup.sh"
 )
 
+if ($ArchiveFormat -eq "zip") {
+    Compress-Archive -Force -Path $archiveMembers -DestinationPath $archive
+} else {
+    & tar -czf $archive @archiveMembers
+    if ($LASTEXITCODE -ne 0) {
+        throw "tar archive creation failed"
+    }
+}
+
+$checksumFile = "SHA256SUMS-$target.txt"
+$assetNames = @($archiveMembers + $archive)
 $lines = @()
 foreach ($name in $assetNames) {
     $hash = (Get-FileHash -Algorithm SHA256 $name).Hash.ToLowerInvariant()
     $lines += "$hash  $name"
 }
-Set-Content -Encoding ASCII -Path "SHA256SUMS.txt" -Value $lines
+Set-Content -Encoding ASCII -Path $checksumFile -Value $lines
 
 Write-Host "release_package= PASS"
 Write-Host "dist=$dist"
