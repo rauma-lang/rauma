@@ -107,10 +107,17 @@
 - Real self-host remains Tier 0: `rmb` still builds `rmc0`, but
   `rmc0 build ../rmc/main.rm` now reaches generated C compilation and reports
   `build failed: cc failed`; direct `rmc0 parse/check ../rmc/main.rm` now pass.
+- v0.0.9h-fix4 generated-C graph sprint ✓ DONE
+- v0.0.9h-fix4 fixes generated-C prototypes, scoped compatibility macros,
+  nested bridge dependency emission, unused static helper handling, and
+  string-aware local/print lowering.
+- Real self-host now reaches Tier 4: `rmc0`, `rmc1-real`, and `rmc2-real`
+  each build `../rmc/main.rm`; `rmc3-real version/help` pass.
+- Candidate chain, bool fixture, previous frontend/probe/mini regressions, old
+  rmc smokes, project smokes, and `make test` still pass.
 - Do not claim real compiler self-hosting until the staged build applies to the
   real `rmc` source and comparison strategy.
-- Next option: isolate generated-C correctness blockers for the real
-  multi-module graph and retry the real chain.
+- Next option: add deterministic real artifact comparison for the Tier 4 chain.
 
 ### v0.1.0 Usable Compiler
 - Stable self-hosting compiler

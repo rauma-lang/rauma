@@ -217,6 +217,34 @@ pub fn emit_modules(entry_path str, entry_text str) str {
                 if (str_len(trans_name) == 0) {
                     trans_done = true;
                 } else {
+                    trans_path := module_source_path(base, trans_name);
+                    trans_text := read_file(trans_path);
+                    if (str_len(trans_text) == 0) {
+                        return "#missing";
+                    }
+
+                    k := 0;
+                    sub_done := false;
+                    while (k < 16 && sub_done == false) {
+                        sub_name := use_module_at_index(trans_text, k);
+                        if (str_len(sub_name) == 0) {
+                            sub_done = true;
+                        } else {
+                            if (has_emitted(emitted, sub_name) == false) {
+                                sub_c := emit_one_module(base, sub_name);
+                                if (str_eq(sub_c, "#missing")) {
+                                    return "#missing";
+                                }
+                                if (str_len(sub_c) == 0) {
+                                    return "";
+                                }
+                                out = str_concat(out, sub_c);
+                                emitted = append_marker(emitted, sub_name);
+                            }
+                            k += 1;
+                        }
+                    }
+
                     if (has_emitted(emitted, trans_name) == false) {
                         trans_c := emit_one_module(base, trans_name);
                         if (str_eq(trans_c, "#missing")) {

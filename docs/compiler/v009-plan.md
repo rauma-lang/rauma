@@ -133,13 +133,28 @@ build command is path-specific and does not build the real `rmc/main.rm`.
 - controlled candidate chain, previous frontend/probe/mini fixtures, the bool
   bridge fixture, and `make test` still pass
 
+### v0.0.9h-fix4 generated-C graph sprint ✓ DONE
+
+- fixed generated-C graph blockers: prototypes before bodies, scoped
+  `rm_fn_*` compatibility macros, nested bridge dependency emission, unused
+  static helper handling under `-Werror`, and string-aware `RmStr` local/print
+  lowering
+- real `rmc0 build ../rmc/main.rm` now passes and produces `rmc1-real`
+- `rmc1-real` passes `version`, `help`, Tier 2 smoke, and builds
+  `../rmc/main.rm`
+- `rmc2-real build ../rmc/main.rm` passes and produces `rmc3-real`
+- `rmc3-real version/help` pass
+- highest verified real self-host tier is Tier 4
+- controlled candidate chain, previous frontend/probe/mini fixtures, the bool
+  bridge fixture, old rmc smokes, project smokes, and `make test` still pass
+
 ## Next options
 
-- isolate generated-C correctness blockers for the real multi-module graph:
-  forward declarations across modules, duplicate `rm_fn_*` compatibility macros,
-  and remaining string-aware local inference/printing gaps.
-- v0.1.0 stabilization planning remains premature until the real self-host
-  expansion either reaches a higher tier or is explicitly deferred.
+- add deterministic C/binary artifact comparison for the real Tier 4 chain.
+- harden bridge module dependency emission beyond the current real graph before
+  treating it as a general package or stdlib lookup.
+- v0.1.0 stabilization planning remains premature until real fixed-point
+  comparison is defined and verified.
 
 ## Compressed remaining v0.0.9 path
 

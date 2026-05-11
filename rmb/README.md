@@ -395,7 +395,13 @@ use to `tests/project_nested/app/util.rm`. Dots map to path separators and
 - v0.0.8h adds `Args`-based command dispatch for help/version/demo commands
 - v0.0.8i adds a temporary `read_file` smoke path for generated binaries
 - Currently built by `rmb build ../rmc/main.rm`
-- Full language support and self-hosting are later milestones
+- v0.0.9h-fix4 reaches real bridge Tier 4: `rmc0`, `rmc1-real`, and
+  `rmc2-real` each build `../rmc/main.rm`, and `rmc3-real version/help` pass.
+- The fix4 scope is generated-C graph correctness only: prototypes, scoped
+  compatibility macros, nested dependency emission, unused static helper
+  handling, and string-aware `RmStr` lowering.
+- Full language support, package lookup, stdlib lookup, HIR/MIR, and
+  deterministic real fixed-point comparison are later milestones.
 
 ### Tests
 - Located in `rmb/tests/`

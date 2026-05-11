@@ -119,16 +119,48 @@ multi-module graph: unresolved cross-module forward references, duplicate
 `rm_fn_*` compatibility macros across modules, and remaining string-aware
 local type inference/printing gaps in generated C.
 
+## v0.0.9h-fix4 generated-C graph sprint
+
+v0.0.9h-fix4 fixes the generated-C graph blockers that kept the real build at
+`build failed: cc failed`.
+
+The fixes are intentionally bridge-scoped:
+
+- emit C prototypes before function bodies for same-file and same-module calls
+- scope `rm_fn_*` compatibility macros inside each emitted module, then `#undef`
+  them before the next module
+- emit nested dependency modules deeply enough for the current real graph, so
+  `source.source` sees `source.span`
+- preserve generated helper functions under `-Werror` by marking bridge-emitted
+  static functions as unused-capable
+- extend string-aware emission so `RmStr` locals and prints are not lowered as
+  integer `printf("%lld", ...)`
+
+The real chain now reaches Tier 4:
+
+```text
+rmc0 build ../rmc/main.rm  -> build ok: build/rmc_build_out
+rmc1-real version          -> rmc 0.0.9h-fix
+rmc1-real help             -> pass
+rmc1-real build ../rmc/main.rm -> build ok: build/rmc_build_out
+rmc2-real build ../rmc/main.rm -> build ok: build/rmc_build_out
+rmc3-real version/help     -> pass
+```
+
+Tier 2 smoke also passed for `demo-lex`, `demo-parse`, `lex`, `parse`, `check`,
+`emit-c`, candidate build, and candidate self-test. The controlled candidate
+chain still reaches `rmc3`, and the previous frontend/probe/mini/bool
+regressions plus `make test` still pass.
+
 ## What this does not prove
 
-- real `rmc` does not build itself yet
-- no `rmc1-real`, `rmc2-real`, or `rmc3-real` was produced
-- no real fixed-point comparison was possible
+- real fixed-point artifact comparison is not implemented yet
 - the controlled candidate chain remains separate from real compiler
   self-hosting
+- module dependency emission is still a bridge implementation, not a package
+  manager or general stdlib lookup
 
 ## Recommended next step
 
-Run a focused follow-up that isolates the next parser/unsupported-source shape
-behind `rmc0 build ../rmc/main.rm`, preferably with a small targeted fixture
-before retrying the real self-host chain again.
+Continue real tier progression by adding deterministic C/binary artifact
+comparison for the real `rmc1-real`, `rmc2-real`, and `rmc3-real` outputs.

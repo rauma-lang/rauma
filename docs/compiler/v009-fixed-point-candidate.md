@@ -91,6 +91,11 @@ candidate commands listed above.
 - v0.0.9h-fix3 fixes five more real-rmc bridge blockers. The real graph now
   parses/checks and reaches generated C compilation, but still remains Tier 0
   because gcc fails before `rmc1-real` is produced.
+- v0.0.9h-fix4 fixes the generated-C graph blockers. Real `rmc/main.rm` now
+  builds through `rmc0`, `rmc1-real`, and `rmc2-real`, producing a runnable
+  `rmc3-real` whose `version` and `help` commands pass. The highest verified
+  real tier is Tier 4, but deterministic real artifact comparison is still
+  pending.
 - Preserve candidate build outputs under distinct paths for staged comparison.
 - Expand real `rmc` source coverage beyond controlled fixtures.
 - Add robust cross-module checking and diagnostics.

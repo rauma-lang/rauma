@@ -546,6 +546,24 @@ Generate `compile_commands.json` for:
 
 ## Future Extensions
 
+## Current rmc Bridge Build Status
+
+As of v0.0.9h-fix4, the bridge build path can compile the real multi-module
+`rmc/main.rm` graph through Tier 4:
+
+```text
+rmc0 build ../rmc/main.rm
+rmc1-real build ../rmc/main.rm
+rmc2-real build ../rmc/main.rm
+rmc3-real version/help
+```
+
+The build-system bridge still resolves modules relative to the entry file and
+does not implement package management or stdlib lookup. The fix4 work only
+hardens generated-C graph emission for the current real compiler graph:
+function prototypes, scoped compatibility macros, nested dependency emission,
+unused static helper handling, and string-aware `RmStr` lowering.
+
 ### Distributed Builds
 - Share compilation across network
 - Build farm support

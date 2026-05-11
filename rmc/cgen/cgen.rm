@@ -358,6 +358,9 @@ pub fn is_string_call_name(name str) bool {
     if (str_eq(name, "args_get") || str_eq(name, "read_file")) {
         return true;
     }
+    if (str_eq(name, "dirname") || str_eq(name, "module_source_path")) {
+        return true;
+    }
     if (str_eq(name, "str_concat") || str_eq(name, "str_from_slice")) {
         return true;
     }
@@ -379,15 +382,60 @@ pub fn is_string_call_name(name str) bool {
     return false;
 }
 
+pub fn is_string_ident_name(name str) bool {
+    if (str_eq(name, "text") || str_eq(name, "path") || str_eq(name, "label")) {
+        return true;
+    }
+    if (str_eq(name, "out") || str_eq(name, "base") || str_eq(name, "emitted")) {
+        return true;
+    }
+    if (str_eq(name, "module") || str_eq(name, "module_name") || str_eq(name, "module_prefix")) {
+        return true;
+    }
+    if (str_eq(name, "dep_path") || str_eq(name, "dep_text")) {
+        return true;
+    }
+    if (str_eq(name, "trans_name") || str_eq(name, "trans_c")) {
+        return true;
+    }
+    if (str_eq(name, "module_c") || str_eq(name, "entry_c")) {
+        return true;
+    }
+    if (str_eq(name, "c") || str_eq(name, "c_path") || str_eq(name, "out_path")) {
+        return true;
+    }
+    if (str_eq(name, "name") || str_eq(name, "fn_name") || str_eq(name, "part")) {
+        return true;
+    }
+    if (str_eq(name, "expr") || str_eq(name, "left") || str_eq(name, "right")) {
+        return true;
+    }
+    if (str_eq(name, "params") || str_eq(name, "body")) {
+        return true;
+    }
+    if (str_eq(name, "then_body") || str_eq(name, "else_body") || str_eq(name, "cond")) {
+        return true;
+    }
+    if (str_eq(name, "return_type") || str_eq(name, "type_name")) {
+        return true;
+    }
+    if (str_eq(name, "needle") || str_eq(name, "repl")) {
+        return true;
+    }
+    return false;
+}
+
 pub fn expr_is_string_like(src str, i int) bool {
     if (lex.stream.current_kind(src, i) == lex.token.kind_string()) {
         return true;
     }
     if (lex.stream.current_kind(src, i) == lex.token.kind_ident()) {
+        name := token_text(src, i);
         next := lex.stream.advance(src, i);
         if (lex.stream.current_kind(src, next) == lex.token.kind_l_paren() || lex.stream.current_kind(src, next) == lex.token.kind_dot()) {
             return is_string_call_name(call_name_at(src, i));
         }
+        return is_string_ident_name(name);
     }
     return false;
 }
@@ -1127,6 +1175,12 @@ pub fn emit_call_stmt_to_c(src str, i int) str {
             out = str_concat(out, "));\n");
             return out;
         }
+        if (expr_is_string_like(src, pos)) {
+            out := "    rm_print(";
+            out = str_concat(out, expr);
+            out = str_concat(out, ");\n");
+            return out;
+        }
 
         out := "    printf(\"%lld\", (long long)";
         out = str_concat(out, expr);
@@ -1467,12 +1521,12 @@ pub fn is_supported_return_type(return_type str) bool {
 pub fn emit_fn_prefix(name str, return_type str) str {
     out := "";
     if (str_len(return_type) == 0) {
-        out = str_concat(out, "static void rm_fn_");
+        out = str_concat(out, "static __attribute__((unused)) void rm_fn_");
     } else {
         if (str_eq(return_type, "str")) {
-            out = str_concat(out, "static RmStr rm_fn_");
+            out = str_concat(out, "static __attribute__((unused)) RmStr rm_fn_");
         } else {
-            out = str_concat(out, "static int64_t rm_fn_");
+            out = str_concat(out, "static __attribute__((unused)) int64_t rm_fn_");
         }
     }
     out = str_concat(out, name);
@@ -1482,17 +1536,115 @@ pub fn emit_fn_prefix(name str, return_type str) str {
 pub fn emit_module_fn_prefix(module_prefix str, name str, return_type str) str {
     out := "";
     if (str_len(return_type) == 0) {
-        out = str_concat(out, "static void rm_mod_");
+        out = str_concat(out, "static __attribute__((unused)) void rm_mod_");
     } else {
         if (str_eq(return_type, "str")) {
-            out = str_concat(out, "static RmStr rm_mod_");
+            out = str_concat(out, "static __attribute__((unused)) RmStr rm_mod_");
         } else {
-            out = str_concat(out, "static int64_t rm_mod_");
+            out = str_concat(out, "static __attribute__((unused)) int64_t rm_mod_");
         }
     }
     out = str_concat(out, module_prefix);
     out = str_concat(out, "_");
     out = str_concat(out, name);
+    return out;
+}
+
+pub fn emit_fn_decl_to_c(src str, i int) str {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_fn());
+    if (pos == 0) {
+        return "";
+    }
+
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return "";
+    }
+    name := token_text(src, pos);
+    if (str_eq(name, "main")) {
+        return "";
+    }
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return "";
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return "";
+    }
+
+    param_start := pos;
+    params := emit_params_to_c(src, param_start);
+    if (is_fail_text(params)) {
+        return "";
+    }
+
+    pos = params_end(src, pos);
+    if (pos == 0) {
+        return "";
+    }
+
+    return_type := "";
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_ident()) {
+        return_type = token_text(src, pos);
+        if (is_supported_return_type(return_type) == false) {
+            return "";
+        }
+    }
+
+    out := emit_fn_prefix(name, return_type);
+    out = str_concat(out, "(");
+    out = str_concat(out, params);
+    out = str_concat(out, ");\n");
+    return out;
+}
+
+pub fn emit_module_fn_decl_to_c(src str, i int, module_prefix str) str {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_fn());
+    if (pos == 0) {
+        return "";
+    }
+
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return "";
+    }
+    name := token_text(src, pos);
+    if (str_eq(name, "main")) {
+        return "";
+    }
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return "";
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) {
+        return "";
+    }
+
+    param_start := pos;
+    params := emit_params_to_c(src, param_start);
+    if (is_fail_text(params)) {
+        return "";
+    }
+
+    pos = params_end(src, pos);
+    if (pos == 0) {
+        return "";
+    }
+
+    return_type := "";
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_ident()) {
+        return_type = token_text(src, pos);
+        if (is_supported_return_type(return_type) == false) {
+            return "";
+        }
+    }
+
+    out := emit_module_fn_prefix(module_prefix, name, return_type);
+    out = str_concat(out, "(");
+    out = str_concat(out, params);
+    out = str_concat(out, ");\n");
     return out;
 }
 
@@ -1771,19 +1923,150 @@ pub fn emit_module_fn_to_c(src str, i int, module_prefix str) str {
         body = replace_void_returns(body);
     }
 
-    out := "#define rm_fn_";
-    out = str_concat(out, name);
-    out = str_concat(out, " rm_mod_");
-    out = str_concat(out, module_prefix);
-    out = str_concat(out, "_");
-    out = str_concat(out, name);
-    out = str_concat(out, "\n");
-    out = str_concat(out, emit_module_fn_prefix(module_prefix, name, return_type));
+    out := emit_module_fn_prefix(module_prefix, name, return_type);
     out = str_concat(out, "(");
     out = str_concat(out, params);
     out = str_concat(out, ") {\n");
     out = str_concat(out, body);
     out = str_concat(out, "}\n\n");
+    return out;
+}
+
+pub fn emit_fn_decls_to_string(src str) str {
+    pos := 0;
+    out := "";
+
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_use()) {
+            pos = use_end(src, pos);
+            if (pos == 0) {
+                return "";
+            }
+        } else {
+            decl := emit_fn_decl_to_c(src, pos);
+            if (str_len(decl) > 0) {
+                out = str_concat(out, decl);
+            }
+
+            pos = fn_end(src, pos);
+            if (pos == 0) {
+                return "";
+            }
+        }
+    }
+
+    if (str_len(out) > 0) {
+        out = str_concat(out, "\n");
+    }
+    return out;
+}
+
+pub fn emit_module_fn_decls_to_string(src str, prefix str) str {
+    pos := 0;
+    out := "";
+
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_use()) {
+            pos = use_end(src, pos);
+            if (pos == 0) {
+                return "";
+            }
+        } else {
+            decl := emit_module_fn_decl_to_c(src, pos, prefix);
+            if (str_len(decl) > 0) {
+                out = str_concat(out, decl);
+            }
+
+            pos = fn_end(src, pos);
+            if (pos == 0) {
+                return "";
+            }
+        }
+    }
+
+    if (str_len(out) > 0) {
+        out = str_concat(out, "\n");
+    }
+    return out;
+}
+
+pub fn emit_module_fn_defines_to_string(src str, prefix str) str {
+    pos := 0;
+    out := "";
+
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_use()) {
+            pos = use_end(src, pos);
+            if (pos == 0) {
+                return "";
+            }
+        } else {
+            fn_pos := lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+            if (fn_pos == 0) {
+                return "";
+            }
+            if (lex.stream.current_kind(src, fn_pos) != lex.token.kind_ident()) {
+                return "";
+            }
+            name := token_text(src, fn_pos);
+            if (str_eq(name, "main") == false) {
+                out = str_concat(out, "#define rm_fn_");
+                out = str_concat(out, name);
+                out = str_concat(out, " rm_mod_");
+                out = str_concat(out, prefix);
+                out = str_concat(out, "_");
+                out = str_concat(out, name);
+                out = str_concat(out, "\n");
+            }
+
+            pos = fn_end(src, pos);
+            if (pos == 0) {
+                return "";
+            }
+        }
+    }
+
+    if (str_len(out) > 0) {
+        out = str_concat(out, "\n");
+    }
+    return out;
+}
+
+pub fn emit_module_fn_undefs_to_string(src str) str {
+    pos := 0;
+    out := "";
+
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_use()) {
+            pos = use_end(src, pos);
+            if (pos == 0) {
+                return "";
+            }
+        } else {
+            fn_pos := lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+            if (fn_pos == 0) {
+                return "";
+            }
+            if (lex.stream.current_kind(src, fn_pos) != lex.token.kind_ident()) {
+                return "";
+            }
+            name := token_text(src, fn_pos);
+            if (str_eq(name, "main") == false) {
+                out = str_concat(out, "#undef rm_fn_");
+                out = str_concat(out, name);
+                out = str_concat(out, "\n");
+            }
+
+            pos = fn_end(src, pos);
+            if (pos == 0) {
+                return "";
+            }
+        }
+    }
+
+    if (str_len(out) > 0) {
+        out = str_concat(out, "\n");
+    }
     return out;
 }
 
@@ -1815,7 +2098,7 @@ pub fn module_prefix_from_text(module str) str {
 
 pub fn emit_program_body_to_string(src str) str {
     pos := 0;
-    out := "";
+    out := emit_fn_decls_to_string(src);
 
     while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
         if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_use()) {
@@ -1847,7 +2130,12 @@ pub fn emit_entry_to_string(src str) str {
 pub fn emit_module_to_string(module str, src str) str {
     pos := 0;
     prefix := module_prefix_from_text(module);
-    out := "";
+    out := emit_module_fn_decls_to_string(src, prefix);
+    defines := emit_module_fn_defines_to_string(src, prefix);
+    if (str_len(defines) == 0) {
+        return "";
+    }
+    out = str_concat(out, defines);
 
     while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
         if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_use()) {
@@ -1869,6 +2157,11 @@ pub fn emit_module_to_string(module str, src str) str {
         }
     }
 
+    undefs := emit_module_fn_undefs_to_string(src);
+    if (str_len(undefs) == 0) {
+        return "";
+    }
+    out = str_concat(out, undefs);
     return out;
 }
 

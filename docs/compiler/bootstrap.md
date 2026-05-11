@@ -586,6 +586,27 @@ rmb/
 
 ## Future Bootstrap Extensions
 
+## Current v0.0.9h-fix4 Status
+
+The real `rmc` bootstrap path now reaches Tier 4 through the bridge:
+
+```text
+rmb build ../rmc/main.rm
+rmc0 build ../rmc/main.rm
+rmc1-real build ../rmc/main.rm
+rmc2-real build ../rmc/main.rm
+rmc3-real version/help
+```
+
+v0.0.9h-fix4 fixed generated-C graph blockers rather than adding a new
+backend: prototypes are emitted before function bodies, module-local
+compatibility macros are scoped, the current nested module graph is emitted in
+dependency order, and string-aware `RmStr` emission avoids integer printing for
+string locals.
+
+This is still bridge self-host progress, not a complete bootstrap proof.
+Deterministic real artifact comparison remains the next required step.
+
 ### Cross-Compilation Support
 - Bootstrap compiler can target multiple architectures
 - Support for embedded systems

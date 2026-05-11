@@ -332,6 +332,17 @@ and `rmc0 check` now pass for `../rmc/main.rm`; `rmc0 build` emits generated C
 but gcc rejects it. This keeps the architecture intact: no package manager,
 stdlib lookup, HIR/MIR, or alternate backend was introduced.
 
+v0.0.9h-fix4 moves the real graph beyond generated-C `cc failed`. The bridge
+now emits prototypes before bodies, scopes `rm_fn_*` compatibility macros per
+module, emits the current nested dependency graph in dependency order, handles
+unused static helpers under `-Werror`, and preserves `RmStr` locals/prints.
+`rmc0`, `rmc1-real`, and `rmc2-real` each build `../rmc/main.rm`, and
+`rmc3-real version/help` pass. The highest verified real tier is Tier 4.
+
+The architecture is still unchanged: this is generated-C bridge hardening, not
+HIR/MIR, LLVM, package management, or stdlib lookup. Deterministic real
+artifact comparison is the next architecture-level blocker.
+
 ## Error Reporting
 
 ### Diagnostic System

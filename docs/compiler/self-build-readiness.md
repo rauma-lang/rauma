@@ -197,8 +197,18 @@ through `rmc build`. The remaining compressed v0.0.9 path is:
 2. v0.0.9f — rmc compiler candidate
 3. v0.0.9g — fixed-point candidate
 
-## Not yet self-hosting
+## Current real self-build status
 
-v0.0.9e is not self-hosting.
+v0.0.9h-fix4 moves the real `rmc` graph beyond the previous generated-C
+`cc failed` blocker. `rmb` builds `rmc0`; `rmc0`, `rmc1-real`, and
+`rmc2-real` each build `../rmc/main.rm`; and `rmc3-real version/help` pass.
+The highest verified real tier is Tier 4.
 
-`rmc` does not build itself yet. `rmc` does not have multi-file chunk builds, HIR/MIR, a full backend, or fixed-point verification. v0.0.9 remains the self-host fixed-point milestone.
+The generated-C fixes remain bridge-scoped: forward prototypes, scoped
+module-local compatibility macros, nested dependency emission for the current
+real graph, unused static helper handling under `-Werror`, and string-aware
+`RmStr` local/print lowering.
+
+This is not yet a complete fixed-point proof. `rmc` still lacks deterministic
+real artifact comparison, full package or stdlib lookup, HIR/MIR, and a full
+backend.

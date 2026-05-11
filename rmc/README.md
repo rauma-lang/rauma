@@ -394,3 +394,26 @@ self-test
 
 The `self-test` command exercises helper calls, loops, conditionals, and int
 printing. It is only a pre-self-host target, not the real `rmc`.
+
+## v0.0.9h-fix4 Real Bridge Status
+
+The real RauMa-written `rmc` now builds itself through the current bridge up to
+Tier 4:
+
+```bash
+./build/rmb build ../rmc/main.rm
+./build/debug/native/bin/main build ../rmc/main.rm
+./build/rmc1-real build ../rmc/main.rm
+./build/rmc2-real build ../rmc/main.rm
+./build/rmc3-real version
+./build/rmc3-real help
+```
+
+The generated-C fixes cover prototypes before function bodies, scoped
+module-local `rm_fn_*` compatibility macros, nested dependency emission for the
+current real graph, unused static helper handling under `-Werror`, and
+string-aware `RmStr` local/print lowering.
+
+This does not add a package manager, stdlib lookup, HIR/MIR, or a new backend.
+The next step is deterministic real artifact comparison across the produced
+tiers.
