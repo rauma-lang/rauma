@@ -412,7 +412,7 @@ static bool compile_chunk(BuildChunk* chunk) {
     const char* cc = c_compiler();
     char cmd[4096];
     snprintf(cmd, sizeof(cmd),
-        "%s -std=c11 -Wall -Wextra -Werror -pedantic -fno-strict-aliasing -c \"%s\" -o \"%s\"",
+        "%s -std=c11 -Wall -Wextra -Werror -Wno-parentheses -pedantic -fno-strict-aliasing -c \"%s\" -o \"%s\"",
         cc, chunk->c_path, chunk->o_path);
     int rc = run_command(cmd);
     if (rc != 0) {
