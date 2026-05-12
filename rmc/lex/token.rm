@@ -143,139 +143,139 @@ pub fn kind_invalid() int {
 }
 
 pub fn print_kind_name(kind int) {
-    if (kind == 0) {
+    if (kind < 1) {
         print("eof");
         return;
     }
-    if (kind == 1) {
+    if (kind < 2) {
         print("ident");
         return;
     }
-    if (kind == 2) {
+    if (kind < 3) {
         print("int");
         return;
     }
-    if (kind == 3) {
+    if (kind < 4) {
         print("string");
         return;
     }
-    if (kind == 4) {
+    if (kind < 5) {
         print("kw_fn");
         return;
     }
-    if (kind == 5) {
+    if (kind < 6) {
         print("kw_return");
         return;
     }
-    if (kind == 6) {
+    if (kind < 7) {
         print("l_paren");
         return;
     }
-    if (kind == 7) {
+    if (kind < 8) {
         print("r_paren");
         return;
     }
-    if (kind == 8) {
+    if (kind < 9) {
         print("l_brace");
         return;
     }
-    if (kind == 9) {
+    if (kind < 10) {
         print("r_brace");
         return;
     }
-    if (kind == 10) {
+    if (kind < 11) {
         print("semi");
         return;
     }
-    if (kind == 11) {
+    if (kind < 12) {
         print("comma");
         return;
     }
-    if (kind == 12) {
+    if (kind < 13) {
         print("plus");
         return;
     }
-    if (kind == 13) {
+    if (kind < 14) {
         print("eq");
         return;
     }
-    if (kind == 14) {
+    if (kind < 15) {
         print("colon_eq");
         return;
     }
-    if (kind == 15) {
+    if (kind < 16) {
         print("kw_if");
         return;
     }
-    if (kind == 16) {
+    if (kind < 17) {
         print("kw_else");
         return;
     }
-    if (kind == 17) {
+    if (kind < 18) {
         print("kw_while");
         return;
     }
-    if (kind == 18) {
+    if (kind < 19) {
         print("eq_eq");
         return;
     }
-    if (kind == 19) {
+    if (kind < 20) {
         print("bang_eq");
         return;
     }
-    if (kind == 20) {
+    if (kind < 21) {
         print("lt");
         return;
     }
-    if (kind == 21) {
+    if (kind < 22) {
         print("gt");
         return;
     }
-    if (kind == 22) {
+    if (kind < 23) {
         print("lt_eq");
         return;
     }
-    if (kind == 23) {
+    if (kind < 24) {
         print("gt_eq");
         return;
     }
-    if (kind == 24) {
+    if (kind < 25) {
         print("plus_eq");
         return;
     }
-    if (kind == 25) {
+    if (kind < 26) {
         print("dot");
         return;
     }
-    if (kind == 26) {
+    if (kind < 27) {
         print("kw_use");
         return;
     }
-    if (kind == 27) {
+    if (kind < 28) {
         print("minus");
         return;
     }
-    if (kind == 28) {
+    if (kind < 29) {
         print("kw_pub");
         return;
     }
-    if (kind == 29) {
+    if (kind < 30) {
         print("kw_struct");
         return;
     }
-    if (kind == 30) {
+    if (kind < 31) {
         print("kw_enum");
         return;
     }
-    if (kind == 31) {
+    if (kind < 32) {
         print("bang");
         return;
     }
-    if (kind == 32) {
+    if (kind < 33) {
         print("and_and");
         return;
     }
-    if (kind == 33) {
+    if (kind < 34) {
         print("or_or");
         return;
     }
