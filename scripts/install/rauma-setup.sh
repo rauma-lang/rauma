@@ -31,6 +31,34 @@ normalize_number() {
     esac
 }
 
+fetch_url() {
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL "$1"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -q "$1" -O -
+    else
+        echo "curl or wget is required" >&2
+        exit 1
+    fi
+}
+
+resolve_version_tag() {
+    case "$1" in
+        latest)
+            api_url="https://api.github.com/repos/$OWNER/$REPO/releases/latest"
+            tag="$(fetch_url "$api_url" | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
+            if [ -z "$tag" ]; then
+                echo "could not resolve latest release tag from $api_url" >&2
+                exit 1
+            fi
+            printf '%s\n' "$tag"
+            ;;
+        *)
+            normalize_tag "$1"
+            ;;
+    esac
+}
+
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --version)
@@ -93,14 +121,10 @@ if [ "$platform_os" = "windows" ]; then
 fi
 
 asset="rmc-$platform_os-$platform_arch$exe_suffix"
-version_tag="$(normalize_tag "$VERSION")"
-version_number="$(normalize_number "$VERSION")"
+version_tag="$(resolve_version_tag "$VERSION")"
+version_number="$(normalize_number "$version_tag")"
 archive="rauma-v$version_number-$platform_os-$platform_arch.$archive_suffix"
-if [ "$VERSION" = "latest" ]; then
-    base_url="https://github.com/$OWNER/$REPO/releases/latest/download"
-else
-    base_url="https://github.com/$OWNER/$REPO/releases/download/$version_tag"
-fi
+base_url="https://github.com/$OWNER/$REPO/releases/download/$version_tag"
 url="$base_url/$archive"
 
 echo "platform: $platform_os-$platform_arch"

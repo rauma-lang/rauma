@@ -24,6 +24,17 @@ function Normalize-Number([string]$Raw) {
     return $Raw
 }
 
+function Resolve-Version-Tag([string]$Raw) {
+    if ($Raw -ne "latest") { return Normalize-Tag $Raw }
+
+    $apiUrl = "https://api.github.com/repos/$Owner/$Repo/releases/latest"
+    $latest = Invoke-RestMethod -Headers @{ "User-Agent" = "rauma-setup" } -Uri $apiUrl
+    if (-not $latest.tag_name) {
+        throw "could not resolve latest release tag from $apiUrl"
+    }
+    return $latest.tag_name
+}
+
 if ($Help) {
     Write-Host "rauma-setup.ps1 [-Version v0.1.0] [-Prefix DIR] [-AddToPath] [-DryRun]"
     exit 0
@@ -37,14 +48,10 @@ switch ($archRaw) {
 }
 
 $asset = "rmc-windows-$arch.exe"
-$versionTag = Normalize-Tag $Version
-$versionNumber = Normalize-Number $Version
+$versionTag = Resolve-Version-Tag $Version
+$versionNumber = Normalize-Number $versionTag
 $archive = "rauma-v$versionNumber-windows-$arch.zip"
-if ($Version -eq "latest") {
-    $baseUrl = "https://github.com/$Owner/$Repo/releases/latest/download"
-} else {
-    $baseUrl = "https://github.com/$Owner/$Repo/releases/download/$versionTag"
-}
+$baseUrl = "https://github.com/$Owner/$Repo/releases/download/$versionTag"
 $url = "$baseUrl/$archive"
 
 Write-Host "platform: windows-$arch"
