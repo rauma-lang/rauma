@@ -487,6 +487,22 @@ static const char* binary_op_str(RmbTokenKind op) {
     }
 }
 
+static bool binary_op_needs_parens(RmbTokenKind op) {
+    switch (op) {
+        case RMB_TOKEN_LT:
+        case RMB_TOKEN_GT:
+        case RMB_TOKEN_LT_EQ:
+        case RMB_TOKEN_GT_EQ:
+        case RMB_TOKEN_EQ_EQ:
+        case RMB_TOKEN_BANG_EQ:
+        case RMB_TOKEN_AND_AND:
+        case RMB_TOKEN_OR_OR:
+            return false;
+        default:
+            return true;
+    }
+}
+
 static const char* unary_op_str(RmbTokenKind op) {
     switch (op) {
         case RMB_TOKEN_MINUS: return "-";
@@ -716,11 +732,11 @@ static void emit_expr(RmbCGen* g, RmbAstExpr* e) {
             emit_str(g, ")");
             break;
         case RMB_AST_EXPR_BINARY:
-            emit_str(g, "(");
+            if (binary_op_needs_parens(e->binary.op)) emit_str(g, "(");
             emit_expr(g, e->binary.left);
             emit_fmt(g, " %s ", binary_op_str(e->binary.op));
             emit_expr(g, e->binary.right);
-            emit_str(g, ")");
+            if (binary_op_needs_parens(e->binary.op)) emit_str(g, ")");
             break;
         case RMB_AST_EXPR_ERROR_PROP:
             cg_error(g, e->span, "error propagation '?' is not supported by codegen v0.0.7");
