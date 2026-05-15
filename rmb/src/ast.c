@@ -14,6 +14,7 @@ void rmb_ast_init(rmb_arena* arena) {
     g_ast_arena = arena;
 }
 
+
 // Get AST arena
 rmb_arena* rmb_ast_get_arena(void) {
     return g_ast_arena;

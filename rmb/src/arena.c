@@ -41,6 +41,7 @@ rmb_arena* rmb_arena_create(rmb_size initial_capacity) {
     return arena;
 }
 
+
 // Allocate memory from arena
 void* rmb_arena_alloc(rmb_arena* arena, rmb_size size) {
     return rmb_arena_alloc_aligned(arena, size, 1);

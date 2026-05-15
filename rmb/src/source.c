@@ -64,6 +64,7 @@ bool rmb_source_read(const char* path, RmbSource* out) {
     return true;
 }
 
+
 // Free source file memory
 void rmb_source_free(RmbSource* source) {
     if (source && source->data) {

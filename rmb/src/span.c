@@ -14,6 +14,7 @@ RmbSpan rmb_span_create(const char* file, size_t start, size_t end, int line, in
     return span;
 }
 
+
 // Create a zero-length span at a position
 RmbSpan rmb_span_at(const char* file, size_t pos, int line, int col) {
     return rmb_span_create(file, pos, pos, line, col);

@@ -19,6 +19,7 @@ void rmb_vec_init(rmb_vec* vec) {
     vec->cap = 0;
 }
 
+
 // Initialize vector with initial capacity
 bool rmb_vec_init_with_capacity(rmb_vec* vec, rmb_size initial_capacity) {
     if (!vec) {

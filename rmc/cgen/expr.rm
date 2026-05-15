@@ -692,13 +692,11 @@ pub fn emit_additive_to_c(src str, i int) str {
             return "";
         }
 
-        out := "(";
-        out = str_concat(out, left);
+        out := left;
         out = str_concat(out, " ");
         out = str_concat(out, op);
         out = str_concat(out, " ");
         out = str_concat(out, right);
-        out = str_concat(out, ")");
         return out;
     }
 

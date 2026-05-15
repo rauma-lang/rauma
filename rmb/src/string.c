@@ -21,6 +21,7 @@ rmb_string rmb_string_from_cstr(const char* cstr) {
     return str;
 }
 
+
 // Create string from buffer
 rmb_string rmb_string_from_buf(const char* buf, rmb_size len) {
     rmb_string str;
