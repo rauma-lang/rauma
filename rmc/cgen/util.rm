@@ -1,0 +1,25 @@
+use lex.token;
+use lex.stream;
+use type.checker;
+
+pub fn fail_text() str {
+    return "#fail";
+}
+
+pub fn is_fail_text(text str) bool {
+    return str_eq(text, fail_text());
+}
+
+pub fn expect_ident_text(src str, i int, text str) int {
+    if (lex.stream.current_kind(src, i) != lex.token.kind_ident()) {
+        return 0;
+    }
+    if (lex.stream.token_text_eq(src, lex.stream.token_start(src, i), lex.stream.token_end(src, i), text)) {
+        return lex.stream.advance(src, i);
+    }
+    return 0;
+}
+
+pub fn token_text(src str, i int) str {
+    return lex.stream.token_text_slice(src, lex.stream.token_start(src, i), lex.stream.token_end(src, i));
+}

@@ -1,4 +1,5 @@
 use parse.parser;
+use parse.analysis;
 use lex.token;
 use lex.stream;
 
@@ -11,7 +12,7 @@ pub fn can_check(text str) bool {
         return false;
     }
 
-    if (parse.parser.has_missing_return_for_typed_fn_text(text)) {
+    if (parse.analysis.has_missing_return_for_typed_fn_text(text)) {
         return false;
     }
 
@@ -102,7 +103,7 @@ pub fn run_file(path str, text str) {
     }
 
     count := parse.parser.count_functions(text);
-    if (parse.parser.has_missing_return_for_typed_fn_text(text)) {
+    if (parse.analysis.has_missing_return_for_typed_fn_text(text)) {
         print("check failed: missing return\n");
         return;
     }

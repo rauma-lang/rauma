@@ -1,6 +1,7 @@
 use source.source;
 use lex.token;
 use lex.lexer;
+use lex.ident;
 
 pub fn run_stream_smoke() {
     print("token stream ready\n");
@@ -80,11 +81,11 @@ pub fn current_ident_code(src str, i int) int {
     if (kind != lex.token.kind_ident()) {
         return 0;
     }
-    return lex.lexer.token_ident_code(src, current_start(src, i), current_end(src, i));
+    return lex.ident.token_ident_code(src, current_start(src, i), current_end(src, i));
 }
 
 pub fn print_ident_code(code int) {
-    lex.lexer.print_ident_code(code);
+    lex.ident.print_ident_code(code);
 }
 
 pub fn expect_ident(src str, i int) int {
@@ -101,7 +102,7 @@ pub fn expect_ident_main(src str, i int) int {
     if (kind != lex.token.kind_ident()) {
         return 0;
     }
-    if (lex.lexer.token_is_ident_main(src, start, end)) {
+    if (lex.ident.token_is_ident_main(src, start, end)) {
         return end;
     }
     return 0;
@@ -114,7 +115,7 @@ pub fn expect_ident_add(src str, i int) int {
     if (kind != lex.token.kind_ident()) {
         return 0;
     }
-    if (lex.lexer.token_is_ident_add(src, start, end)) {
+    if (lex.ident.token_is_ident_add(src, start, end)) {
         return end;
     }
     return 0;
@@ -127,7 +128,7 @@ pub fn expect_ident_a(src str, i int) int {
     if (kind != lex.token.kind_ident()) {
         return 0;
     }
-    if (lex.lexer.token_is_ident_a(src, start, end)) {
+    if (lex.ident.token_is_ident_a(src, start, end)) {
         return end;
     }
     return 0;
@@ -140,7 +141,7 @@ pub fn expect_ident_b(src str, i int) int {
     if (kind != lex.token.kind_ident()) {
         return 0;
     }
-    if (lex.lexer.token_is_ident_b(src, start, end)) {
+    if (lex.ident.token_is_ident_b(src, start, end)) {
         return end;
     }
     return 0;
@@ -153,7 +154,7 @@ pub fn expect_ident_int(src str, i int) int {
     if (kind != lex.token.kind_ident()) {
         return 0;
     }
-    if (lex.lexer.token_is_ident_int(src, start, end)) {
+    if (lex.ident.token_is_ident_int(src, start, end)) {
         return end;
     }
     return 0;
@@ -166,7 +167,7 @@ pub fn expect_ident_x(src str, i int) int {
     if (kind != lex.token.kind_ident()) {
         return 0;
     }
-    if (lex.lexer.token_is_ident_x(src, start, end)) {
+    if (lex.ident.token_is_ident_x(src, start, end)) {
         return end;
     }
     return 0;
@@ -179,7 +180,7 @@ pub fn expect_ident_print(src str, i int) int {
     if (kind != lex.token.kind_ident()) {
         return 0;
     }
-    if (lex.lexer.token_is_ident_print(src, start, end)) {
+    if (lex.ident.token_is_ident_print(src, start, end)) {
         return end;
     }
     return 0;
@@ -192,7 +193,7 @@ pub fn expect_int_20(src str, i int) int {
     if (kind != lex.token.kind_int()) {
         return 0;
     }
-    if (lex.lexer.token_is_int_20(src, start, end)) {
+    if (lex.ident.token_is_int_20(src, start, end)) {
         return end;
     }
     return 0;
@@ -205,7 +206,7 @@ pub fn expect_int_22(src str, i int) int {
     if (kind != lex.token.kind_int()) {
         return 0;
     }
-    if (lex.lexer.token_is_int_22(src, start, end)) {
+    if (lex.ident.token_is_int_22(src, start, end)) {
         return end;
     }
     return 0;

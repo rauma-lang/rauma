@@ -1,0 +1,72 @@
+use lex.token;
+use lex.stream;
+
+pub fn item_is_struct(src str, i int) bool {
+    if (lex.stream.current_kind(src, i) == lex.token.kind_kw_struct()) {
+        return true;
+    }
+    return false;
+}
+
+pub fn item_is_enum(src str, i int) bool {
+    if (lex.stream.current_kind(src, i) == lex.token.kind_kw_enum()) {
+        return true;
+    }
+    return false;
+}
+
+pub fn struct_end(src str, i int) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_struct());
+    if (pos == 0) {
+        return 0;
+    }
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) {
+        return 0;
+    }
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
+            return 0;
+        }
+        pos = lex.stream.advance(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+    }
+    return lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+}
+
+pub fn enum_end(src str, i int) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_enum());
+    if (pos == 0) {
+        return 0;
+    }
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) {
+        return 0;
+    }
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
+            return 0;
+        }
+        pos = lex.stream.advance(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+    }
+    return lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+}
