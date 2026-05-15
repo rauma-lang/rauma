@@ -36,11 +36,11 @@ if (Test-Path $dist) {
 }
 New-Item -ItemType Directory -Force $dist | Out-Null
 
-& (Join-Path $PSScriptRoot "verify-self-host.ps1")
+& (Join-Path $PSScriptRoot "verify-product.ps1")
 
 Set-Location (Join-Path $root "rmb")
 $rmb = Native-Exe "build/rmb"
-$rmc = Native-Exe "build/rmc3-real"
+$rmc = Native-Exe "build/debug/native/bin/main"
 
 $exeSuffix = if ($PlatformOs -eq "windows") { ".exe" } else { "" }
 $target = "$PlatformOs-$PlatformArch"

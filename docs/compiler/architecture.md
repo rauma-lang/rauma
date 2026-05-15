@@ -134,14 +134,14 @@ still emits C directly from checked AST chunks:
   This is still bridge cgen, not real chunking, HIR/MIR, or fixed point.
 
 
-### v0.2.0 Bridge Status
+### v0.2.0 Product Pipeline
 
-The RauMa-written `rmc` tree now includes bridge-compatible type, HIR, MIR,
-optimizer, standard-library, and LSP modules. These modules are verified as
-compiler-shaped building blocks, but the active executable backend is still the
-bridge C path rather than a HIR/MIR-backed code generator.
+The product compiler path is the C backend pipeline. That is a real backend:
+source is lexed, parsed into AST, checked, emitted as C, compiled, and linked to
+a native executable. The RauMa-written `rmc` tree also includes
+bridge-compatible type, HIR, MIR, optimizer, standard-library, and LSP modules.
 
-The currently verified v0.2.0 path is:
+The verified v0.2.0 release path is:
 
 ```text
 .rm source -> Lexer -> Parser -> Checker -> bridge C backend -> gcc/clang -> executable

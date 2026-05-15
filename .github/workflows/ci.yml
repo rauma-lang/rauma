@@ -76,15 +76,15 @@ jobs:
         shell: bash
         run: echo "CC=${{ matrix.cc }}" >> "$GITHUB_ENV"
 
-      - name: Verify deterministic self-host chain on Windows
+      - name: Verify product compiler pipeline on Windows
         if: matrix.platform_os == 'windows'
         shell: msys2 {0}
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release/verify-self-host.ps1
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release/verify-product.ps1
 
-      - name: Verify deterministic self-host chain on non-Windows
+      - name: Verify product compiler pipeline on non-Windows
         if: matrix.platform_os != 'windows'
         shell: bash
-        run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/release/verify-self-host.ps1
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/release/verify-product.ps1
 
       - name: Run bootstrap test suite on Windows
         if: matrix.platform_os == 'windows' && matrix.full_test

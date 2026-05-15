@@ -28,7 +28,10 @@ RauMa has two compiler tracks:
 - `rmb` is the C11 bootstrap compiler kept for recovery.
 - `rauma-setup.sh` and `rauma-setup.ps1` are the v0.2.0 installer scripts.
 
-As of v0.2.0, the compiler supports struct/enum declarations, type checking with symbol tables, HIR/MIR IR definitions, a growing stdlib, and LSP tooling infrastructure.
+As of v0.2.0, the product compiler path is the C backend pipeline:
+source -> lexer -> parser -> AST -> checker -> C codegen -> native binary.
+The release gate builds `rmc/main.rm`, checks the stdlib/tooling modules, runs
+the LSP smoke path, and builds/runs the stdlib smoke program.
 
 ## Repository Structure
 
@@ -118,8 +121,8 @@ make
 ./build/rmb build ../rmc/main.rm
 ./build/debug/native/bin/main version
 
-# Verify the self-host chain
-powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/release/verify-self-host.ps1
+# Verify the product compiler pipeline
+powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/release/verify-product.ps1
 
 # Dry-run the script installer
 powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/install/rauma-setup.ps1 -DryRun -Version v0.2.0
