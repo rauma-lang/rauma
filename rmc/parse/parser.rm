@@ -371,10 +371,15 @@ pub fn parse_assign_stmt(src str, i int, emit bool) int {
     if (pos == 0) {
         return 0;
     }
-    if (lex.stream.current_kind(src, pos) != lex.token.kind_eq()) {
-        return 0;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_eq()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_eq());
+    } else {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_plus_eq()) {
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_plus_eq());
+        } else {
+            return 0;
+        }
     }
-    pos = lex.stream.expect_kind(src, pos, lex.token.kind_eq());
     if (pos == 0) {
         return 0;
     }
@@ -489,6 +494,9 @@ pub fn parse_stmt(src str, i int, emit bool) int {
         if (next_kind == lex.token.kind_eq()) {
             return parse_assign_stmt(src, i, emit);
         }
+        if (next_kind == lex.token.kind_plus_eq()) {
+            return parse_assign_stmt(src, i, emit);
+        }
         if (next_kind == lex.token.kind_l_paren() || next_kind == lex.token.kind_dot()) {
             return parse_call_stmt(src, i, emit);
         }
@@ -516,7 +524,7 @@ pub fn parse_use_decl(src str, i int) int {
             return 0;
         }
     }
-    return pos;
+    return lex.stream.expect_kind(src, pos, lex.token.kind_semi());
 }
 
 pub fn parse_struct_decl(src str, i int, emit bool) int {

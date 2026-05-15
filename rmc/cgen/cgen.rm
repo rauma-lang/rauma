@@ -2396,7 +2396,14 @@ pub fn emit_module_fn_defines_to_string(src str, prefix str) str {
                         return "";
                     }
                 } else {
-                    fn_pos := lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+                    fn_pos := pos;
+                    if (lex.stream.current_kind(src, fn_pos) == lex.token.kind_kw_pub()) {
+                        fn_pos = lex.stream.expect_kind(src, fn_pos, lex.token.kind_kw_pub());
+                        if (fn_pos == 0) {
+                            return "";
+                        }
+                    }
+                    fn_pos = lex.stream.expect_kind(src, fn_pos, lex.token.kind_kw_fn());
                     if (fn_pos == 0) {
                         return "";
                     }
@@ -2451,7 +2458,14 @@ pub fn emit_module_fn_undefs_to_string(src str) str {
                         return "";
                     }
                 } else {
-                    fn_pos := lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+                    fn_pos := pos;
+                    if (lex.stream.current_kind(src, fn_pos) == lex.token.kind_kw_pub()) {
+                        fn_pos = lex.stream.expect_kind(src, fn_pos, lex.token.kind_kw_pub());
+                        if (fn_pos == 0) {
+                            return "";
+                        }
+                    }
+                    fn_pos = lex.stream.expect_kind(src, fn_pos, lex.token.kind_kw_fn());
                     if (fn_pos == 0) {
                         return "";
                     }
