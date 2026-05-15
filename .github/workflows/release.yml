@@ -190,6 +190,6 @@ jobs:
           if ! gh release view "$tag" >/dev/null 2>&1; then
             gh release create "$tag" --title "RauMa v0.2.0" --notes-file RELEASE_NOTES.md --latest
           else
-            gh release edit "$tag" --title "RauMa v0.2.0" --notes-file RELEASE_NOTES.md --latest
+            gh release edit "$tag" --title "RauMa v0.2.0" --notes-file RELEASE_NOTES.md --draft=false --prerelease=false --latest
           fi
           gh release upload "$tag" release-dist/* --clobber
