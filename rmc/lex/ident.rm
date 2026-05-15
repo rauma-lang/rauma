@@ -24,14 +24,20 @@ pub fn is_a_ident(text str, start int, end int) bool {
     if (end - start != 1) {
         return false;
     }
-    return str_byte(text, start) == 97;
+    if (str_byte(text, start) == 97) {
+        return true;
+    }
+    return false;
 }
 
 pub fn is_b_ident(text str, start int, end int) bool {
     if (end - start != 1) {
         return false;
     }
-    return str_byte(text, start) == 98;
+    if (str_byte(text, start) == 98) {
+        return true;
+    }
+    return false;
 }
 
 pub fn is_int_ident(text str, start int, end int) bool {
@@ -49,7 +55,10 @@ pub fn is_x_ident(text str, start int, end int) bool {
     if (end - start != 1) {
         return false;
     }
-    return str_byte(text, start) == 120;
+    if (str_byte(text, start) == 120) {
+        return true;
+    }
+    return false;
 }
 
 pub fn is_print_ident(text str, start int, end int) bool {
