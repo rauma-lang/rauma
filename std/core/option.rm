@@ -1,0 +1,46 @@
+pub fn option_is_some_int(opt bool, has_value bool) bool {
+    if (opt == false) {
+        return false;
+    }
+    return has_value;
+}
+
+pub fn option_is_none_int(opt bool, has_value bool) bool {
+    if (opt == false) {
+        return true;
+    }
+    if (has_value == false) {
+        return true;
+    }
+    return false;
+}
+
+pub fn option_unwrap_or_int(opt bool, has_value bool, value int, fallback int) int {
+    if (opt == false) {
+        return fallback;
+    }
+    if (has_value == false) {
+        return fallback;
+    }
+    return value;
+}
+
+pub fn option_unwrap_or_str(opt bool, has_value bool, value str, fallback str) str {
+    if (opt == false) {
+        return fallback;
+    }
+    if (has_value == false) {
+        return fallback;
+    }
+    return value;
+}
+
+pub fn option_unwrap_int(opt bool, has_value bool, value int) int {
+    if (opt == false) {
+        return 0;
+    }
+    if (has_value == false) {
+        return 0;
+    }
+    return value;
+}

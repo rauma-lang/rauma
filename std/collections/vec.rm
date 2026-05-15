@@ -1,0 +1,24 @@
+pub fn vec_len_int(len int) int {
+    return len;
+}
+
+pub fn vec_is_empty_int(len int) bool {
+    return len == 0;
+}
+
+pub fn vec_can_get_int(len int, index int) bool {
+    if (index < 0) {
+        return false;
+    }
+    if (index >= len) {
+        return false;
+    }
+    return true;
+}
+
+pub fn vec_next_cap_int(cap int) int {
+    if (cap <= 0) {
+        return 1;
+    }
+    return cap + cap;
+}

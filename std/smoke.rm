@@ -1,0 +1,17 @@
+use core.option;
+use core.result;
+use str.str;
+use io.print;
+use math.math;
+use conv.conv;
+use collections.vec;
+
+fn main() {
+    io.print.println_str(str.str.str_concat_fn("std", " ok"));
+    io.print.println_int(math.math.abs_int(0 - 7));
+    io.print.println_bool(core.option.option_is_some_int(true, true));
+    io.print.println_bool(core.result.result_is_err(false));
+    io.print.println_int(conv.conv.str_to_int("7"));
+    io.print.println_bool(collections.vec.vec_can_get_int(3, 2));
+    return;
+}

@@ -1,0 +1,12 @@
+pub fn read_all(path str) str {
+    return read_file(path);
+}
+
+pub fn write_all(path str, content str) bool {
+    return write_file(path, content);
+}
+
+pub fn read_is_empty(path str) bool {
+    text := read_file(path);
+    return str_len(text) == 0;
+}

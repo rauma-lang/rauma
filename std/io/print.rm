@@ -1,0 +1,34 @@
+pub fn print_str(s str) {
+    print_str_slice(s, 0, str_len(s));
+}
+
+pub fn println_str(s str) {
+    print_str_slice(s, 0, str_len(s));
+    print("\n");
+}
+
+pub fn print_int(i int) {
+    print(i);
+}
+
+pub fn println_int(i int) {
+    print(i);
+    print("\n");
+}
+
+pub fn print_bool(b bool) {
+    if (b) {
+        print("true");
+    } else {
+        print("false");
+    }
+}
+
+pub fn println_bool(b bool) {
+    print_bool(b);
+    print("\n");
+}
+
+pub fn println_newline() {
+    print("\n");
+}

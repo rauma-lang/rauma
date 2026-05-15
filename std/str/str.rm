@@ -1,0 +1,41 @@
+pub fn str_len_fn(s str) int {
+    return str_len(s);
+}
+
+pub fn str_eq_fn(a str, b str) bool {
+    return str_eq(a, b);
+}
+
+pub fn str_byte_at(s str, i int) int {
+    return str_byte(s, i);
+}
+
+pub fn str_concat_fn(a str, b str) str {
+    return str_concat(a, b);
+}
+
+pub fn str_substr(s str, start int, end int) str {
+    return str_from_slice(s, start, end);
+}
+
+pub fn str_is_empty(s str) bool {
+    if (str_len(s) == 0) {
+        return true;
+    }
+    return false;
+}
+
+pub fn str_first_char(s str) int {
+    if (str_len(s) > 0) {
+        return str_byte(s, 0);
+    }
+    return 0;
+}
+
+pub fn str_last_char(s str) int {
+    len := str_len(s);
+    if (len > 0) {
+        return str_byte(s, len - 1);
+    }
+    return 0;
+}

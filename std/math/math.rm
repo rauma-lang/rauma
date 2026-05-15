@@ -1,0 +1,30 @@
+pub fn abs_int(x int) int {
+    if (x < 0) {
+        return 0 - x;
+    }
+    return x;
+}
+
+pub fn min_int(a int, b int) int {
+    if (a < b) {
+        return a;
+    }
+    return b;
+}
+
+pub fn max_int(a int, b int) int {
+    if (a > b) {
+        return a;
+    }
+    return b;
+}
+
+pub fn clamp_int(value int, low int, high int) int {
+    if (value < low) {
+        return low;
+    }
+    if (value > high) {
+        return high;
+    }
+    return value;
+}
