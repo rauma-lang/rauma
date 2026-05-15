@@ -61,13 +61,6 @@ pub fn next_start(text str, start int) int {
             done = true;
         }
     }
-    if (i + 3 < len && str_byte(text, i) == 112 && str_byte(text, i + 1) == 117 &&
-        str_byte(text, i + 2) == 98 && is_space(str_byte(text, i + 3))) {
-        i += 3;
-        while (i < len && is_space(str_byte(text, i))) {
-            i += 1;
-        }
-    }
     return i;
 }
 
@@ -166,6 +159,120 @@ pub fn is_enum_keyword(text str, start int, end int) bool {
     }
     if (str_byte(text, start) == 101 && str_byte(text, start + 1) == 110 &&
         str_byte(text, start + 2) == 117 && str_byte(text, start + 3) == 109) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_match_keyword(text str, start int, end int) bool {
+    if (end - start != 5) {
+        return false;
+    }
+    if (str_byte(text, start) == 109 && str_byte(text, start + 1) == 97 &&
+        str_byte(text, start + 2) == 116 && str_byte(text, start + 3) == 99 &&
+        str_byte(text, start + 4) == 104) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_case_keyword(text str, start int, end int) bool {
+    if (end - start != 4) {
+        return false;
+    }
+    if (str_byte(text, start) == 99 && str_byte(text, start + 1) == 97 &&
+        str_byte(text, start + 2) == 115 && str_byte(text, start + 3) == 101) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_none_keyword(text str, start int, end int) bool {
+    if (end - start != 4) {
+        return false;
+    }
+    if (str_byte(text, start) == 110 && str_byte(text, start + 1) == 111 &&
+        str_byte(text, start + 2) == 110 && str_byte(text, start + 3) == 101) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_break_keyword(text str, start int, end int) bool {
+    if (end - start != 5) {
+        return false;
+    }
+    if (str_byte(text, start) == 98 && str_byte(text, start + 1) == 114 &&
+        str_byte(text, start + 2) == 101 && str_byte(text, start + 3) == 97 &&
+        str_byte(text, start + 4) == 107) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_continue_keyword(text str, start int, end int) bool {
+    if (end - start != 8) {
+        return false;
+    }
+    if (str_byte(text, start) == 99 && str_byte(text, start + 1) == 111 &&
+        str_byte(text, start + 2) == 110 && str_byte(text, start + 3) == 116 &&
+        str_byte(text, start + 4) == 105 && str_byte(text, start + 5) == 110 &&
+        str_byte(text, start + 6) == 117 && str_byte(text, start + 7) == 101) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_let_keyword(text str, start int, end int) bool {
+    if (end - start != 3) {
+        return false;
+    }
+    if (str_byte(text, start) == 108 && str_byte(text, start + 1) == 101 &&
+        str_byte(text, start + 2) == 116) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_bool_keyword(text str, start int, end int) bool {
+    if (end - start != 4) {
+        return false;
+    }
+    if (str_byte(text, start) == 98 && str_byte(text, start + 1) == 111 &&
+        str_byte(text, start + 2) == 111 && str_byte(text, start + 3) == 108) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_void_keyword(text str, start int, end int) bool {
+    if (end - start != 4) {
+        return false;
+    }
+    if (str_byte(text, start) == 118 && str_byte(text, start + 1) == 111 &&
+        str_byte(text, start + 2) == 105 && str_byte(text, start + 3) == 100) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_byte_keyword(text str, start int, end int) bool {
+    if (end - start != 4) {
+        return false;
+    }
+    if (str_byte(text, start) == 98 && str_byte(text, start + 1) == 121 &&
+        str_byte(text, start + 2) == 116 && str_byte(text, start + 3) == 101) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_uint_keyword(text str, start int, end int) bool {
+    if (end - start != 4) {
+        return false;
+    }
+    if (str_byte(text, start) == 117 && str_byte(text, start + 1) == 105 &&
+        str_byte(text, start + 2) == 110 && str_byte(text, start + 3) == 116) {
         return true;
     }
     return false;
@@ -631,14 +738,29 @@ pub fn punct_kind(text str, start int, len int) int {
     if (b == 38 && start + 1 < len && str_byte(text, start + 1) == 38) {
         return lex.token.kind_and_and();
     }
+    if (b == 38) {
+        return lex.token.kind_amp();
+    }
     if (b == 124 && start + 1 < len && str_byte(text, start + 1) == 124) {
         return lex.token.kind_or_or();
+    }
+    if (b == 124) {
+        return lex.token.kind_pipe();
+    }
+    if (b == 94) {
+        return lex.token.kind_caret();
     }
     if (b == 61 && start + 1 < len && str_byte(text, start + 1) == 61) {
         return lex.token.kind_eq_eq();
     }
     if (b == 33 && start + 1 < len && str_byte(text, start + 1) == 61) {
         return lex.token.kind_bang_eq();
+    }
+    if (b == 60 && start + 1 < len && str_byte(text, start + 1) == 60) {
+        return lex.token.kind_lt_lt();
+    }
+    if (b == 62 && start + 1 < len && str_byte(text, start + 1) == 62) {
+        return lex.token.kind_gt_gt();
     }
     if (b == 60 && start + 1 < len && str_byte(text, start + 1) == 61) {
         return lex.token.kind_lt_eq();
@@ -648,6 +770,9 @@ pub fn punct_kind(text str, start int, len int) int {
     }
     if (b == 43 && start + 1 < len && str_byte(text, start + 1) == 61) {
         return lex.token.kind_plus_eq();
+    }
+    if (b == 45 && start + 1 < len && str_byte(text, start + 1) == 62) {
+        return lex.token.kind_arrow();
     }
     if (b == 40) {
         return lex.token.kind_l_paren();
@@ -676,6 +801,15 @@ pub fn punct_kind(text str, start int, len int) int {
     if (b == 45) {
         return lex.token.kind_minus();
     }
+    if (b == 42) {
+        return lex.token.kind_star();
+    }
+    if (b == 47) {
+        return lex.token.kind_slash();
+    }
+    if (b == 37) {
+        return lex.token.kind_percent();
+    }
     if (b == 33) {
         return lex.token.kind_bang();
     }
@@ -687,6 +821,18 @@ pub fn punct_kind(text str, start int, len int) int {
     }
     if (b == 62) {
         return lex.token.kind_gt();
+    }
+    if (b == 63) {
+        return lex.token.kind_question();
+    }
+    if (b == 124) {
+        return lex.token.kind_pipe();
+    }
+    if (b == 91) {
+        return lex.token.kind_l_bracket();
+    }
+    if (b == 93) {
+        return lex.token.kind_r_bracket();
     }
     if (b == 58 && start + 1 < len && str_byte(text, start + 1) == 61) {
         return lex.token.kind_colon_eq();
@@ -730,6 +876,24 @@ pub fn next_kind(text str, start int) int {
         }
         if (is_enum_keyword(text, pos, end)) {
             return lex.token.kind_kw_enum();
+        }
+        if (is_match_keyword(text, pos, end)) {
+            return lex.token.kind_kw_match();
+        }
+        if (is_case_keyword(text, pos, end)) {
+            return lex.token.kind_kw_case();
+        }
+        if (is_none_keyword(text, pos, end)) {
+            return lex.token.kind_kw_none();
+        }
+        if (is_break_keyword(text, pos, end)) {
+            return lex.token.kind_kw_break();
+        }
+        if (is_continue_keyword(text, pos, end)) {
+            return lex.token.kind_kw_continue();
+        }
+        if (is_let_keyword(text, pos, end)) {
+            return lex.token.kind_kw_let();
         }
         return lex.token.kind_ident();
     }
@@ -777,10 +941,19 @@ pub fn next_end(text str, start int) int {
     if (b == 43 && pos + 1 < len && str_byte(text, pos + 1) == 61) {
         return pos + 2;
     }
+    if (b == 45 && pos + 1 < len && str_byte(text, pos + 1) == 62) {
+        return pos + 2;
+    }
     if (b == 38 && pos + 1 < len && str_byte(text, pos + 1) == 38) {
         return pos + 2;
     }
     if (b == 124 && pos + 1 < len && str_byte(text, pos + 1) == 124) {
+        return pos + 2;
+    }
+    if (b == 60 && pos + 1 < len && str_byte(text, pos + 1) == 60) {
+        return pos + 2;
+    }
+    if (b == 62 && pos + 1 < len && str_byte(text, pos + 1) == 62) {
         return pos + 2;
     }
     return pos + 1;
@@ -823,6 +996,30 @@ pub fn scan_ident(text str, start int, len int) int {
     }
     if (is_enum_keyword(text, start, i)) {
         lex.token.print_token(lex.token.kind_kw_enum(), "enum");
+        return i;
+    }
+    if (is_match_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_match(), "match");
+        return i;
+    }
+    if (is_case_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_case(), "case");
+        return i;
+    }
+    if (is_none_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_none(), "none");
+        return i;
+    }
+    if (is_break_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_break(), "break");
+        return i;
+    }
+    if (is_continue_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_continue(), "continue");
+        return i;
+    }
+    if (is_let_keyword(text, start, i)) {
+        lex.token.print_token(lex.token.kind_kw_let(), "let");
         return i;
     }
     if (is_add_ident(text, start, i)) {
@@ -912,8 +1109,28 @@ pub fn scan_punct(text str, start int, len int) int {
         lex.token.print_token(lex.token.kind_and_and(), "&&");
         return start + 2;
     }
+    if (b == 38) {
+        lex.token.print_token(lex.token.kind_amp(), "&");
+        return start + 1;
+    }
     if (b == 124 && start + 1 < len && str_byte(text, start + 1) == 124) {
         lex.token.print_token(lex.token.kind_or_or(), "||");
+        return start + 2;
+    }
+    if (b == 124) {
+        lex.token.print_token(lex.token.kind_pipe(), "|");
+        return start + 1;
+    }
+    if (b == 94) {
+        lex.token.print_token(lex.token.kind_caret(), "^");
+        return start + 1;
+    }
+    if (b == 60 && start + 1 < len && str_byte(text, start + 1) == 60) {
+        lex.token.print_token(lex.token.kind_lt_lt(), "<<");
+        return start + 2;
+    }
+    if (b == 62 && start + 1 < len && str_byte(text, start + 1) == 62) {
+        lex.token.print_token(lex.token.kind_gt_gt(), ">>");
         return start + 2;
     }
     if (b == 61 && start + 1 < len && str_byte(text, start + 1) == 61) {
@@ -934,6 +1151,10 @@ pub fn scan_punct(text str, start int, len int) int {
     }
     if (b == 43 && start + 1 < len && str_byte(text, start + 1) == 61) {
         lex.token.print_token(lex.token.kind_plus_eq(), "+=");
+        return start + 2;
+    }
+    if (b == 45 && start + 1 < len && str_byte(text, start + 1) == 62) {
+        lex.token.print_token(lex.token.kind_arrow(), "->");
         return start + 2;
     }
     if (b == 40) {
@@ -972,6 +1193,18 @@ pub fn scan_punct(text str, start int, len int) int {
         lex.token.print_token(lex.token.kind_minus(), "-");
         return start + 1;
     }
+    if (b == 42) {
+        lex.token.print_token(lex.token.kind_star(), "*");
+        return start + 1;
+    }
+    if (b == 47) {
+        lex.token.print_token(lex.token.kind_slash(), "/");
+        return start + 1;
+    }
+    if (b == 37) {
+        lex.token.print_token(lex.token.kind_percent(), "%");
+        return start + 1;
+    }
     if (b == 33) {
         lex.token.print_token(lex.token.kind_bang(), "!");
         return start + 1;
@@ -986,6 +1219,22 @@ pub fn scan_punct(text str, start int, len int) int {
     }
     if (b == 62) {
         lex.token.print_token(lex.token.kind_gt(), ">");
+        return start + 1;
+    }
+    if (b == 63) {
+        lex.token.print_token(lex.token.kind_question(), "?");
+        return start + 1;
+    }
+    if (b == 124) {
+        lex.token.print_token(lex.token.kind_pipe(), "|");
+        return start + 1;
+    }
+    if (b == 91) {
+        lex.token.print_token(lex.token.kind_l_bracket(), "[");
+        return start + 1;
+    }
+    if (b == 93) {
+        lex.token.print_token(lex.token.kind_r_bracket(), "]");
         return start + 1;
     }
     if (b == 58 && start + 1 < len && str_byte(text, start + 1) == 61) {

@@ -2,6 +2,15 @@
 
 RauMa is a compiled, no-runtime, server-side-oriented programming language.
 
+## What's New in v0.2.0
+
+- **Full struct and enum support** - `struct`, `enum`, and `pub` keyword now fully parsed and codegen'd
+- **Type system foundation** - `rmc/type/types.rm` and `rmc/type/symtab.rm` define primitive types, symbol table entries, and type resolution
+- **HIR/MIR infrastructure** - Initial `rmc/hir/` and `rmc/mir/` modules define type/value nodes and optimization primitives
+- **Standard library modules** - `std/core/`, `std/str/`, `std/io/`, `std/math/` with core utilities
+- **LSP language server** - `rmc/lsp/` module with JSON-RPC protocol support, keyword/builtin completions
+- **Enhanced CI/CD** - Cross-platform tests for stdlib, HIR/MIR, and LSP modules
+
 ## Overview
 
 - Source files use the `.rm` extension
@@ -17,21 +26,9 @@ RauMa has two compiler tracks:
 
 - `rmc` is the self-hosted RauMa compiler written in RauMa.
 - `rmb` is the C11 bootstrap compiler kept for recovery.
-- `rauma-setup.sh` and `rauma-setup.ps1` are the v0.1.0 installer scripts.
+- `rauma-setup.sh` and `rauma-setup.ps1` are the v0.2.0 installer scripts.
 
-As of v0.1.0, the real self-host chain is verified:
-
-```text
-rmb -> rmc0 -> rmc1-real -> rmc2-real -> rmc3-real
-```
-
-Generated C exact comparison passes across the real stages, behavior comparison
-passes across `rmc1-real`, `rmc2-real`, and `rmc3-real`, and `make test`
-passes. The compiler remains a bridge C-backend release with a local module
-graph only: no package manager, stdlib lookup, HIR/MIR, LLVM, rmgen, or rmlink.
-
-See `docs/compiler/v009-deterministic-self-host.md` and
-`docs/compiler/v009-plan.md` for the verified chain and remaining boundaries.
+As of v0.2.0, the compiler supports struct/enum declarations, type checking with symbol tables, HIR/MIR IR definitions, a growing stdlib, and LSP tooling infrastructure.
 
 ## Repository Structure
 
@@ -42,18 +39,19 @@ See `docs/compiler/v009-deterministic-self-host.md` and
 
 - `rmc/` - RauMa Main Compiler (RauMa `.rm`)
   - Real compiler written in RauMa
-  - Will eventually compile itself
-  - Architecture: AST -> HIR -> MIR -> backend
+  - Architecture: Lexer -> Parser -> Type Checker -> HIR -> MIR -> C Backend
+  - Includes `rmc/hir/` (HIR types/nodes), `rmc/mir/` (MIR types/optimization), `rmc/lsp/` (language server)
+  - Includes `rmc/type/` (type system, symbol table)
 
 - `std/` - RauMa Standard Library
-  - Minimal standard library
-  - Core functionality only
+  - `std/core/` - Option types, core utilities
+  - `std/str/` - String operations
+  - `std/io/` - Input/output
+  - `std/math/` - Mathematical functions
+  - `std/conv/` - Type conversions (planned)
 
 - `tests/` - Test Suites
-  - Syntax, parsing, type checking, error handling, interference, codegen, self-hosting tests
-
-- `examples/` - Example Programs
-  - Simple `.rm` examples
+  - Syntax, parsing, type checking, error handling, codegen, self-hosting tests
 
 - `docs/` - Documentation
   - Language specification, compiler architecture, roadmap
@@ -68,8 +66,8 @@ See `docs/compiler/v009-deterministic-self-host.md` and
 
 ## Backends
 
-1. C backend first (for bootstrap stability)
-2. LLVM backend delayed until after self-hosting
+1. C backend (bridge) - for bootstrap stability
+2. LLVM backend - delayed until after full self-hosting
 3. Other backends (rmgen, rmlink) possible later
 
 ## Design Principles
@@ -77,7 +75,7 @@ See `docs/compiler/v009-deterministic-self-host.md` and
 1. RauMa must eventually self-host
 2. `rmb` must stay small, boring, stable, and C11-only
 3. `rmb` emits C first, not LLVM
-4. `rmc` uses AST -> HIR -> MIR -> backend architecture
+4. `rmc` uses Lexer -> Parser -> Type Checker -> HIR -> MIR -> Backend architecture
 5. No macros, async, HTTP, package registry, LLVM, VM, or native linker in bootstrap stage
 6. Public API type-explicit, local code inference-friendly
 7. Simple C-family syntax
@@ -88,11 +86,11 @@ See `docs/compiler/v009-deterministic-self-host.md` and
 
 Download the archive for your platform from GitHub Releases:
 
-- `rauma-v0.1.0-windows-x64.zip`
-- `rauma-v0.1.0-windows-arm64.zip`
-- `rauma-v0.1.0-linux-x64.tar.gz`
-- `rauma-v0.1.0-linux-arm64.tar.gz`
-- `rauma-v0.1.0-macos-arm64.tar.gz`
+- `rauma-v0.2.0-windows-x64.zip`
+- `rauma-v0.2.0-windows-arm64.zip`
+- `rauma-v0.2.0-linux-x64.tar.gz`
+- `rauma-v0.2.0-linux-arm64.tar.gz`
+- `rauma-v0.2.0-macos-arm64.tar.gz`
 
 Each archive includes:
 
@@ -120,19 +118,15 @@ make
 ./build/rmb build ../rmc/main.rm
 ./build/debug/native/bin/main version
 
-# Verify the real self-host chain
+# Verify the self-host chain
 powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/release/verify-self-host.ps1
 
 # Dry-run the script installer
-powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/install/rauma-setup.ps1 -DryRun -Version v0.1.0
+powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/install/rauma-setup.ps1 -DryRun -Version v0.2.0
 ```
 
-Release packages are produced by GitHub Actions from tag `v0.1.0`; generated
+Release packages are produced by GitHub Actions from tag `v0.2.0`; generated
 binaries are not committed to the repository.
-
-The RauMa source at `examples/setup/rauma-setup.rm` is only a future native
-installer example. It is not the official v0.1.0 installer because RauMa does
-not yet provide stdlib process, HTTP/fetch, or archive extraction APIs.
 
 ## License
 

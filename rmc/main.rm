@@ -8,6 +8,7 @@ use type.checker;
 use cgen.cgen;
 use build.build;
 use build.module;
+use lsp.dispatch;
 
 fn main(args Args) {
     if (args_len(args) <= 1) {
@@ -119,6 +120,23 @@ fn main(args Args) {
         text := read_file(args_get(args, 2));
         // text length check done inside build
         build.build.run_file(args_get(args, 2), text);
+        return;
+    }
+
+    if (str_eq(cmd, "lsp")) {
+        if (args_len(args) >= 3) {
+            mode := args_get(args, 2);
+            if (str_eq(mode, "--check-exits-immediately")) {
+                lsp.dispatch.run_check();
+                return;
+            }
+            if (str_eq(mode, "--capabilities")) {
+                lsp.dispatch.print_capabilities();
+                return;
+            }
+        }
+
+        lsp.dispatch.start_stdio();
         return;
     }
 

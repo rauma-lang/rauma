@@ -19,8 +19,12 @@ static RmbSpan span_union(RmbSpan a, RmbSpan b) {
 static RmbAstExpr* rmb_parse_assignment(RmbParser* parser);
 static RmbAstExpr* rmb_parse_logical_or(RmbParser* parser);
 static RmbAstExpr* rmb_parse_logical_and(RmbParser* parser);
+static RmbAstExpr* rmb_parse_bitwise_or(RmbParser* parser);
+static RmbAstExpr* rmb_parse_bitwise_xor(RmbParser* parser);
+static RmbAstExpr* rmb_parse_bitwise_and(RmbParser* parser);
 static RmbAstExpr* rmb_parse_equality(RmbParser* parser);
 static RmbAstExpr* rmb_parse_comparison(RmbParser* parser);
+static RmbAstExpr* rmb_parse_shift(RmbParser* parser);
 static RmbAstExpr* rmb_parse_term(RmbParser* parser);
 static RmbAstExpr* rmb_parse_factor(RmbParser* parser);
 static RmbAstExpr* rmb_parse_unary(RmbParser* parser);
@@ -336,13 +340,70 @@ static RmbAstExpr* rmb_parse_logical_or(RmbParser* parser) {
 
 // Parse logical AND (&&)
 static RmbAstExpr* rmb_parse_logical_and(RmbParser* parser) {
-    RmbAstExpr* expr = rmb_parse_equality(parser);
+    RmbAstExpr* expr = rmb_parse_bitwise_or(parser);
 
     while (parser_match(parser, RMB_TOKEN_AND_AND)) {
-        RmbAstExpr* right = rmb_parse_equality(parser);
+        RmbAstExpr* right = rmb_parse_bitwise_or(parser);
         expr = rmb_ast_expr_binary(
             span_union(expr->span,right->span),
             RMB_TOKEN_AND_AND,
+            expr,
+            right
+        );
+    }
+
+    return expr;
+}
+
+// Parse bitwise or (|)
+static RmbAstExpr* rmb_parse_bitwise_or(RmbParser* parser) {
+    RmbAstExpr* expr = rmb_parse_bitwise_xor(parser);
+
+    while (parser_check(parser, RMB_TOKEN_PIPE)) {
+        RmbTokenKind op = parser_current(parser)->kind;
+        parser_advance(parser);
+        RmbAstExpr* right = rmb_parse_bitwise_xor(parser);
+        expr = rmb_ast_expr_binary(
+            span_union(expr->span,right->span),
+            op,
+            expr,
+            right
+        );
+    }
+
+    return expr;
+}
+
+// Parse bitwise xor (^)
+static RmbAstExpr* rmb_parse_bitwise_xor(RmbParser* parser) {
+    RmbAstExpr* expr = rmb_parse_bitwise_and(parser);
+
+    while (parser_check(parser, RMB_TOKEN_CARET)) {
+        RmbTokenKind op = parser_current(parser)->kind;
+        parser_advance(parser);
+        RmbAstExpr* right = rmb_parse_bitwise_and(parser);
+        expr = rmb_ast_expr_binary(
+            span_union(expr->span,right->span),
+            op,
+            expr,
+            right
+        );
+    }
+
+    return expr;
+}
+
+// Parse bitwise and (&)
+static RmbAstExpr* rmb_parse_bitwise_and(RmbParser* parser) {
+    RmbAstExpr* expr = rmb_parse_equality(parser);
+
+    while (parser_check(parser, RMB_TOKEN_AMP)) {
+        RmbTokenKind op = parser_current(parser)->kind;
+        parser_advance(parser);
+        RmbAstExpr* right = rmb_parse_equality(parser);
+        expr = rmb_ast_expr_binary(
+            span_union(expr->span,right->span),
+            op,
             expr,
             right
         );
@@ -372,10 +433,29 @@ static RmbAstExpr* rmb_parse_equality(RmbParser* parser) {
 
 // Parse comparison (<, >, <=, >=)
 static RmbAstExpr* rmb_parse_comparison(RmbParser* parser) {
-    RmbAstExpr* expr = rmb_parse_term(parser);
+    RmbAstExpr* expr = rmb_parse_shift(parser);
 
     while (parser_check(parser, RMB_TOKEN_LT) || parser_check(parser, RMB_TOKEN_GT) ||
            parser_check(parser, RMB_TOKEN_LT_EQ) || parser_check(parser, RMB_TOKEN_GT_EQ)) {
+        RmbTokenKind op = parser_current(parser)->kind;
+        parser_advance(parser);
+        RmbAstExpr* right = rmb_parse_shift(parser);
+        expr = rmb_ast_expr_binary(
+            span_union(expr->span,right->span),
+            op,
+            expr,
+            right
+        );
+    }
+
+    return expr;
+}
+
+// Parse shift (<<, >>)
+static RmbAstExpr* rmb_parse_shift(RmbParser* parser) {
+    RmbAstExpr* expr = rmb_parse_term(parser);
+
+    while (parser_check(parser, RMB_TOKEN_LT_LT) || parser_check(parser, RMB_TOKEN_GT_GT)) {
         RmbTokenKind op = parser_current(parser)->kind;
         parser_advance(parser);
         RmbAstExpr* right = rmb_parse_term(parser);

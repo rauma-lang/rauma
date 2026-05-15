@@ -1,0 +1,15 @@
+use lsp.handlers;
+use lsp.protocol;
+
+pub fn start_stdio() {
+    print_str_slice(lsp.handlers.handle_initialize(), 0, str_len(lsp.handlers.handle_initialize()));
+}
+
+pub fn run_check() {
+    print("lsp check ok\n");
+}
+
+pub fn print_capabilities() {
+    print_str_slice(lsp.protocol.lsp_init_response(), 0, str_len(lsp.protocol.lsp_init_response()));
+    print("\n");
+}

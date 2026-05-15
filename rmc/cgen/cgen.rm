@@ -53,6 +53,341 @@ pub fn emit_prelude_to_string() str {
     return out;
 }
 
+pub fn emit_struct_to_c(src str, i int) str {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_struct());
+    if (pos == 0) {
+        return "";
+    }
+
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return "";
+    }
+    name := token_text(src, pos);
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return "";
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) {
+        return "";
+    }
+
+    out := "typedef struct {\n";
+
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
+            return "";
+        }
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return "";
+        }
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return "";
+        }
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return "";
+        }
+        type_name := token_text(src, pos);
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return "";
+        }
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+        if (pos == 0) {
+            return "";
+        }
+        out = str_concat(out, "    ");
+        if (str_eq(type_name, "str")) {
+            out = str_concat(out, "RmStr ");
+        } else {
+            if (str_eq(type_name, "bool")) {
+                out = str_concat(out, "bool ");
+            } else {
+                if (str_eq(type_name, "int")) {
+                    out = str_concat(out, "int64_t ");
+                } else {
+                    out = str_concat(out, type_name);
+                    out = str_concat(out, " ");
+                }
+            }
+        }
+        out = str_concat(out, "_placeholder;\n");
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+    if (pos == 0) {
+        return "";
+    }
+    out = str_concat(out, "} ");
+    out = str_concat(out, name);
+    out = str_concat(out, ";\n\n");
+    return out;
+}
+
+pub fn emit_enum_to_c(src str, i int) str {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_enum());
+    if (pos == 0) {
+        return "";
+    }
+
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return "";
+    }
+    name := token_text(src, pos);
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return "";
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) {
+        return "";
+    }
+
+    out := "typedef enum {\n";
+    variant_count := 0;
+
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
+            return "";
+        }
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return "";
+        }
+        variant_name := token_text(src, pos);
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return "";
+        }
+
+        has_payload := false;
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_l_paren()) {
+            has_payload = true;
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+            if (pos == 0) {
+                return "";
+            }
+            pos = lex.stream.expect_ident(src, pos);
+            if (pos == 0) {
+                return "";
+            }
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+            if (pos == 0) {
+                return "";
+            }
+        }
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+        if (pos == 0) {
+            return "";
+        }
+        out = str_concat(out, "    ");
+        out = str_concat(out, name);
+        out = str_concat(out, "_");
+        out = str_concat(out, variant_name);
+        if (has_payload) {
+            out = str_concat(out, "_with_data");
+        }
+        out = str_concat(out, ",\n");
+        variant_count = variant_count + 1;
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+    if (pos == 0) {
+        return "";
+    }
+    out = str_concat(out, "} ");
+    out = str_concat(out, name);
+    out = str_concat(out, ";\n\n");
+    return out;
+}
+
+pub fn struct_end(src str, i int) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_struct());
+    if (pos == 0) {
+        return 0;
+    }
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) {
+        return 0;
+    }
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
+            return 0;
+        }
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return 0;
+        }
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return 0;
+        }
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+        if (pos == 0) {
+            return 0;
+        }
+    }
+    return lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+}
+
+pub fn enum_end(src str, i int) int {
+    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_enum());
+    if (pos == 0) {
+        return 0;
+    }
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return 0;
+    }
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) {
+        return 0;
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+    if (pos == 0) {
+        return 0;
+    }
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
+            return 0;
+        }
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return 0;
+        }
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_l_paren()) {
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+            if (pos == 0) {
+                return 0;
+            }
+            pos = lex.stream.expect_ident(src, pos);
+            if (pos == 0) {
+                return 0;
+            }
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+            if (pos == 0) {
+                return 0;
+            }
+        }
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+        if (pos == 0) {
+            return 0;
+        }
+    }
+    return lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+}
+
+pub fn item_is_struct(src str, i int) bool {
+    if (lex.stream.current_kind(src, i) == lex.token.kind_kw_pub()) {
+        peek := lex.stream.expect_kind(src, i, lex.token.kind_kw_pub());
+        if (peek != 0) {
+            return lex.stream.current_kind(src, peek) == lex.token.kind_kw_struct();
+        }
+    }
+    return lex.stream.current_kind(src, i) == lex.token.kind_kw_struct();
+}
+
+pub fn item_is_enum(src str, i int) bool {
+    if (lex.stream.current_kind(src, i) == lex.token.kind_kw_pub()) {
+        peek := lex.stream.expect_kind(src, i, lex.token.kind_kw_pub());
+        if (peek != 0) {
+            return lex.stream.current_kind(src, peek) == lex.token.kind_kw_enum();
+        }
+    }
+    return lex.stream.current_kind(src, i) == lex.token.kind_kw_enum();
+}
+
+pub fn item_end(src str, i int) int {
+    if (item_is_struct(src, i)) {
+        return struct_end(src, i);
+    }
+    if (item_is_enum(src, i)) {
+        return enum_end(src, i);
+    }
+    return fn_end(src, i);
+}
+
+pub fn emit_struct_decl_to_c(src str, i int) str {
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_pub());
+        if (pos == 0) {
+            return "";
+        }
+    }
+    return emit_struct_to_c(src, pos);
+}
+
+pub fn emit_enum_decl_to_c(src str, i int) str {
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_pub());
+        if (pos == 0) {
+            return "";
+        }
+    }
+    return emit_enum_to_c(src, pos);
+}
+
+pub fn emit_fn_decls_to_string(src str) str {
+    pos := 0;
+    out := "";
+
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_use()) {
+            pos = use_end(src, pos);
+            if (pos == 0) {
+                return "";
+            }
+        } else {
+            if (item_is_struct(src, pos)) {
+                pos = struct_end(src, pos);
+                if (pos == 0) {
+                    return "";
+                }
+            } else {
+                if (item_is_enum(src, pos)) {
+                    pos = enum_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                } else {
+                    decl := emit_fn_decl_to_c(src, pos);
+                    if (str_len(decl) > 0) {
+                        out = str_concat(out, decl);
+                    }
+                    pos = fn_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                }
+            }
+        }
+    }
+
+    if (str_len(out) > 0) {
+        out = str_concat(out, "\n");
+    }
+    return out;
+}
+
 pub fn emit_header_to_string() str {
     return emit_prelude_to_string();
 }
@@ -374,6 +709,30 @@ pub fn is_string_call_name(name str) bool {
         return true;
     }
     if (str_eq(name, "path_dir") || str_eq(name, "append_marker")) {
+        return true;
+    }
+    if (str_eq(name, "content_length_header") || str_eq(name, "frame_message")) {
+        return true;
+    }
+    if (str_eq(name, "initialize_frame") || str_eq(name, "shutdown_frame")) {
+        return true;
+    }
+    if (str_eq(name, "handle_initialize") || str_eq(name, "handle_shutdown")) {
+        return true;
+    }
+    if (str_eq(name, "lsp_init_response") || str_eq(name, "lsp_shutdown_response")) {
+        return true;
+    }
+    if (str_eq(name, "lsp_exit_response") || str_eq(name, "lsp_notification")) {
+        return true;
+    }
+    if (str_eq(name, "lsp_keyword_at") || str_eq(name, "lsp_builtin_at")) {
+        return true;
+    }
+    if (str_eq(name, "completion_item_label") || str_eq(name, "diagnostics_for_text")) {
+        return true;
+    }
+    if (str_eq(name, "hover_keyword")) {
         return true;
     }
     if (text_starts_with(name, "emit_")) {
@@ -1551,7 +1910,15 @@ pub fn emit_module_fn_prefix(module_prefix str, name str, return_type str) str {
 }
 
 pub fn emit_fn_decl_to_c(src str, i int) str {
-    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_fn());
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_pub());
+        if (pos == 0) {
+            return "";
+        }
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
     if (pos == 0) {
         return "";
     }
@@ -1600,7 +1967,15 @@ pub fn emit_fn_decl_to_c(src str, i int) str {
 }
 
 pub fn emit_module_fn_decl_to_c(src str, i int, module_prefix str) str {
-    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_fn());
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_pub());
+        if (pos == 0) {
+            return "";
+        }
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
     if (pos == 0) {
         return "";
     }
@@ -1698,7 +2073,15 @@ pub fn params_are_main_args(src str, i int) bool {
 }
 
 pub fn fn_end(src str, i int) int {
-    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_fn());
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_pub());
+        if (pos == 0) {
+            return 0;
+        }
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
     if (pos == 0) {
         return 0;
     }
@@ -1744,7 +2127,15 @@ pub fn fn_end(src str, i int) int {
 }
 
 pub fn emit_fn_to_c(src str, i int) str {
-    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_fn());
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_pub());
+        if (pos == 0) {
+            return "";
+        }
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
     if (pos == 0) {
         return "";
     }
@@ -1862,7 +2253,15 @@ pub fn replace_void_returns(body str) str {
 }
 
 pub fn emit_module_fn_to_c(src str, i int, module_prefix str) str {
-    pos := lex.stream.expect_kind(src, i, lex.token.kind_kw_fn());
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_pub());
+        if (pos == 0) {
+            return "";
+        }
+    }
+
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
     if (pos == 0) {
         return "";
     }
@@ -1932,35 +2331,6 @@ pub fn emit_module_fn_to_c(src str, i int, module_prefix str) str {
     return out;
 }
 
-pub fn emit_fn_decls_to_string(src str) str {
-    pos := 0;
-    out := "";
-
-    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
-        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_use()) {
-            pos = use_end(src, pos);
-            if (pos == 0) {
-                return "";
-            }
-        } else {
-            decl := emit_fn_decl_to_c(src, pos);
-            if (str_len(decl) > 0) {
-                out = str_concat(out, decl);
-            }
-
-            pos = fn_end(src, pos);
-            if (pos == 0) {
-                return "";
-            }
-        }
-    }
-
-    if (str_len(out) > 0) {
-        out = str_concat(out, "\n");
-    }
-    return out;
-}
-
 pub fn emit_module_fn_decls_to_string(src str, prefix str) str {
     pos := 0;
     out := "";
@@ -1972,14 +2342,27 @@ pub fn emit_module_fn_decls_to_string(src str, prefix str) str {
                 return "";
             }
         } else {
-            decl := emit_module_fn_decl_to_c(src, pos, prefix);
-            if (str_len(decl) > 0) {
-                out = str_concat(out, decl);
-            }
-
-            pos = fn_end(src, pos);
-            if (pos == 0) {
-                return "";
+            if (item_is_struct(src, pos)) {
+                pos = struct_end(src, pos);
+                if (pos == 0) {
+                    return "";
+                }
+            } else {
+                if (item_is_enum(src, pos)) {
+                    pos = enum_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                } else {
+                    decl := emit_module_fn_decl_to_c(src, pos, prefix);
+                    if (str_len(decl) > 0) {
+                        out = str_concat(out, decl);
+                    }
+                    pos = fn_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                }
             }
         }
     }
@@ -2001,27 +2384,40 @@ pub fn emit_module_fn_defines_to_string(src str, prefix str) str {
                 return "";
             }
         } else {
-            fn_pos := lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
-            if (fn_pos == 0) {
-                return "";
-            }
-            if (lex.stream.current_kind(src, fn_pos) != lex.token.kind_ident()) {
-                return "";
-            }
-            name := token_text(src, fn_pos);
-            if (str_eq(name, "main") == false) {
-                out = str_concat(out, "#define rm_fn_");
-                out = str_concat(out, name);
-                out = str_concat(out, " rm_mod_");
-                out = str_concat(out, prefix);
-                out = str_concat(out, "_");
-                out = str_concat(out, name);
-                out = str_concat(out, "\n");
-            }
-
-            pos = fn_end(src, pos);
-            if (pos == 0) {
-                return "";
+            if (item_is_struct(src, pos)) {
+                pos = struct_end(src, pos);
+                if (pos == 0) {
+                    return "";
+                }
+            } else {
+                if (item_is_enum(src, pos)) {
+                    pos = enum_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                } else {
+                    fn_pos := lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+                    if (fn_pos == 0) {
+                        return "";
+                    }
+                    if (lex.stream.current_kind(src, fn_pos) != lex.token.kind_ident()) {
+                        return "";
+                    }
+                    name := token_text(src, fn_pos);
+                    if (str_eq(name, "main") == false) {
+                        out = str_concat(out, "#define rm_fn_");
+                        out = str_concat(out, name);
+                        out = str_concat(out, " rm_mod_");
+                        out = str_concat(out, prefix);
+                        out = str_concat(out, "_");
+                        out = str_concat(out, name);
+                        out = str_concat(out, "\n");
+                    }
+                    pos = fn_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                }
             }
         }
     }
@@ -2043,23 +2439,36 @@ pub fn emit_module_fn_undefs_to_string(src str) str {
                 return "";
             }
         } else {
-            fn_pos := lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
-            if (fn_pos == 0) {
-                return "";
-            }
-            if (lex.stream.current_kind(src, fn_pos) != lex.token.kind_ident()) {
-                return "";
-            }
-            name := token_text(src, fn_pos);
-            if (str_eq(name, "main") == false) {
-                out = str_concat(out, "#undef rm_fn_");
-                out = str_concat(out, name);
-                out = str_concat(out, "\n");
-            }
-
-            pos = fn_end(src, pos);
-            if (pos == 0) {
-                return "";
+            if (item_is_struct(src, pos)) {
+                pos = struct_end(src, pos);
+                if (pos == 0) {
+                    return "";
+                }
+            } else {
+                if (item_is_enum(src, pos)) {
+                    pos = enum_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                } else {
+                    fn_pos := lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+                    if (fn_pos == 0) {
+                        return "";
+                    }
+                    if (lex.stream.current_kind(src, fn_pos) != lex.token.kind_ident()) {
+                        return "";
+                    }
+                    name := token_text(src, fn_pos);
+                    if (str_eq(name, "main") == false) {
+                        out = str_concat(out, "#undef rm_fn_");
+                        out = str_concat(out, name);
+                        out = str_concat(out, "\n");
+                    }
+                    pos = fn_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                }
             }
         }
     }
@@ -2098,7 +2507,7 @@ pub fn module_prefix_from_text(module str) str {
 
 pub fn emit_program_body_to_string(src str) str {
     pos := 0;
-    out := emit_fn_decls_to_string(src);
+    out := "";
 
     while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
         if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_use()) {
@@ -2107,15 +2516,37 @@ pub fn emit_program_body_to_string(src str) str {
                 return "";
             }
         } else {
-            f := emit_fn_to_c(src, pos);
-            if (str_len(f) == 0) {
-                return "";
-            }
-            out = str_concat(out, f);
+            if (item_is_struct(src, pos)) {
+                s := emit_struct_to_c(src, pos);
+                if (str_len(s) > 0) {
+                    out = str_concat(out, s);
+                }
+                pos = struct_end(src, pos);
+                if (pos == 0) {
+                    return "";
+                }
+            } else {
+                if (item_is_enum(src, pos)) {
+                    e := emit_enum_to_c(src, pos);
+                    if (str_len(e) > 0) {
+                        out = str_concat(out, e);
+                    }
+                    pos = enum_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                } else {
+                    f := emit_fn_to_c(src, pos);
+                    if (str_len(f) == 0) {
+                        return "";
+                    }
+                    out = str_concat(out, f);
 
-            pos = fn_end(src, pos);
-            if (pos == 0) {
-                return "";
+                    pos = fn_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                }
             }
         }
     }
@@ -2144,15 +2575,36 @@ pub fn emit_module_to_string(module str, src str) str {
                 return "";
             }
         } else {
-            f := emit_module_fn_to_c(src, pos, prefix);
-            if (str_len(f) == 0) {
-                return "";
-            }
-            out = str_concat(out, f);
-
-            pos = fn_end(src, pos);
-            if (pos == 0) {
-                return "";
+            if (item_is_struct(src, pos)) {
+                s := emit_struct_to_c(src, pos);
+                if (str_len(s) > 0) {
+                    out = str_concat(out, s);
+                }
+                pos = struct_end(src, pos);
+                if (pos == 0) {
+                    return "";
+                }
+            } else {
+                if (item_is_enum(src, pos)) {
+                    e := emit_enum_to_c(src, pos);
+                    if (str_len(e) > 0) {
+                        out = str_concat(out, e);
+                    }
+                    pos = enum_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                } else {
+                    f := emit_module_fn_to_c(src, pos, prefix);
+                    if (str_len(f) == 0) {
+                        return "";
+                    }
+                    out = str_concat(out, f);
+                    pos = fn_end(src, pos);
+                    if (pos == 0) {
+                        return "";
+                    }
+                }
             }
         }
     }

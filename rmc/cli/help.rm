@@ -1,5 +1,5 @@
 pub fn print_help() {
-    print("RauMa Main Compiler (rmc)\n");
+    print("RauMa Compiler (rmc) v0.2.0\n");
     print("usage: rmc <command> [options]\n");
     print("\n");
     print("commands:\n");
@@ -10,7 +10,8 @@ pub fn print_help() {
     print("  demo-file   read a file and print basic info\n");
     print("  lex         lex a RauMa source file\n");
     print("  parse       parse a RauMa source file\n");
-    print("  check       check a RauMa source file\n");
+    print("  check       check a RauMa source file (type check)\n");
     print("  emit-c      emit C for a RauMa source file\n");
-    print("  build       build a RauMa source file\n");
+    print("  build       build a RauMa source file (emit + compile)\n");
+    print("  lsp         start the LSP language server\n");
 }

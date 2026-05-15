@@ -85,7 +85,7 @@ jobs:
         run: >
           powershell -NoProfile -ExecutionPolicy Bypass
           -File scripts/release/package.ps1
-          -Version 0.1.0
+          -Version 0.2.0
           -PlatformOs ${{ matrix.platform_os }}
           -PlatformArch ${{ matrix.platform_arch }}
           -ArchiveFormat ${{ matrix.archive_format }}
@@ -96,7 +96,7 @@ jobs:
         run: >
           pwsh -NoProfile -ExecutionPolicy Bypass
           -File scripts/release/package.ps1
-          -Version 0.1.0
+          -Version 0.2.0
           -PlatformOs ${{ matrix.platform_os }}
           -PlatformArch ${{ matrix.platform_arch }}
           -ArchiveFormat ${{ matrix.archive_format }}
@@ -135,9 +135,9 @@ jobs:
         shell: bash
         run: |
           cat > RELEASE_NOTES.md <<'EOF'
-          # RauMa v0.1.0
+          # RauMa v0.2.0
 
-          First self-hosted RauMa compiler release with multi-platform binaries.
+          Self-hosted RauMa compiler release with bridge-compatible stdlib and LSP bootstrap tooling.
 
           ## Included binaries
 
@@ -170,8 +170,8 @@ jobs:
           - local module graph only
           - bridge C backend
           - no package manager
-          - no stdlib lookup
-          - no HIR/MIR
+          - stdlib modules are imported through local paths
+          - HIR/MIR modules are structural bootstrap modules
           - no LLVM/rmgen/rmlink
           EOF
 
@@ -182,9 +182,9 @@ jobs:
         run: |
           tag="${GITHUB_REF_NAME}"
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
-            tag="v0.1.0"
+            tag="v0.2.0"
           fi
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --title "RauMa v0.1.0" --notes-file RELEASE_NOTES.md
+            gh release create "$tag" --title "RauMa v0.2.0" --notes-file RELEASE_NOTES.md
           fi
           gh release upload "$tag" release-dist/* --clobber

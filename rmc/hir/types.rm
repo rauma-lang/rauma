@@ -1,0 +1,69 @@
+pub fn htype_kind_int() int {
+    return 1;
+}
+
+pub fn htype_kind_float() int {
+    return 2;
+}
+
+pub fn htype_kind_bool() int {
+    return 3;
+}
+
+pub fn htype_kind_void() int {
+    return 4;
+}
+
+pub fn htype_kind_str() int {
+    return 5;
+}
+
+pub fn htype_kind_ptr() int {
+    return 6;
+}
+
+pub fn htype_kind_slice() int {
+    return 7;
+}
+
+pub fn htype_kind_named() int {
+    return 8;
+}
+
+pub fn htype_kind_param() int {
+    return 9;
+}
+
+pub fn htype_bits(t int) int {
+    return t;
+}
+
+pub fn htype_to_c(kind int, name str) str {
+    if (kind == 1) {
+        return "int64_t";
+    }
+    if (kind == 2) {
+        return "double";
+    }
+    if (kind == 3) {
+        return "bool";
+    }
+    if (kind == 4) {
+        return "void";
+    }
+    if (kind == 5) {
+        return "RmStr";
+    }
+    if (kind == 6) {
+        return "void*";
+    }
+    return name;
+}
+
+pub fn htype_is_primitive(kind int) bool {
+    return kind >= 1 && kind <= 5;
+}
+
+pub fn htype_name(kind int, name str) str {
+    return name;
+}

@@ -1,0 +1,39 @@
+use lsp.protocol;
+use lsp.message;
+use lsp.docs;
+
+pub fn handle_initialize() str {
+    return lsp.message.initialize_frame();
+}
+
+pub fn handle_shutdown() str {
+    return lsp.message.shutdown_frame();
+}
+
+pub fn completion_item_label(index int) str {
+    if (index < lsp.protocol.lsp_keyword_count()) {
+        return lsp.protocol.lsp_keyword_at(index);
+    }
+    builtin_index := index - lsp.protocol.lsp_keyword_count();
+    return lsp.protocol.lsp_builtin_at(builtin_index);
+}
+
+pub fn completion_count() int {
+    return lsp.protocol.lsp_keyword_count() + lsp.protocol.lsp_builtin_count();
+}
+
+pub fn diagnostics_for_text(uri str, text str) str {
+    if (lsp.docs.doc_is_rauma_uri(uri) == false) {
+        return "{\"diagnostics\":[]}";
+    }
+    if (lsp.docs.doc_has_text(text)) {
+        return "{\"diagnostics\":[]}";
+    }
+    return "{\"diagnostics\":[{\"severity\":1,\"source\":\"rmc\",\"message\":\"empty document\"}]}";
+}
+
+pub fn hover_keyword(keyword str) str {
+    out := "Keyword: ";
+    out = str_concat(out, keyword);
+    return out;
+}

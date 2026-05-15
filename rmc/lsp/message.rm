@@ -1,0 +1,47 @@
+use lsp.protocol;
+
+pub fn content_length_header(len int) str {
+    if (len == 0) {
+        return "Content-Length: 0\n\n";
+    }
+    if (len == 1) {
+        return "Content-Length: 1\n\n";
+    }
+    if (len == 2) {
+        return "Content-Length: 2\n\n";
+    }
+    if (len == 3) {
+        return "Content-Length: 3\n\n";
+    }
+    if (len == 4) {
+        return "Content-Length: 4\n\n";
+    }
+    if (len == 5) {
+        return "Content-Length: 5\n\n";
+    }
+    if (len == 6) {
+        return "Content-Length: 6\n\n";
+    }
+    if (len == 7) {
+        return "Content-Length: 7\n\n";
+    }
+    if (len == 8) {
+        return "Content-Length: 8\n\n";
+    }
+    if (len == 9) {
+        return "Content-Length: 9\n\n";
+    }
+    return "Content-Length: 0\n\n";
+}
+
+pub fn frame_message(body str) str {
+    return str_concat(content_length_header(str_len(body)), body);
+}
+
+pub fn initialize_frame() str {
+    return frame_message(lsp.protocol.lsp_init_response());
+}
+
+pub fn shutdown_frame() str {
+    return frame_message(lsp.protocol.lsp_shutdown_response());
+}

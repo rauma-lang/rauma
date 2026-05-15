@@ -1,0 +1,28 @@
+pub fn hval_kind_arg() int {
+    return 1;
+}
+
+pub fn hval_kind_local() int {
+    return 2;
+}
+
+pub fn hval_kind_const_int() int {
+    return 3;
+}
+
+pub fn hval_kind_const_str() int {
+    return 4;
+}
+
+pub fn hval_kind_inst() int {
+    return 5;
+}
+
+pub fn hval_kind_name(kind int) str {
+    if (kind == 1) { return "arg"; }
+    if (kind == 2) { return "local"; }
+    if (kind == 3) { return "const_int"; }
+    if (kind == 4) { return "const_str"; }
+    if (kind == 5) { return "inst"; }
+    return "?";
+}

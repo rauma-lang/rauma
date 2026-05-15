@@ -54,12 +54,28 @@ pub fn kind_plus() int {
     return 12;
 }
 
+pub fn kind_star() int {
+    return 49;
+}
+
+pub fn kind_slash() int {
+    return 50;
+}
+
+pub fn kind_percent() int {
+    return 51;
+}
+
 pub fn kind_eq() int {
     return 13;
 }
 
 pub fn kind_colon_eq() int {
     return 14;
+}
+
+pub fn kind_minus() int {
+    return 27;
 }
 
 pub fn kind_kw_if() int {
@@ -110,10 +126,6 @@ pub fn kind_kw_use() int {
     return 26;
 }
 
-pub fn kind_minus() int {
-    return 27;
-}
-
 pub fn kind_kw_pub() int {
     return 28;
 }
@@ -136,6 +148,66 @@ pub fn kind_and_and() int {
 
 pub fn kind_or_or() int {
     return 33;
+}
+
+pub fn kind_question() int {
+    return 34;
+}
+
+pub fn kind_l_bracket() int {
+    return 35;
+}
+
+pub fn kind_r_bracket() int {
+    return 36;
+}
+
+pub fn kind_pipe() int {
+    return 37;
+}
+
+pub fn kind_arrow() int {
+    return 38;
+}
+
+pub fn kind_kw_match() int {
+    return 39;
+}
+
+pub fn kind_kw_case() int {
+    return 40;
+}
+
+pub fn kind_kw_none() int {
+    return 41;
+}
+
+pub fn kind_kw_break() int {
+    return 42;
+}
+
+pub fn kind_kw_continue() int {
+    return 43;
+}
+
+pub fn kind_kw_let() int {
+    return 44;
+}
+
+pub fn kind_caret() int {
+    return 45;
+}
+
+pub fn kind_lt_lt() int {
+    return 46;
+}
+
+pub fn kind_gt_gt() int {
+    return 47;
+}
+
+pub fn kind_amp() int {
+    return 48;
 }
 
 pub fn kind_invalid() int {
@@ -277,6 +349,78 @@ pub fn print_kind_name(kind int) {
     }
     if (kind == 33) {
         print("or_or");
+        return;
+    }
+    if (kind == 34) {
+        print("question");
+        return;
+    }
+    if (kind == 35) {
+        print("l_bracket");
+        return;
+    }
+    if (kind == 36) {
+        print("r_bracket");
+        return;
+    }
+    if (kind == 37) {
+        print("pipe");
+        return;
+    }
+    if (kind == 38) {
+        print("arrow");
+        return;
+    }
+    if (kind == 39) {
+        print("kw_match");
+        return;
+    }
+    if (kind == 40) {
+        print("kw_case");
+        return;
+    }
+    if (kind == 41) {
+        print("kw_none");
+        return;
+    }
+    if (kind == 42) {
+        print("kw_break");
+        return;
+    }
+    if (kind == 43) {
+        print("kw_continue");
+        return;
+    }
+    if (kind == 44) {
+        print("kw_let");
+        return;
+    }
+    if (kind == 45) {
+        print("caret");
+        return;
+    }
+    if (kind == 46) {
+        print("lt_lt");
+        return;
+    }
+    if (kind == 47) {
+        print("gt_gt");
+        return;
+    }
+    if (kind == 48) {
+        print("amp");
+        return;
+    }
+    if (kind == 49) {
+        print("star");
+        return;
+    }
+    if (kind == 50) {
+        print("slash");
+        return;
+    }
+    if (kind == 51) {
+        print("percent");
         return;
     }
     print("invalid");

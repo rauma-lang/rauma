@@ -1,0 +1,47 @@
+pub fn sym_kind_var() int {
+    return 1;
+}
+
+pub fn sym_kind_func() int {
+    return 2;
+}
+
+pub fn sym_kind_struct() int {
+    return 3;
+}
+
+pub fn sym_kind_enum() int {
+    return 4;
+}
+
+pub fn sym_kind_module() int {
+    return 5;
+}
+
+pub fn sym_kind_field() int {
+    return 6;
+}
+
+pub fn sym_kind_variant() int {
+    return 7;
+}
+
+pub fn sym_kind_local() int {
+    return 8;
+}
+
+pub fn sym_kind_type_param() int {
+    return 9;
+}
+
+pub fn symtab_count(count int) int {
+    return count;
+}
+
+pub fn symtab_print_entry(name str, type_name str, kind int) {
+    print("  ");
+    print(name);
+    print(": ");
+    print(type_name);
+    print("\n");
+}

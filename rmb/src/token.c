@@ -60,7 +60,11 @@ static const char* TOKEN_NAMES[] = {
     "star_eq",
     "slash_eq",
     "colon_eq",
-    "amp"
+    "amp",
+    "pipe",
+    "caret",
+    "lt_lt",
+    "gt_gt"
 };
 
 // Get human-readable name for token kind

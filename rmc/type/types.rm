@@ -1,0 +1,103 @@
+use lex.token;
+use lex.stream;
+
+pub fn t_name_int() str {
+    return "int";
+}
+
+pub fn t_name_str() str {
+    return "str";
+}
+
+pub fn t_name_bool() str {
+    return "bool";
+}
+
+pub fn t_name_void() str {
+    return "void";
+}
+
+pub fn t_name_byte() str {
+    return "byte";
+}
+
+pub fn t_name_args() str {
+    return "Args";
+}
+
+pub fn is_primitive_type(name str) bool {
+    if (str_eq(name, "int")) {
+        return true;
+    }
+    if (str_eq(name, "str")) {
+        return true;
+    }
+    if (str_eq(name, "bool")) {
+        return true;
+    }
+    if (str_eq(name, "void")) {
+        return true;
+    }
+    if (str_eq(name, "byte")) {
+        return true;
+    }
+    if (str_eq(name, "Args")) {
+        return true;
+    }
+    return false;
+}
+
+pub fn is_void_type(name str) bool {
+    return str_eq(name, "void");
+}
+
+pub fn is_int_type(name str) bool {
+    return str_eq(name, "int");
+}
+
+pub fn is_str_type(name str) bool {
+    return str_eq(name, "str");
+}
+
+pub fn is_bool_type(name str) bool {
+    return str_eq(name, "bool");
+}
+
+pub fn c_type_name(name str) str {
+    if (str_eq(name, "str")) {
+        return "RmStr";
+    }
+    if (str_eq(name, "bool")) {
+        return "bool";
+    }
+    if (str_eq(name, "int")) {
+        return "int64_t";
+    }
+    if (str_eq(name, "Args")) {
+        return "RmArgs";
+    }
+    return name;
+}
+
+pub fn print_type(name str) {
+    print(name);
+}
+
+pub fn type_eq(a str, b str) bool {
+    return str_eq(a, b);
+}
+
+pub fn is_type_param(text str, start int, end int) bool {
+    if (end <= start) {
+        return false;
+    }
+    first_byte := str_byte(text, start);
+    if (first_byte >= 65 && first_byte <= 90) {
+        return true;
+    }
+    return false;
+}
+
+pub fn type_param_name(text str, start int, end int) str {
+    return lex.stream.token_text_slice(text, start, end);
+}

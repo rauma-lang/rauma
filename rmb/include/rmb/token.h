@@ -56,7 +56,6 @@ typedef enum RmbTokenKind {
     RMB_TOKEN_STAR,
     RMB_TOKEN_SLASH,
     RMB_TOKEN_PERCENT,
-
     RMB_TOKEN_EQ,
     RMB_TOKEN_EQ_EQ,
     RMB_TOKEN_BANG_EQ,
@@ -75,7 +74,11 @@ typedef enum RmbTokenKind {
     RMB_TOKEN_SLASH_EQ,
     RMB_TOKEN_COLON_EQ,
 
-    RMB_TOKEN_AMP
+    RMB_TOKEN_AMP,
+    RMB_TOKEN_PIPE,
+    RMB_TOKEN_CARET,
+    RMB_TOKEN_LT_LT,
+    RMB_TOKEN_GT_GT
 } RmbTokenKind;
 
 // Token structure

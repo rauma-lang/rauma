@@ -1,0 +1,37 @@
+pub fn mval_kind_arg() int {
+    return 1;
+}
+
+pub fn mval_kind_local() int {
+    return 2;
+}
+
+pub fn mval_kind_const_int() int {
+    return 3;
+}
+
+pub fn mval_kind_const_str() int {
+    return 4;
+}
+
+pub fn mval_kind_inst() int {
+    return 5;
+}
+
+pub fn mval_kind_phi() int {
+    return 6;
+}
+
+pub fn mval_kind_name(kind int) str {
+    if (kind == 1) { return "arg"; }
+    if (kind == 2) { return "local"; }
+    if (kind == 3) { return "const_int"; }
+    if (kind == 4) { return "const_str"; }
+    if (kind == 5) { return "inst"; }
+    if (kind == 6) { return "phi"; }
+    return "?";
+}
+
+pub fn mval_is_const(kind int) bool {
+    return kind == 3 || kind == 4;
+}

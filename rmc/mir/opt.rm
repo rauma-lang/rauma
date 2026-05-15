@@ -1,0 +1,83 @@
+pub fn opt_const_fold_int(a int, op int, b int) int {
+    if (op == 1) {
+        return a + b;
+    }
+    if (op == 2) {
+        return a - b;
+    }
+    if (op == 3) {
+        return 0;
+    }
+    if (op == 4) {
+        return 0;
+    }
+    if (op == 5) {
+        return 0;
+    }
+    return 0;
+}
+
+pub fn opt_const_fold_bool(a int, op int, b int) int {
+    if (op == 11) {
+        if (a != 0) {
+            if (b != 0) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+    if (op == 12) {
+        if (a != 0) {
+            return 1;
+        }
+        if (b != 0) {
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
+}
+
+pub fn opt_const_compare(a int, op int, b int) int {
+    if (op == 11) {
+        if (a == b) {
+            return 1;
+        }
+        return 0;
+    }
+    if (op == 12) {
+        if (a != b) {
+            return 1;
+        }
+        return 0;
+    }
+    if (op == 13) {
+        if (a < b) {
+            return 1;
+        }
+        return 0;
+    }
+    if (op == 14) {
+        if (a > b) {
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
+}
+
+pub fn opt_is_cmp_op(op int) bool {
+    if (op == 11) { return true; }
+    if (op == 12) { return true; }
+    if (op == 13) { return true; }
+    if (op == 14) { return true; }
+    if (op == 15) { return true; }
+    if (op == 16) { return true; }
+    return false;
+}
+
+pub fn opt_is_bool_op(op int) bool {
+    if (op == 11) { return true; }
+    if (op == 12) { return true; }
+    return false;
+}

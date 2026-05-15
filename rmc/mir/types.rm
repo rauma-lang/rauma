@@ -1,0 +1,69 @@
+pub fn mtype_kind_i() int {
+    return 1;
+}
+
+pub fn mtype_kind_f() int {
+    return 2;
+}
+
+pub fn mtype_kind_bool() int {
+    return 3;
+}
+
+pub fn mtype_kind_void() int {
+    return 4;
+}
+
+pub fn mtype_kind_str() int {
+    return 5;
+}
+
+pub fn mtype_kind_ptr() int {
+    return 6;
+}
+
+pub fn mtype_kind_named() int {
+    return 7;
+}
+
+pub fn mtype_kind_param() int {
+    return 8;
+}
+
+pub fn mtype_to_c(kind int, name str) str {
+    if (kind == 1) {
+        return "int64_t";
+    }
+    if (kind == 2) {
+        return "double";
+    }
+    if (kind == 3) {
+        return "bool";
+    }
+    if (kind == 4) {
+        return "void";
+    }
+    if (kind == 5) {
+        return "RmStr";
+    }
+    if (kind == 6) {
+        return "void*";
+    }
+    return name;
+}
+
+pub fn mtype_eq(kind_a int, kind_b int) bool {
+    return kind_a == kind_b;
+}
+
+pub fn mtype_is_i64(kind int) bool {
+    return kind == 1;
+}
+
+pub fn mtype_is_ptr(kind int) bool {
+    return kind == 6;
+}
+
+pub fn mtype_is_str(kind int) bool {
+    return kind == 5;
+}

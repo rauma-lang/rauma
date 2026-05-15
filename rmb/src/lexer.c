@@ -338,9 +338,11 @@ RmbToken rmb_lexer_next(RmbLexer* lexer) {
             if (match_char(lexer, '=')) return make_token(lexer, RMB_TOKEN_EQ_EQ, start);
             return make_token(lexer, RMB_TOKEN_EQ, start);
         case '<':
+            if (match_char(lexer, '<')) return make_token(lexer, RMB_TOKEN_LT_LT, start);
             if (match_char(lexer, '=')) return make_token(lexer, RMB_TOKEN_LT_EQ, start);
             return make_token(lexer, RMB_TOKEN_LT, start);
         case '>':
+            if (match_char(lexer, '>')) return make_token(lexer, RMB_TOKEN_GT_GT, start);
             if (match_char(lexer, '=')) return make_token(lexer, RMB_TOKEN_GT_EQ, start);
             return make_token(lexer, RMB_TOKEN_GT, start);
         case '&':
@@ -348,7 +350,8 @@ RmbToken rmb_lexer_next(RmbLexer* lexer) {
             return make_token(lexer, RMB_TOKEN_AMP, start);
         case '|':
             if (match_char(lexer, '|')) return make_token(lexer, RMB_TOKEN_OR_OR, start);
-            break;  // Fall through to invalid token
+            return make_token(lexer, RMB_TOKEN_PIPE, start);
+        case '^': return make_token(lexer, RMB_TOKEN_CARET, start);
     }
 
     // Invalid character

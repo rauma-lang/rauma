@@ -478,6 +478,11 @@ static const char* binary_op_str(RmbTokenKind op) {
         case RMB_TOKEN_BANG_EQ: return "!=";
         case RMB_TOKEN_AND_AND: return "&&";
         case RMB_TOKEN_OR_OR: return "||";
+        case RMB_TOKEN_AMP: return "&";
+        case RMB_TOKEN_PIPE: return "|";
+        case RMB_TOKEN_CARET: return "^";
+        case RMB_TOKEN_LT_LT: return "<<";
+        case RMB_TOKEN_GT_GT: return ">>";
         default: return "?";
     }
 }

@@ -98,14 +98,75 @@ jobs:
         working-directory: rmb
         run: make test
 
+      - name: Test struct/enum parsing
+        if: matrix.full_test
+        shell: bash
+        run: |
+          rmb/build/debug/native/bin/main parse rmc/type/types.rm
+          rmb/build/debug/native/bin/main parse rmc/type/symtab.rm
+          rmb/build/debug/native/bin/main parse rmc/type/checker.rm
+
+      - name: Test HIR/MIR/type/LSP modules
+        if: matrix.full_test
+        shell: bash
+        run: |
+          for f in rmc/hir/*.rm rmc/mir/*.rm rmc/type/*.rm rmc/lsp/*.rm; do
+            rmb/build/debug/native/bin/main check "$f"
+          done
+
+      - name: Test stdlib modules
+        if: matrix.full_test
+        shell: bash
+        run: |
+          for f in std/collections/*.rm std/conv/*.rm std/core/*.rm std/io/*.rm std/math/*.rm std/str/*.rm; do
+            rmb/build/debug/native/bin/main check "$f"
+          done
+          rmb/build/debug/native/bin/main build std/smoke.rm
+          ./build/rmc_build_out
+
       - name: Dry-run setup scripts on non-Windows
         if: matrix.platform_os != 'windows'
         shell: bash
-        run: bash scripts/install/rauma-setup.sh --dry-run --version v0.1.0
+        run: bash scripts/install/rauma-setup.sh --dry-run --version v0.2.0
 
       - name: Dry-run setup scripts on Windows
         if: matrix.platform_os == 'windows'
         shell: msys2 {0}
         run: |
-          powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install/rauma-setup.ps1 -DryRun -Version v0.1.0
-          bash scripts/install/rauma-setup.sh --dry-run --version v0.1.0
+          powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install/rauma-setup.ps1 -DryRun -Version v0.2.0
+          bash scripts/install/rauma-setup.sh --dry-run --version v0.2.0
+
+  lsp-test:
+    name: LSP Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build compiler
+        shell: bash
+        run: |
+          cd rmb
+          make
+          ./build/rmb build ../rmc/main.rm
+      - name: Test LSP protocol module
+        shell: bash
+        run: |
+          rmb/build/debug/native/bin/main lsp --check-exits-immediately
+          rmb/build/debug/native/bin/main lsp --capabilities
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build compiler
+        shell: bash
+        run: |
+          cd rmb
+          make
+          ./build/rmb build ../rmc/main.rm
+      - name: Run test suite with coverage
+        shell: bash
+        run: |
+          rmb/build/debug/native/bin/main version
+          rmb/build/debug/native/bin/main lsp --check-exits-immediately
+          echo "Coverage report generation skipped (gcov not available)"

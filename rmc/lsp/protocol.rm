@@ -1,0 +1,66 @@
+pub fn lsp_init_response() str {
+    return "{\"jsonrpc\":\"2.0\",\"id\":0,\"result\":{\"capabilities\":{\"textDocumentSync\":1,\"completionProvider\":{\"triggerCharacters\":[\".\",\"(\"]},\"hoverProvider\":true,\"definitionProvider\":true}}}";
+}
+
+pub fn lsp_shutdown_response() str {
+    return "{\"jsonrpc\":\"2.0\",\"id\":0,\"result\":null}";
+}
+
+pub fn lsp_exit_response() str {
+    return "{\"jsonrpc\":\"2.0\",\"id\":0}";
+}
+
+pub fn lsp_notification(method str, params str) str {
+    out := "{\"jsonrpc\":\"2.0\",\"method\":\"";
+    out = str_concat(out, method);
+    out = str_concat(out, "\",\"params\":");
+    out = str_concat(out, params);
+    out = str_concat(out, "}");
+    return out;
+}
+
+pub fn lsp_keyword_count() int {
+    return 20;
+}
+
+pub fn lsp_keyword_at(i int) str {
+    if (i == 0) { return "fn"; }
+    if (i == 1) { return "let"; }
+    if (i == 2) { return "if"; }
+    if (i == 3) { return "else"; }
+    if (i == 4) { return "while"; }
+    if (i == 5) { return "return"; }
+    if (i == 6) { return "pub"; }
+    if (i == 7) { return "use"; }
+    if (i == 8) { return "struct"; }
+    if (i == 9) { return "enum"; }
+    if (i == 10) { return "match"; }
+    if (i == 11) { return "case"; }
+    if (i == 12) { return "break"; }
+    if (i == 13) { return "continue"; }
+    if (i == 14) { return "none"; }
+    if (i == 15) { return "int"; }
+    if (i == 16) { return "str"; }
+    if (i == 17) { return "bool"; }
+    if (i == 18) { return "void"; }
+    if (i == 19) { return "byte"; }
+    return "";
+}
+
+pub fn lsp_builtin_count() int {
+    return 10;
+}
+
+pub fn lsp_builtin_at(i int) str {
+    if (i == 0) { return "print"; }
+    if (i == 1) { return "str_len"; }
+    if (i == 2) { return "str_eq"; }
+    if (i == 3) { return "str_byte"; }
+    if (i == 4) { return "str_concat"; }
+    if (i == 5) { return "str_from_slice"; }
+    if (i == 6) { return "read_file"; }
+    if (i == 7) { return "write_file"; }
+    if (i == 8) { return "args_len"; }
+    if (i == 9) { return "args_get"; }
+    return "";
+}

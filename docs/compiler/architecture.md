@@ -133,6 +133,30 @@ still emits C directly from checked AST chunks:
   combined group glues lexer/parser/checker modules into one buildable graph.
   This is still bridge cgen, not real chunking, HIR/MIR, or fixed point.
 
+
+### v0.2.0 Bridge Status
+
+The RauMa-written `rmc` tree now includes bridge-compatible type, HIR, MIR,
+optimizer, standard-library, and LSP modules. These modules are verified as
+compiler-shaped building blocks, but the active executable backend is still the
+bridge C path rather than a HIR/MIR-backed code generator.
+
+The currently verified v0.2.0 path is:
+
+```text
+.rm source -> Lexer -> Parser -> Checker -> bridge C backend -> gcc/clang -> executable
+```
+
+The intended full path remains:
+
+```text
+.rm source -> Lexer -> Parser -> Resolver -> Type Checker -> Typed AST
+Typed AST -> HIR Generator -> HIR Module
+HIR Module -> MIR Generator -> MIR Module
+MIR Module -> Optimizer -> optimized MIR
+optimized MIR -> C/LLVM/wasm backend -> executable
+```
+
 ## Compilation Pipeline
 
 ```

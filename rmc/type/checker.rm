@@ -1,4 +1,6 @@
 use parse.parser;
+use lex.token;
+use lex.stream;
 
 pub fn can_check(text str) bool {
     if (parse.parser.can_parse_file(text) == false) {
@@ -9,10 +11,207 @@ pub fn can_check(text str) bool {
         return false;
     }
 
-    if (parse.parser.has_missing_return_for_typed_fn(text)) {
+    if (parse.parser.has_missing_return_for_typed_fn_text(text) == false) {
         return false;
     }
 
+    return true;
+}
+
+pub fn check_type_name(type_name str) bool {
+    if (str_eq(type_name, "int") == false) {
+        if (str_eq(type_name, "str") == false) {
+            if (str_eq(type_name, "bool") == false) {
+                if (str_eq(type_name, "void") == false) {
+                    if (str_eq(type_name, "byte") == false) {
+                        if (str_eq(type_name, "Args") == false) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+
+pub fn check_struct_fields(src str, i int) bool {
+    pos := i;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
+            return false;
+        }
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return false;
+        }
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return false;
+        }
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+        if (pos == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+pub fn check_enum_variants(src str, i int) bool {
+    pos := i;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_r_brace()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_eof()) {
+            return false;
+        }
+        pos = lex.stream.expect_ident(src, pos);
+        if (pos == 0) {
+            return false;
+        }
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_l_paren()) {
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+            if (pos == 0) {
+                return false;
+            }
+            pos = lex.stream.expect_ident(src, pos);
+            if (pos == 0) {
+                return false;
+            }
+            pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_paren());
+            if (pos == 0) {
+                return false;
+            }
+        }
+        pos = lex.stream.expect_kind(src, pos, lex.token.kind_semi());
+        if (pos == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+pub fn check_program(src str) bool {
+    pos := 0;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_use()) {
+            pos = parse.parser.parse_use_decl(src, pos);
+            if (pos == 0) {
+                return false;
+            }
+        } else {
+            if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+                peek := lex.stream.expect_kind(src, pos, lex.token.kind_kw_pub());
+                if (peek != 0) {
+                    next_kind := lex.stream.current_kind(src, peek);
+                    if (next_kind == lex.token.kind_kw_struct()) {
+                        pos = peek;
+                        pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_struct());
+                        if (pos == 0) {
+                            return false;
+                        }
+                        pos = lex.stream.expect_ident(src, pos);
+                        if (pos == 0) {
+                            return false;
+                        }
+                        pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+                        if (pos == 0) {
+                            return false;
+                        }
+                        if (check_struct_fields(src, pos) == false) {
+                            return false;
+                        }
+                        pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+                        if (pos == 0) {
+                            return false;
+                        }
+                    } else {
+                        if (next_kind == lex.token.kind_kw_enum()) {
+                            pos = peek;
+                            pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_enum());
+                            if (pos == 0) {
+                                return false;
+                            }
+                            pos = lex.stream.expect_ident(src, pos);
+                            if (pos == 0) {
+                                return false;
+                            }
+                            pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+                            if (pos == 0) {
+                                return false;
+                            }
+                            if (check_enum_variants(src, pos) == false) {
+                                return false;
+                            }
+                            pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+                            if (pos == 0) {
+                                return false;
+                            }
+                        } else {
+                            if (next_kind == lex.token.kind_kw_fn()) {
+                                pos = peek;
+                                pos = parse.parser.fn_end(src, pos);
+                                if (pos == 0) {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_struct()) {
+                    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_struct());
+                    if (pos == 0) {
+                        return false;
+                    }
+                    pos = lex.stream.expect_ident(src, pos);
+                    if (pos == 0) {
+                        return false;
+                    }
+                    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+                    if (pos == 0) {
+                        return false;
+                    }
+                    if (check_struct_fields(src, pos) == false) {
+                        return false;
+                    }
+                    pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+                    if (pos == 0) {
+                        return false;
+                    }
+                } else {
+                    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_enum()) {
+                        pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_enum());
+                        if (pos == 0) {
+                            return false;
+                        }
+                        pos = lex.stream.expect_ident(src, pos);
+                        if (pos == 0) {
+                            return false;
+                        }
+                        pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_brace());
+                        if (pos == 0) {
+                            return false;
+                        }
+                        if (check_enum_variants(src, pos) == false) {
+                            return false;
+                        }
+                        pos = lex.stream.expect_kind(src, pos, lex.token.kind_r_brace());
+                        if (pos == 0) {
+                            return false;
+                        }
+                    } else {
+                        pos = parse.parser.fn_end(src, pos);
+                        if (pos == 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+    }
     return true;
 }
 
@@ -25,8 +224,13 @@ pub fn run_file(path str, text str) {
     }
 
     count := parse.parser.count_functions(text);
-    if (parse.parser.has_missing_return_for_typed_fn(text)) {
+    if (parse.parser.has_missing_return_for_typed_fn_text(text)) {
         print("check failed: missing return\n");
+        return;
+    }
+
+    if (check_program(text) == false) {
+        print("check failed: type error\n");
         return;
     }
 
