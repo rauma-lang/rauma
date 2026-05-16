@@ -2,6 +2,7 @@ use parse.parser;
 use parse.analysis;
 use lex.token;
 use lex.stream;
+use diag.output;
 
 pub fn can_check(text str) bool {
     if (parse.parser.can_parse_file(text) == false) {
@@ -94,11 +95,462 @@ pub fn check_program(src str) bool {
     return parse.parser.can_parse_file(src);
 }
 
+pub fn token_slice_eq(src str, a_start int, a_end int, b_start int, b_end int) bool {
+    a_len := a_end - a_start;
+    b_len := b_end - b_start;
+    if (a_len != b_len) {
+        return false;
+    }
+    i := 0;
+    while (i < a_len) {
+        if (str_byte(src, a_start + i) != str_byte(src, b_start + i)) {
+            return false;
+        }
+        i += 1;
+    }
+    return true;
+}
+
+pub fn is_text(src str, start int, end int, value str) bool {
+    return lex.stream.token_text_eq(src, start, end, value);
+}
+
+pub fn is_builtin_name(src str, start int, end int) bool {
+    if (is_text(src, start, end, "print")) { return true; }
+    if (is_text(src, start, end, "print_int")) { return true; }
+    if (is_text(src, start, end, "print_bool")) { return true; }
+    if (is_text(src, start, end, "print_str_slice")) { return true; }
+    if (is_text(src, start, end, "read_file")) { return true; }
+    if (is_text(src, start, end, "write_file")) { return true; }
+    if (is_text(src, start, end, "str_len")) { return true; }
+    if (is_text(src, start, end, "str_eq")) { return true; }
+    if (is_text(src, start, end, "str_byte")) { return true; }
+    if (is_text(src, start, end, "str_concat")) { return true; }
+    if (is_text(src, start, end, "str_from_slice")) { return true; }
+    if (is_text(src, start, end, "args_len")) { return true; }
+    if (is_text(src, start, end, "args_get")) { return true; }
+    if (is_text(src, start, end, "cc_compile")) { return true; }
+    if (is_text(src, start, end, "run_command")) { return true; }
+    if (is_text(src, start, end, "make_dir")) { return true; }
+    if (is_text(src, start, end, "file_exists")) { return true; }
+    if (is_text(src, start, end, "int_to_string")) { return true; }
+    if (is_text(src, start, end, "sizeof")) { return true; }
+    if (is_text(src, start, end, "alloca")) { return true; }
+    if (is_text(src, start, end, "memcpy")) { return true; }
+    if (is_text(src, start, end, "panic")) { return true; }
+    return false;
+}
+
+pub fn is_type_name_slice(src str, start int, end int) bool {
+    if (is_text(src, start, end, "int")) { return true; }
+    if (is_text(src, start, end, "str")) { return true; }
+    if (is_text(src, start, end, "bool")) { return true; }
+    if (is_text(src, start, end, "void")) { return true; }
+    if (is_text(src, start, end, "byte")) { return true; }
+    if (is_text(src, start, end, "Args")) { return true; }
+    return false;
+}
+
+pub fn builtin_arity(src str, start int, end int) int {
+    if (is_text(src, start, end, "print")) { return 1; }
+    if (is_text(src, start, end, "print_int")) { return 1; }
+    if (is_text(src, start, end, "print_bool")) { return 1; }
+    if (is_text(src, start, end, "print_str_slice")) { return 3; }
+    if (is_text(src, start, end, "read_file")) { return 1; }
+    if (is_text(src, start, end, "write_file")) { return 2; }
+    if (is_text(src, start, end, "str_len")) { return 1; }
+    if (is_text(src, start, end, "str_eq")) { return 2; }
+    if (is_text(src, start, end, "str_byte")) { return 2; }
+    if (is_text(src, start, end, "str_concat")) { return 2; }
+    if (is_text(src, start, end, "str_from_slice")) { return 3; }
+    if (is_text(src, start, end, "args_len")) { return 1; }
+    if (is_text(src, start, end, "args_get")) { return 2; }
+    if (is_text(src, start, end, "cc_compile")) { return 2; }
+    if (is_text(src, start, end, "run_command")) { return 1; }
+    if (is_text(src, start, end, "make_dir")) { return 1; }
+    if (is_text(src, start, end, "file_exists")) { return 1; }
+    if (is_text(src, start, end, "int_to_string")) { return 1; }
+    if (is_text(src, start, end, "sizeof")) { return 1; }
+    if (is_text(src, start, end, "alloca")) { return 2; }
+    if (is_text(src, start, end, "memcpy")) { return 3; }
+    if (is_text(src, start, end, "panic")) { return 1; }
+    return -1;
+}
+
+pub fn fn_name_start(src str, i int) int {
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.advance(src, pos);
+    }
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_kw_fn()) {
+        return -1;
+    }
+    pos = lex.stream.advance(src, pos);
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return -1;
+    }
+    return lex.stream.token_start(src, pos);
+}
+
+pub fn fn_name_end(src str, i int) int {
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.advance(src, pos);
+    }
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_kw_fn()) {
+        return -1;
+    }
+    pos = lex.stream.advance(src, pos);
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return -1;
+    }
+    return lex.stream.token_end(src, pos);
+}
+
+pub fn fn_lparen_pos(src str, i int) int {
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.advance(src, pos);
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+    if (pos == 0) { return 0; }
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) { return 0; }
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_l_paren()) {
+        return 0;
+    }
+    return pos;
+}
+
+pub fn fn_body_start(src str, i int) int {
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.advance(src, pos);
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+    if (pos == 0) { return 0; }
+    pos = lex.stream.expect_ident(src, pos);
+    if (pos == 0) { return 0; }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) { return 0; }
+    pos = parse.parser.parse_params(src, pos, false);
+    if (pos == 0) { return 0; }
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_ident()) {
+        pos = lex.stream.advance(src, pos);
+        if (pos == 0) { return 0; }
+    }
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_l_brace()) {
+        return 0;
+    }
+    return pos;
+}
+
+pub fn fn_return_type_start(src str, i int) int {
+    body := fn_body_start(src, i);
+    if (body == 0) { return -1; }
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.advance(src, pos);
+    }
+    pos = lex.stream.advance(src, pos);
+    pos = lex.stream.advance(src, pos);
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_l_paren());
+    if (pos == 0) { return -1; }
+    pos = parse.parser.parse_params(src, pos, false);
+    if (pos == 0) { return -1; }
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_ident()) {
+        return lex.stream.token_start(src, pos);
+    }
+    return -1;
+}
+
+pub fn fn_return_type_end(src str, i int) int {
+    start := fn_return_type_start(src, i);
+    if (start < 0) { return -1; }
+    return lex.stream.token_end(src, start);
+}
+
+pub fn matching_brace(src str, open_pos int) int {
+    pos := open_pos;
+    depth := 0;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_l_brace()) {
+            depth += 1;
+        }
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_r_brace()) {
+            depth -= 1;
+            if (depth == 0) {
+                return pos;
+            }
+        }
+        pos = lex.stream.advance(src, pos);
+        if (pos == 0) {
+            return 0;
+        }
+    }
+    return 0;
+}
+
+pub fn count_call_args(src str, lparen_pos int) int {
+    pos := lex.stream.expect_kind(src, lparen_pos, lex.token.kind_l_paren());
+    if (pos == 0) { return -1; }
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
+        return 0;
+    }
+    count := 0;
+    while (true) {
+        pos = parse.parser.parse_expr(src, pos);
+        if (pos == 0) { return -1; }
+        count += 1;
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_comma()) {
+            pos = lex.stream.advance(src, pos);
+        } else {
+            if (lex.stream.current_kind(src, pos) == lex.token.kind_r_paren()) {
+                return count;
+            }
+            return -1;
+        }
+    }
+    return -1;
+}
+
+pub fn declared_fn_arity(src str, name_start int, name_end int) int {
+    pos := 0;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_fn() || lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+            ns := fn_name_start(src, pos);
+            ne := fn_name_end(src, pos);
+            if (ns >= 0 && token_slice_eq(src, ns, ne, name_start, name_end)) {
+                lp := fn_lparen_pos(src, pos);
+                if (lp == 0) { return -1; }
+                return parse.parser.count_params(src, lex.stream.advance(src, lp));
+            }
+            next := parse.parser.parse_fn_decl(src, pos, false);
+            if (next == 0) { return -1; }
+            pos = next;
+        } else {
+            if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_struct()) {
+                pos = parse.parser.parse_struct_decl(src, pos, false);
+            } else {
+                if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_enum()) {
+                    pos = parse.parser.parse_enum_decl(src, pos, false);
+                } else {
+                    pos = lex.stream.advance(src, pos);
+                }
+            }
+            if (pos == 0) { return -1; }
+        }
+    }
+    return -1;
+}
+
+pub fn check_duplicate_functions(path str, src str) bool {
+    outer := 0;
+    ok := true;
+    while (lex.stream.current_kind(src, outer) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, outer) == lex.token.kind_kw_fn() || lex.stream.current_kind(src, outer) == lex.token.kind_kw_pub()) {
+            os := fn_name_start(src, outer);
+            oe := fn_name_end(src, outer);
+            inner := parse.parser.parse_fn_decl(src, outer, false);
+            while (inner != 0 && lex.stream.current_kind(src, inner) != lex.token.kind_eof()) {
+                if (lex.stream.current_kind(src, inner) == lex.token.kind_kw_fn() || lex.stream.current_kind(src, inner) == lex.token.kind_kw_pub()) {
+                    is := fn_name_start(src, inner);
+                    ie := fn_name_end(src, inner);
+                    if (os >= 0 && is >= 0 && token_slice_eq(src, os, oe, is, ie)) {
+                        diag.output.print_error_at(path, src, is, "E0101", "duplicate function definition", "rename one function or merge the implementations");
+                        ok = false;
+                    }
+                    inner = parse.parser.parse_fn_decl(src, inner, false);
+                } else {
+                    inner = lex.stream.advance(src, inner);
+                }
+            }
+            outer = parse.parser.parse_fn_decl(src, outer, false);
+            if (outer == 0) { return false; }
+        } else {
+            outer = lex.stream.advance(src, outer);
+            if (outer == 0) { return false; }
+        }
+    }
+    return ok;
+}
+
+pub fn check_calls(path str, src str) bool {
+    pos := 0;
+    ok := true;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_ident()) {
+            name_start := lex.stream.token_start(src, pos);
+            name_end := lex.stream.token_end(src, pos);
+            next := lex.stream.advance(src, pos);
+            if (lex.stream.current_kind(src, next) == lex.token.kind_l_paren()) {
+                is_qualified := false;
+                if (name_start > 0 && str_byte(src, name_start - 1) == 46) {
+                    is_qualified = true;
+                }
+                if (is_qualified == false) {
+                    arity := declared_fn_arity(src, name_start, name_end);
+                    if (arity < 0 && is_builtin_name(src, name_start, name_end)) {
+                        arity = builtin_arity(src, name_start, name_end);
+                    }
+                    if (arity < 0) {
+                        diag.output.print_error_at(path, src, name_start, "E0201", "unresolved function call", "define the function, import its module, or qualify the call");
+                        ok = false;
+                    } else {
+                        got := count_call_args(src, next);
+                        if (got >= 0 && got != arity) {
+                            diag.output.print_error_at(path, src, name_start, "E0202", "wrong number of call arguments", "check the callee signature and passed arguments");
+                            ok = false;
+                        }
+                    }
+                }
+            }
+        }
+        pos = lex.stream.advance(src, pos);
+        if (pos == 0) { return false; }
+    }
+    return ok;
+}
+
+pub fn check_variables(path str, src str) bool {
+    pos := 0;
+    ok := true;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_ident()) {
+            name_start := lex.stream.token_start(src, pos);
+            name_end := lex.stream.token_end(src, pos);
+            next := lex.stream.advance(src, pos);
+            if (lex.stream.current_kind(src, next) != lex.token.kind_l_paren() && lex.stream.current_kind(src, next) != lex.token.kind_colon_eq()) {
+                if (is_builtin_name(src, name_start, name_end) == false && is_text(src, name_start, name_end, "true") == false && is_text(src, name_start, name_end, "false") == false) {
+                    if (declared_fn_arity(src, name_start, name_end) < 0 && is_type_name_slice(src, name_start, name_end) == false) {
+                        // This is intentionally conservative: it only catches bare names that are not
+                        // functions, builtins, booleans, or known type names.
+                        if (name_is_local_before(src, pos, name_start, name_end) == false) {
+                            diag.output.print_error_at(path, src, name_start, "E0203", "unresolved identifier", "declare the variable before using it");
+                            ok = false;
+                        }
+                    }
+                }
+            }
+        }
+        pos = lex.stream.advance(src, pos);
+        if (pos == 0) { return false; }
+    }
+    return ok;
+}
+
+pub fn name_is_local_before(src str, pos int, name_start int, name_end int) bool {
+    scan := 0;
+    while (scan < pos && lex.stream.current_kind(src, scan) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, scan) == lex.token.kind_ident()) {
+            s := lex.stream.token_start(src, scan);
+            e := lex.stream.token_end(src, scan);
+            next := lex.stream.advance(src, scan);
+            if (token_slice_eq(src, s, e, name_start, name_end)) {
+                if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
+                    return true;
+                }
+                if (lex.stream.current_kind(src, next) == lex.token.kind_ident()) {
+                    return true;
+                }
+            }
+        }
+        scan = lex.stream.advance(src, scan);
+        if (scan == 0) { return false; }
+    }
+    return false;
+}
+
+pub fn expr_literal_type(src str, expr_pos int) str {
+    kind := lex.stream.current_kind(src, expr_pos);
+    if (kind == lex.token.kind_int()) {
+        return "int";
+    }
+    if (kind == lex.token.kind_string()) {
+        return "str";
+    }
+    if (kind == lex.token.kind_ident()) {
+        s := lex.stream.token_start(src, expr_pos);
+        e := lex.stream.token_end(src, expr_pos);
+        if (is_text(src, s, e, "true")) { return "bool"; }
+        if (is_text(src, s, e, "false")) { return "bool"; }
+    }
+    return "";
+}
+
+pub fn check_returns(path str, src str) bool {
+    pos := 0;
+    ok := true;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_fn() || lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+            ret_start := fn_return_type_start(src, pos);
+            ret_end := fn_return_type_end(src, pos);
+            body := fn_body_start(src, pos);
+            body_end := matching_brace(src, body);
+            has_return := false;
+            scan := body;
+            while (scan != 0 && scan < body_end) {
+                if (lex.stream.current_kind(src, scan) == lex.token.kind_kw_return()) {
+                    has_return = true;
+                    expr := lex.stream.advance(src, scan);
+                    if (ret_start >= 0) {
+                        if (lex.stream.current_kind(src, expr) == lex.token.kind_semi()) {
+                            diag.output.print_error_at(path, src, scan, "E0301", "non-void function returns no value", "return a value matching the function return type");
+                            ok = false;
+                        } else {
+                            lit_type := expr_literal_type(src, expr);
+                            if (str_len(lit_type) > 0 && is_text(src, ret_start, ret_end, lit_type) == false) {
+                                diag.output.print_error_at(path, src, expr, "E0302", "return type mismatch", "returned literal does not match the declared return type");
+                                ok = false;
+                            }
+                        }
+                    }
+                }
+                scan = lex.stream.advance(src, scan);
+            }
+            if (ret_start >= 0 && has_return == false) {
+                diag.output.print_error_at(path, src, body, "E0303", "missing return in non-void function", "add an explicit return on every value-returning function");
+                ok = false;
+            }
+            pos = parse.parser.parse_fn_decl(src, pos, false);
+            if (pos == 0) { return false; }
+        } else {
+            pos = lex.stream.advance(src, pos);
+            if (pos == 0) { return false; }
+        }
+    }
+    return ok;
+}
+
+pub fn can_check_with_diagnostics(path str, text str) bool {
+    if (parse.parser.can_parse_file(text) == false) {
+        diag.output.print_error_at(path, text, 0, "E0001", "parser rejected this source file", "run `rmc parse` to isolate the unsupported syntax");
+        return false;
+    }
+
+    if (parse.parser.count_functions(text) <= 0) {
+        diag.output.print_error_at(path, text, 0, "E0002", "module has no function declarations", "add at least one function");
+        return false;
+    }
+
+    ok := true;
+    if (check_duplicate_functions(path, text) == false) {
+        ok = false;
+    }
+    if (check_calls(path, text) == false) {
+        ok = false;
+    }
+    if (check_returns(path, text) == false) {
+        ok = false;
+    }
+    return ok;
+}
+
 pub fn run_file(path str, text str) {
     print("rmc check file:\n");
 
-    if (can_check(text) == false) {
-        print("check failed: parser error\n");
+    if (can_check_with_diagnostics(path, text) == false) {
+        print("check failed\n");
         return;
     }
 

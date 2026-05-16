@@ -13,7 +13,7 @@ pub fn run_file(path str, text str) {
         return;
     }
 
-    if (!type.checker.can_check(text)) {
+    if (!type.checker.can_check_with_diagnostics(path, text)) {
         print("build failed: check failed\n");
         return;
     }

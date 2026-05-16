@@ -107,6 +107,11 @@ fn main(args Args) {
             return;
         }
 
+        if (!type.checker.can_check_with_diagnostics(args_get(args, 2), text)) {
+            print("emit failed: check failed\n");
+            return;
+        }
+
         cgen.cgen.run_file(text);
         return;
     }
