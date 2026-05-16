@@ -1,5 +1,122 @@
 pub fn note(message str) {
+    print("note: ");
     print(message);
+    print("\n");
+}
+
+pub fn line_of_offset(src str, offset int) int {
+    i := 0;
+    line := 1;
+    len := str_len(src);
+    while (i < offset && i < len) {
+        if (str_byte(src, i) == 10) {
+            line += 1;
+        }
+        i += 1;
+    }
+    return line;
+}
+
+pub fn column_of_offset(src str, offset int) int {
+    i := 0;
+    col := 1;
+    len := str_len(src);
+    while (i < offset && i < len) {
+        if (str_byte(src, i) == 10) {
+            col = 1;
+        } else {
+            col += 1;
+        }
+        i += 1;
+    }
+    return col;
+}
+
+pub fn line_start_of_offset(src str, offset int) int {
+    i := offset;
+    len := str_len(src);
+    if (i > len) {
+        i = len;
+    }
+    while (i > 0 && str_byte(src, i - 1) != 10) {
+        i -= 1;
+    }
+    return i;
+}
+
+pub fn line_end_of_offset(src str, offset int) int {
+    i := offset;
+    len := str_len(src);
+    if (i > len) {
+        i = len;
+    }
+    while (i < len && str_byte(src, i) != 10) {
+        i += 1;
+    }
+    return i;
+}
+
+pub fn print_spaces(count int) {
+    i := 0;
+    while (i < count) {
+        print(" ");
+        i += 1;
+    }
+}
+
+pub fn print_source_line(src str, offset int) {
+    start := line_start_of_offset(src, offset);
+    end := line_end_of_offset(src, offset);
+    print_str_slice(src, start, end);
+    print("\n");
+}
+
+pub fn print_caret(src str, offset int) {
+    start := line_start_of_offset(src, offset);
+    col := offset - start;
+    print_spaces(col);
+    print("^\n");
+}
+
+pub fn print_error_at(path str, src str, offset int, code str, message str, hint str) {
+    print(path);
+    print(":");
+    print(line_of_offset(src, offset));
+    print(":");
+    print(column_of_offset(src, offset));
+    print(": error[");
+    print(code);
+    print("]: ");
+    print(message);
+    print("\n");
+    print("  |\n");
+    print("  | ");
+    print_source_line(src, offset);
+    print("  | ");
+    print_caret(src, offset);
+    if (str_len(hint) > 0) {
+        print("  = hint: ");
+        print(hint);
+        print("\n");
+    }
+}
+
+pub fn print_warning_at(path str, src str, offset int, code str, message str, hint str) {
+    print(path);
+    print(":");
+    print(line_of_offset(src, offset));
+    print(":");
+    print(column_of_offset(src, offset));
+    print(": warning[");
+    print(code);
+    print("]: ");
+    print(message);
+    print("\n");
+    if (str_len(hint) > 0) {
+        print("  = hint: ");
+        print(hint);
+        print("\n");
+    }
 }
 
 pub fn print_diag_label() {
