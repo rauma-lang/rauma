@@ -608,6 +608,20 @@ pub fn emit_call_to_c(src str, i int) str {
         return out;
     }
 
+    if (str_eq(name, "file_exists")) {
+        out := "rm_file_exists(";
+        out = str_concat(out, args);
+        out = str_concat(out, ")");
+        return out;
+    }
+
+    if (str_eq(name, "int_to_string")) {
+        out := "rm_int_to_string(";
+        out = str_concat(out, args);
+        out = str_concat(out, ")");
+        return out;
+    }
+
     out := "rm_fn_";
     out = str_concat(out, name);
     out = str_concat(out, "(");

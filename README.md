@@ -81,10 +81,11 @@ rauma test
 Current project-manager features:
 
 - `rauma.toml` creation and validation
-- local module graph output in `.rauma/module-graph.json`
-- source diagnostics before compiler delegation
+- local module graph output in `.rauma/module-graph.json` with existence status
+- source diagnostics with module line numbers before compiler delegation
 - `build`, `run`, `test`, `fmt`, `graph`, `doctor`, and local dependency `add`
-- incremental build cache snapshot in `.rauma/build-cache.txt`
+- test discovery for `tests/basic.rm` and `tests/test1.rm` through `tests/test16.rm`
+- checksum-based incremental build cache in `.rauma/build-cache.txt`
 
 ## Build Model
 

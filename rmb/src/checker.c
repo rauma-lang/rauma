@@ -381,16 +381,18 @@ static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name
     bool is_cc_compile = rmb_string_equal(name, rmb_string_from_cstr("cc_compile"));
     bool is_run_command = rmb_string_equal(name, rmb_string_from_cstr("run_command"));
     bool is_make_dir = rmb_string_equal(name, rmb_string_from_cstr("make_dir"));
+    bool is_file_exists = rmb_string_equal(name, rmb_string_from_cstr("file_exists"));
+    bool is_int_to_string = rmb_string_equal(name, rmb_string_from_cstr("int_to_string"));
     bool is_str_concat = rmb_string_equal(name, rmb_string_from_cstr("str_concat"));
     bool is_str_from_slice = rmb_string_equal(name, rmb_string_from_cstr("str_from_slice"));
     bool is_print_slice = rmb_string_equal(name, rmb_string_from_cstr("print_str_slice"));
     if (!is_len && !is_byte && !is_eq && !is_args_len && !is_args_get && !is_read_file &&
-        !is_write_file && !is_cc_compile && !is_run_command && !is_make_dir && !is_str_concat &&
-        !is_str_from_slice && !is_print_slice) {
+        !is_write_file && !is_cc_compile && !is_run_command && !is_make_dir && !is_file_exists &&
+        !is_int_to_string && !is_str_concat && !is_str_from_slice && !is_print_slice) {
         return err_unknown();
     }
 
-    size_t expected = (is_print_slice || is_str_from_slice) ? 3 : ((is_len || is_args_len || is_read_file || is_run_command || is_make_dir) ? 1 : 2);
+    size_t expected = (is_print_slice || is_str_from_slice) ? 3 : ((is_len || is_args_len || is_read_file || is_run_command || is_make_dir || is_file_exists || is_int_to_string) ? 1 : 2);
     if (expr->call.arg_count != expected) {
         emit_error(c, expr->span,
             "builtin '%.*s' expects %zu arguments, got %zu",
@@ -425,10 +427,14 @@ static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name
             emit_error(c, expr->call.args[i]->span,
                 "slice bounds passed to 'print_str_slice' must be int");
         }
-        if ((is_write_file || is_cc_compile || is_run_command || is_make_dir || is_str_concat) &&
+        if ((is_write_file || is_cc_compile || is_run_command || is_make_dir || is_file_exists || is_str_concat) &&
             !rmb_type_is_unknown(arg.type) && arg.type->kind != RMB_TYPE_STR) {
             emit_error(c, expr->call.args[i]->span,
                 "arguments to '%.*s' must be str", (int)name.len, name.ptr);
+        }
+        if (is_int_to_string && !type_is_known_kind(arg.type, RMB_TYPE_INT)) {
+            emit_error(c, expr->call.args[i]->span,
+                "argument to 'int_to_string' must be int");
         }
         if (is_str_from_slice && i == 0 &&
             !rmb_type_is_unknown(arg.type) && arg.type->kind != RMB_TYPE_STR) {
@@ -447,6 +453,8 @@ static ExprResult check_builtin(RmbChecker* c, RmbAstExpr* expr, rmb_string name
     if (is_read_file) return err_ty(rmb_type_str());
     if (is_write_file) return err_ty(rmb_type_bool());
     if (is_make_dir) return err_ty(rmb_type_bool());
+    if (is_file_exists) return err_ty(rmb_type_bool());
+    if (is_int_to_string) return err_ty(rmb_type_str());
     if (is_str_concat || is_str_from_slice) return err_ty(rmb_type_str());
     return err_ty(rmb_type_int());
 }
@@ -467,6 +475,8 @@ static ExprResult check_call(RmbChecker* c, RmbAstExpr* expr) {
             rmb_string_equal(name, rmb_string_from_cstr("cc_compile")) ||
             rmb_string_equal(name, rmb_string_from_cstr("run_command")) ||
             rmb_string_equal(name, rmb_string_from_cstr("make_dir")) ||
+            rmb_string_equal(name, rmb_string_from_cstr("file_exists")) ||
+            rmb_string_equal(name, rmb_string_from_cstr("int_to_string")) ||
             rmb_string_equal(name, rmb_string_from_cstr("str_concat")) ||
             rmb_string_equal(name, rmb_string_from_cstr("str_from_slice")) ||
             rmb_string_equal(name, rmb_string_from_cstr("print_str_slice")))) {

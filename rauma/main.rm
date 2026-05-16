@@ -7,7 +7,7 @@ fn print_usage() {
     print("  check              validate manifest, module graph, and source\n");
     print("  build [--force]    build src/main.rm through rmc\n");
     print("  run                build and run the project binary\n");
-    print("  test               build and run tests/basic.rm when present\n");
+    print("  test               build and run tests/basic.rm and tests/test1.rm..test16.rm\n");
     print("  fmt                normalize known source file trailing newlines\n");
     print("  graph              write .rauma/module-graph.json\n");
     print("  doctor             print rmc and C compiler status\n");
@@ -184,6 +184,64 @@ fn module_path(module str) str {
     return out;
 }
 
+fn module_line(text str, module str) int {
+    len := str_len(text);
+    mlen := str_len(module);
+    i := 0;
+    line := 1;
+    while (i + mlen <= len) {
+        if (str_byte(text, i) == 10) {
+            line = line + 1;
+        }
+        j := 0;
+        ok := true;
+        while (j < mlen) {
+            if (str_byte(text, i + j) != str_byte(module, j)) {
+                ok = false;
+            }
+            j = j + 1;
+        }
+        if (ok) {
+            return line;
+        }
+        i = i + 1;
+    }
+    return 1;
+}
+
+fn print_module_error(main_text str, module str, message str) {
+    print("src/main.rm:");
+    print(int_to_string(module_line(main_text, module)));
+    print(":1: error: ");
+    print(message);
+    print(" `");
+    print(module);
+    print("`\n");
+}
+
+fn validate_modules(main_text str) bool {
+    i := 0;
+    done := false;
+    ok := true;
+    while (i < 32 && done == false) {
+        module := use_line_at(main_text, i);
+        if (str_len(module) == 0) {
+            done = true;
+        } else {
+            path := module_path(module);
+            if (!file_exists(path)) {
+                print_module_error(main_text, module, "unresolved module");
+                print("hint: expected ");
+                print(path);
+                print("\n");
+                ok = false;
+            }
+            i = i + 1;
+        }
+    }
+    return ok;
+}
+
 fn write_graph(main_text str) bool {
     graph := "{\n  \"entry\": \"src/main.rm\",\n  \"modules\": [\n";
     i := 0;
@@ -200,8 +258,15 @@ fn write_graph(main_text str) bool {
             graph = str_concat(graph, "    { \"name\": \"");
             graph = str_concat(graph, module);
             graph = str_concat(graph, "\", \"path\": \"");
-            graph = str_concat(graph, module_path(module));
-            graph = str_concat(graph, "\" }");
+            path := module_path(module);
+            graph = str_concat(graph, path);
+            graph = str_concat(graph, "\", \"exists\": ");
+            if (file_exists(path)) {
+                graph = str_concat(graph, "true");
+            } else {
+                graph = str_concat(graph, "false");
+            }
+            graph = str_concat(graph, " }");
             first = false;
             i = i + 1;
         }
@@ -212,17 +277,21 @@ fn write_graph(main_text str) bool {
 
 fn write_cache(manifest str, main_text str) {
     text := "build-cache-v1\n";
-    text = str_concat(text, manifest);
-    text = str_concat(text, "\n---entry---\n");
-    text = str_concat(text, main_text);
+    text = str_concat(text, "manifest=");
+    text = str_concat(text, int_to_string(checksum(manifest)));
+    text = str_concat(text, "\nentry=");
+    text = str_concat(text, int_to_string(checksum(main_text)));
+    text = str_concat(text, "\n");
     write_file(".rauma/build-cache.txt", text);
 }
 
 fn cache_snapshot(manifest str, main_text str) str {
     text := "build-cache-v1\n";
-    text = str_concat(text, manifest);
-    text = str_concat(text, "\n---entry---\n");
-    text = str_concat(text, main_text);
+    text = str_concat(text, "manifest=");
+    text = str_concat(text, int_to_string(checksum(manifest)));
+    text = str_concat(text, "\nentry=");
+    text = str_concat(text, int_to_string(checksum(main_text)));
+    text = str_concat(text, "\n");
     return text;
 }
 
@@ -238,6 +307,10 @@ fn command_check() bool {
     main_text := read_file("src/main.rm");
     if (str_len(main_text) == 0) {
         print("error: missing src/main.rm\n");
+        return false;
+    }
+    if (!validate_modules(main_text)) {
+        write_graph(main_text);
         return false;
     }
     if (!write_graph(main_text)) {
@@ -261,7 +334,11 @@ fn command_build(force bool) bool {
     main_text := read_file("src/main.rm");
     cache := read_file(".rauma/build-cache.txt");
     snapshot := cache_snapshot(manifest, main_text);
-    if (!force && str_eq(cache, snapshot)) {
+    has_bin := false;
+    if (file_exists("build/rmc_build_out") || file_exists("build/rmc_build_out.exe")) {
+        has_bin = true;
+    }
+    if (!force && str_eq(cache, snapshot) && has_bin) {
         print("build cached: run `rauma build --force` to rebuild\n");
         return true;
     }
@@ -289,25 +366,68 @@ fn command_run() {
 }
 
 fn command_test() {
-    test_text := read_file("tests/basic.rm");
-    if (str_len(test_text) == 0) {
+    count := 0;
+    failed := 0;
+    if (file_exists("tests/basic.rm")) {
+        count = count + 1;
+        if (!run_one_test("tests/basic.rm")) {
+            failed = failed + 1;
+        }
+    }
+    i := 1;
+    while (i <= 16) {
+        path := "tests/test";
+        path = str_concat(path, int_to_string(i));
+        path = str_concat(path, ".rm");
+        if (file_exists(path)) {
+            count = count + 1;
+            if (!run_one_test(path)) {
+                failed = failed + 1;
+            }
+        }
+        i = i + 1;
+    }
+    if (count == 0) {
         print("test ok: 0 files\n");
         return;
     }
-    rc := run_command("rmc build tests/basic.rm");
-    if (rc != 0) {
-        print("test failed: tests/basic.rm\n");
+    if (failed > 0) {
+        print("test failed: ");
+        print(int_to_string(failed));
+        print(" of ");
+        print(int_to_string(count));
+        print(" files\n");
         return;
+    }
+    print("test ok: ");
+    print(int_to_string(count));
+    print(" files\n");
+}
+
+fn run_one_test(path str) bool {
+    print("test ");
+    print(path);
+    print("\n");
+    cmd := "rmc build ";
+    cmd = str_concat(cmd, path);
+    rc := run_command(cmd);
+    if (rc != 0) {
+        print("test failed: ");
+        print(path);
+        print("\n");
+        return false;
     }
     rc = run_command("build\\rmc_build_out.exe");
     if (rc != 0) {
         rc = run_command("./build/rmc_build_out");
     }
     if (rc != 0) {
-        print("test failed: tests/basic.rm\n");
-        return;
+        print("test failed: ");
+        print(path);
+        print("\n");
+        return false;
     }
-    print("test ok: 1 files\n");
+    return true;
 }
 
 fn command_fmt() {
@@ -318,6 +438,17 @@ fn command_fmt() {
     test_text := read_file("tests/basic.rm");
     if (str_len(test_text) > 0) {
         write_file("tests/basic.rm", str_concat(test_text, ""));
+    }
+    i := 1;
+    while (i <= 16) {
+        path := "tests/test";
+        path = str_concat(path, int_to_string(i));
+        path = str_concat(path, ".rm");
+        test_text = read_file(path);
+        if (str_len(test_text) > 0) {
+            write_file(path, str_concat(test_text, ""));
+        }
+        i = i + 1;
     }
     print("fmt ok\n");
 }

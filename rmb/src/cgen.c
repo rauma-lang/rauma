@@ -343,6 +343,8 @@ static RmbType* call_type(RmbCGen* g, RmbAstExpr* e) {
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("cc_compile"))) return rmb_type_int();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("run_command"))) return rmb_type_int();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("make_dir"))) return rmb_type_bool();
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("file_exists"))) return rmb_type_bool();
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("int_to_string"))) return rmb_type_str();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_concat"))) return rmb_type_str();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_from_slice"))) return rmb_type_str();
         if (fn) return fn->return_type ? fn->return_type : rmb_type_void();
@@ -649,6 +651,28 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
                 return;
             }
             emit_str(g, "rm_make_dir(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ")");
+            return;
+        }
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("file_exists"))) {
+            if (e->call.arg_count != 1) {
+                cg_error(g, e->span, "file_exists expects exactly 1 argument");
+                emit_str(g, "false");
+                return;
+            }
+            emit_str(g, "rm_file_exists(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ")");
+            return;
+        }
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("int_to_string"))) {
+            if (e->call.arg_count != 1) {
+                cg_error(g, e->span, "int_to_string expects exactly 1 argument");
+                emit_str(g, "rm_str(\"\")");
+                return;
+            }
+            emit_str(g, "rm_int_to_string(");
             emit_expr(g, e->call.args[0]);
             emit_str(g, ")");
             return;
@@ -1199,6 +1223,31 @@ static void emit_prelude(RmbCGen* g) {
         "#endif\n"
         "    free(cpath);\n"
         "    return rc == 0;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED bool rm_file_exists(RmStr path) {\n"
+        "    char *cpath = (char*)malloc((size_t)path.len + 1);\n"
+        "    if (!cpath) return false;\n"
+        "    memcpy(cpath, path.ptr, (size_t)path.len);\n"
+        "    cpath[path.len] = '\\0';\n"
+        "    FILE *f = fopen(cpath, \"rb\");\n"
+        "    free(cpath);\n"
+        "    if (!f) return false;\n"
+        "    fclose(f);\n"
+        "    return true;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED RmStr rm_int_to_string(int64_t value) {\n"
+        "    char tmp[64];\n"
+        "    int n = snprintf(tmp, sizeof(tmp), \"%lld\", (long long)value);\n"
+        "    if (n < 0 || n >= (int)sizeof(tmp)) return rm_str(\"\");\n"
+        "    char *out = (char*)malloc((size_t)n + 1);\n"
+        "    if (!out) return rm_str(\"\");\n"
+        "    memcpy(out, tmp, (size_t)n + 1);\n"
+        "    RmStr s;\n"
+        "    s.ptr = out;\n"
+        "    s.len = (int64_t)n;\n"
+        "    return s;\n"
         "}\n"
         "\n"
         "static RM_UNUSED void rm_print(RmStr s) {\n"
