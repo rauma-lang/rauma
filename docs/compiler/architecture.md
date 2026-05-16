@@ -147,6 +147,12 @@ The verified v0.2.0 release path is:
 .rm source -> Lexer -> Parser -> Checker -> bridge C backend -> gcc/clang -> executable
 ```
 
+The `rmc hir <path>` and `rmc mir <path>` commands expose the first
+bridge-compatible IR lowering surface. They currently produce textual HIR/MIR
+summaries after the checker succeeds, so bad source is rejected before IR
+generation. The production executable path still uses the C backend above while
+the typed-AST-backed HIR/MIR path is expanded.
+
 The intended full path remains:
 
 ```text

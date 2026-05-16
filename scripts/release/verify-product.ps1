@@ -96,8 +96,11 @@ Write-Host (Run-Cmd $rmc @("lsp", "--check-exits-immediately")).TrimEnd()
 $moduleChecks = @(
     "../rmc/hir/types.rm",
     "../rmc/hir/nodes.rm",
+    "../rmc/hir/gen.rm",
     "../rmc/mir/types.rm",
     "../rmc/mir/nodes.rm",
+    "../rmc/mir/gen.rm",
+    "../rmc/mir/validate.rm",
     "../rmc/mir/opt.rm",
     "../rmc/type/types.rm",
     "../rmc/type/symtab.rm",

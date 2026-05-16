@@ -1,0 +1,54 @@
+use lex.token;
+use lex.stream;
+use parse.parser;
+use type.checker;
+use diag.output;
+
+pub fn function_has_terminator(src str, body int, body_end int) bool {
+    scan := body;
+    while (scan != 0 && scan < body_end) {
+        if (lex.stream.current_kind(src, scan) == lex.token.kind_kw_return()) {
+            return true;
+        }
+        scan = lex.stream.advance(src, scan);
+    }
+    return false;
+}
+
+pub fn validate_module(path str, src str) bool {
+    if (type.checker.can_check_with_diagnostics(path, src) == false) {
+        return false;
+    }
+
+    pos := 0;
+    ok := true;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_fn() || lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+            body := type.checker.fn_body_start(src, pos);
+            body_end := type.checker.matching_brace(src, body);
+            ret_start := type.checker.fn_return_type_start(src, pos);
+            if (ret_start >= 0 && function_has_terminator(src, body, body_end) == false) {
+                diag.output.print_error_at(path, src, body, "E1001", "MIR function has no return terminator", "all value-returning MIR functions need an explicit ret");
+                ok = false;
+            }
+            pos = parse.parser.parse_fn_decl(src, pos, false);
+            if (pos == 0) {
+                return false;
+            }
+        } else {
+            pos = lex.stream.advance(src, pos);
+            if (pos == 0) {
+                return false;
+            }
+        }
+    }
+    return ok;
+}
+
+pub fn run_file(path str, src str) {
+    if (validate_module(path, src)) {
+        print("mir validate ok\n");
+    } else {
+        print("mir validate failed\n");
+    }
+}

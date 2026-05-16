@@ -1,0 +1,127 @@
+use lex.token;
+use lex.stream;
+use parse.parser;
+use type.checker;
+
+pub fn print_name_at(src str, pos int) {
+    lex.stream.print_token_text(src, lex.stream.token_start(src, pos), lex.stream.token_end(src, pos));
+}
+
+pub fn fn_name_pos(src str, i int) int {
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.advance(src, pos);
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+    if (pos == 0) { return 0; }
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return 0;
+    }
+    return pos;
+}
+
+pub fn fn_body_pos(src str, i int) int {
+    return type.checker.fn_body_start(src, i);
+}
+
+pub fn matching_brace(src str, open_pos int) int {
+    return type.checker.matching_brace(src, open_pos);
+}
+
+pub fn lower_stmt(src str, pos int) {
+    kind := lex.stream.current_kind(src, pos);
+    if (kind == lex.token.kind_kw_return()) {
+        print("    ret\n");
+        return;
+    }
+    if (kind == lex.token.kind_kw_if()) {
+        print("    br_cond if.then if.else\n");
+        return;
+    }
+    if (kind == lex.token.kind_kw_while()) {
+        print("    loop while.body while.exit\n");
+        return;
+    }
+    if (kind == lex.token.kind_ident()) {
+        next := lex.stream.advance(src, pos);
+        if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
+            print("    var ");
+            print_name_at(src, pos);
+            print("\n");
+            return;
+        }
+        if (lex.stream.current_kind(src, next) == lex.token.kind_eq() || lex.stream.current_kind(src, next) == lex.token.kind_plus_eq()) {
+            print("    assign ");
+            print_name_at(src, pos);
+            print("\n");
+            return;
+        }
+        if (lex.stream.current_kind(src, next) == lex.token.kind_l_paren()) {
+            print("    call ");
+            print_name_at(src, pos);
+            print("\n");
+            return;
+        }
+    }
+}
+
+pub fn lower_function(src str, i int) int {
+    name_pos := fn_name_pos(src, i);
+    if (name_pos == 0) {
+        return 0;
+    }
+    body := fn_body_pos(src, i);
+    if (body == 0) {
+        return 0;
+    }
+    body_end := matching_brace(src, body);
+    if (body_end == 0) {
+        return 0;
+    }
+
+    print("hir.func ");
+    print_name_at(src, name_pos);
+    print("\n");
+    print("  block entry\n");
+
+    scan := lex.stream.advance(src, body);
+    while (scan != 0 && scan < body_end) {
+        lower_stmt(src, scan);
+        scan = lex.stream.advance(src, scan);
+    }
+
+    return parse.parser.parse_fn_decl(src, i, false);
+}
+
+pub fn lower_module(path str, src str) bool {
+    if (type.checker.can_check_with_diagnostics(path, src) == false) {
+        return false;
+    }
+
+    print("hir.module ");
+    print(path);
+    print("\n");
+
+    pos := 0;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_fn() || lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+            pos = lower_function(src, pos);
+            if (pos == 0) {
+                return false;
+            }
+        } else {
+            pos = lex.stream.advance(src, pos);
+            if (pos == 0) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+pub fn run_file(path str, src str) {
+    if (lower_module(path, src) == false) {
+        print("hir failed\n");
+    }
+}

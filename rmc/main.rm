@@ -9,6 +9,8 @@ use cgen.cgen;
 use build.build;
 use build.module;
 use lsp.dispatch;
+use hir.gen;
+use mir.gen;
 
 fn main(args Args) {
     if (args_len(args) <= 1) {
@@ -92,6 +94,38 @@ fn main(args Args) {
         }
 
         type.checker.run_file(args_get(args, 2), text);
+        return;
+    }
+
+    if (str_eq(cmd, "hir")) {
+        if (args_len(args) < 3) {
+            print("usage: rmc hir <path>\n");
+            return;
+        }
+
+        text := read_file(args_get(args, 2));
+        if (str_len(text) == 0) {
+            print("empty or unreadable file\n");
+            return;
+        }
+
+        hir.gen.run_file(args_get(args, 2), text);
+        return;
+    }
+
+    if (str_eq(cmd, "mir")) {
+        if (args_len(args) < 3) {
+            print("usage: rmc mir <path>\n");
+            return;
+        }
+
+        text := read_file(args_get(args, 2));
+        if (str_len(text) == 0) {
+            print("empty or unreadable file\n");
+            return;
+        }
+
+        mir.gen.run_file(args_get(args, 2), text);
         return;
     }
 

@@ -1,0 +1,113 @@
+use lex.token;
+use lex.stream;
+use parse.parser;
+use type.checker;
+
+pub fn print_name_at(src str, pos int) {
+    lex.stream.print_token_text(src, lex.stream.token_start(src, pos), lex.stream.token_end(src, pos));
+}
+
+pub fn fn_name_pos(src str, i int) int {
+    pos := i;
+    if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+        pos = lex.stream.advance(src, pos);
+    }
+    pos = lex.stream.expect_kind(src, pos, lex.token.kind_kw_fn());
+    if (pos == 0) { return 0; }
+    if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+        return 0;
+    }
+    return pos;
+}
+
+pub fn lower_inst(src str, pos int, id int) int {
+    kind := lex.stream.current_kind(src, pos);
+    if (kind == lex.token.kind_kw_return()) {
+        print("    term ret\n");
+        return id;
+    }
+    if (kind == lex.token.kind_kw_if()) {
+        print("    term br_cond block");
+        print(id + 1);
+        print(" block");
+        print(id + 2);
+        print("\n");
+        return id + 2;
+    }
+    if (kind == lex.token.kind_ident()) {
+        next := lex.stream.advance(src, pos);
+        if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
+            print("    %");
+            print(id);
+            print(" = local ");
+            print_name_at(src, pos);
+            print("\n");
+            return id + 1;
+        }
+        if (lex.stream.current_kind(src, next) == lex.token.kind_l_paren()) {
+            print("    %");
+            print(id);
+            print(" = call ");
+            print_name_at(src, pos);
+            print("\n");
+            return id + 1;
+        }
+    }
+    return id;
+}
+
+pub fn lower_function(src str, i int) int {
+    name_pos := fn_name_pos(src, i);
+    body := type.checker.fn_body_start(src, i);
+    if (name_pos == 0 || body == 0) {
+        return 0;
+    }
+    body_end := type.checker.matching_brace(src, body);
+    if (body_end == 0) {
+        return 0;
+    }
+
+    print("mir.func ");
+    print_name_at(src, name_pos);
+    print("\n");
+    print("  block0\n");
+
+    scan := lex.stream.advance(src, body);
+    next_id := 0;
+    while (scan != 0 && scan < body_end) {
+        next_id = lower_inst(src, scan, next_id);
+        scan = lex.stream.advance(src, scan);
+    }
+
+    return parse.parser.parse_fn_decl(src, i, false);
+}
+
+pub fn lower_module(path str, src str) bool {
+    if (type.checker.can_check_with_diagnostics(path, src) == false) {
+        return false;
+    }
+    print("mir.module ");
+    print(path);
+    print("\n");
+    pos := 0;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_fn() || lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+            pos = lower_function(src, pos);
+            if (pos == 0) {
+                return false;
+            }
+        } else {
+            pos = lex.stream.advance(src, pos);
+            if (pos == 0) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+pub fn run_file(path str, src str) {
+    if (lower_module(path, src) == false) {
+        print("mir failed\n");
+    }
+}
