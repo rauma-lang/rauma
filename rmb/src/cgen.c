@@ -341,6 +341,8 @@ static RmbType* call_type(RmbCGen* g, RmbAstExpr* e) {
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("read_file"))) return rmb_type_str();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("write_file"))) return rmb_type_bool();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("cc_compile"))) return rmb_type_int();
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("run_command"))) return rmb_type_int();
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("make_dir"))) return rmb_type_bool();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_concat"))) return rmb_type_str();
         if (!fn && rmb_string_equal(name, rmb_string_from_cstr("str_from_slice"))) return rmb_type_str();
         if (fn) return fn->return_type ? fn->return_type : rmb_type_void();
@@ -626,6 +628,28 @@ static void emit_call(RmbCGen* g, RmbAstExpr* e) {
             emit_expr(g, e->call.args[0]);
             emit_str(g, ", ");
             emit_expr(g, e->call.args[1]);
+            emit_str(g, ")");
+            return;
+        }
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("run_command"))) {
+            if (e->call.arg_count != 1) {
+                cg_error(g, e->span, "run_command expects exactly 1 argument");
+                emit_str(g, "(int64_t)-1");
+                return;
+            }
+            emit_str(g, "rm_run_command(");
+            emit_expr(g, e->call.args[0]);
+            emit_str(g, ")");
+            return;
+        }
+        if (!fn && rmb_string_equal(name, rmb_string_from_cstr("make_dir"))) {
+            if (e->call.arg_count != 1) {
+                cg_error(g, e->span, "make_dir expects exactly 1 argument");
+                emit_str(g, "false");
+                return;
+            }
+            emit_str(g, "rm_make_dir(");
+            emit_expr(g, e->call.args[0]);
             emit_str(g, ")");
             return;
         }
@@ -1008,6 +1032,11 @@ static void emit_prelude(RmbCGen* g) {
         "#include <stdio.h>\n"
         "#include <string.h>\n"
         "#include <stdlib.h>\n"
+        "#if defined(_WIN32)\n"
+        "#include <direct.h>\n"
+        "#else\n"
+        "#include <sys/stat.h>\n"
+        "#endif\n"
         "\n"
         "#if defined(__GNUC__)\n"
         "#define RM_UNUSED __attribute__((unused))\n"
@@ -1146,6 +1175,30 @@ static void emit_prelude(RmbCGen* g) {
         "    free(cp);\n"
         "    free(op);\n"
         "    return (int64_t)rc;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED int64_t rm_run_command(RmStr command) {\n"
+        "    char *cmd = (char*)malloc((size_t)command.len + 1);\n"
+        "    if (!cmd) return (int64_t)-1;\n"
+        "    memcpy(cmd, command.ptr, (size_t)command.len);\n"
+        "    cmd[command.len] = '\\0';\n"
+        "    int rc = system(cmd);\n"
+        "    free(cmd);\n"
+        "    return (int64_t)rc;\n"
+        "}\n"
+        "\n"
+        "static RM_UNUSED bool rm_make_dir(RmStr path) {\n"
+        "    char *cpath = (char*)malloc((size_t)path.len + 1);\n"
+        "    if (!cpath) return false;\n"
+        "    memcpy(cpath, path.ptr, (size_t)path.len);\n"
+        "    cpath[path.len] = '\\0';\n"
+        "#if defined(_WIN32)\n"
+        "    int rc = _mkdir(cpath);\n"
+        "#else\n"
+        "    int rc = mkdir(cpath, 0777);\n"
+        "#endif\n"
+        "    free(cpath);\n"
+        "    return rc == 0;\n"
         "}\n"
         "\n"
         "static RM_UNUSED void rm_print(RmStr s) {\n"

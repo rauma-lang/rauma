@@ -594,6 +594,20 @@ pub fn emit_call_to_c(src str, i int) str {
         return out;
     }
 
+    if (str_eq(name, "run_command")) {
+        out := "rm_run_command(";
+        out = str_concat(out, args);
+        out = str_concat(out, ")");
+        return out;
+    }
+
+    if (str_eq(name, "make_dir")) {
+        out := "rm_make_dir(";
+        out = str_concat(out, args);
+        out = str_concat(out, ")");
+        return out;
+    }
+
     out := "rm_fn_";
     out = str_concat(out, name);
     out = str_concat(out, "(");

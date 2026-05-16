@@ -10,6 +10,7 @@ RauMa is a compiled, no-runtime, server-side-oriented programming language.
 - **Standard library modules** - `std/core/`, `std/str/`, `std/io/`, `std/math/` with core utilities
 - **LSP language server** - `rmc/lsp/` module with JSON-RPC protocol support, keyword/builtin completions
 - **Enhanced CI/CD** - Cross-platform tests for stdlib, HIR/MIR, and LSP modules
+- **Project manager** - `rauma/main.rm` provides the package/build/test driver
 
 ## Overview
 
@@ -26,6 +27,7 @@ RauMa has two compiler tracks:
 
 - `rmc` is the self-hosted RauMa compiler written in RauMa.
 - `rmb` is the C11 bootstrap compiler kept for recovery.
+- `rauma` is the project manager written in RauMa; it delegates compilation to `rmc`.
 - `rauma-setup.sh` and `rauma-setup.ps1` are the v0.2.0 installer scripts.
 
 As of v0.2.0, the product compiler path is the C backend pipeline:
@@ -60,6 +62,29 @@ the LSP smoke path, and builds/runs the stdlib smoke program.
   - Language specification, compiler architecture, roadmap
 
 - `tools/` - Build and Development Tools
+
+- `rauma/` - RauMa Project Manager (RauMa `.rm`)
+
+## Project Manager
+
+`rauma` is the project-level command, while `rmc` remains the compiler backend.
+
+```bash
+rauma new hello
+cd hello
+rauma check
+rauma build
+rauma run
+rauma test
+```
+
+Current project-manager features:
+
+- `rauma.toml` creation and validation
+- local module graph output in `.rauma/module-graph.json`
+- source diagnostics before compiler delegation
+- `build`, `run`, `test`, `fmt`, `graph`, `doctor`, and local dependency `add`
+- incremental build cache snapshot in `.rauma/build-cache.txt`
 
 ## Build Model
 
@@ -98,13 +123,15 @@ Download the archive for your platform from GitHub Releases:
 Each archive includes:
 
 - `rmc-<platform>` - self-hosted RauMa compiler
+- `rauma-<platform>` - RauMa project manager
 - `rmb-<platform>` - C11 bootstrap compiler for recovery
 - `rauma-setup.sh` / `rauma-setup.ps1` - script installers
 
-Put the matching `rmc` binary on `PATH` as `rmc`.
+Put the matching `rmc` and `rauma` binaries on `PATH`.
 
 ```bash
 rmc version
+rauma version
 ```
 
 Linux/macOS can use `rauma-setup.sh`; Windows can use `rauma-setup.ps1`.

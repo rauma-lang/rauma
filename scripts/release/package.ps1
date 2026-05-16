@@ -46,9 +46,18 @@ $exeSuffix = if ($PlatformOs -eq "windows") { ".exe" } else { "" }
 $target = "$PlatformOs-$PlatformArch"
 $rmbAsset = "rmb-$target$exeSuffix"
 $rmcAsset = "rmc-$target$exeSuffix"
+$raumaAsset = "rauma-$target$exeSuffix"
 
 Copy-Item -Force $rmb (Join-Path $dist $rmbAsset)
 Copy-Item -Force $rmc (Join-Path $dist $rmcAsset)
+
+& $rmb "build" "../rauma/main.rm"
+if ($LASTEXITCODE -ne 0) {
+    throw "failed to build rauma project manager"
+}
+$rauma = Native-Exe "build/debug/native/bin/main"
+Copy-Item -Force $rauma (Join-Path $dist $raumaAsset)
+
 Copy-Item -Force (Join-Path $root "scripts/install/rauma-setup.ps1") (Join-Path $dist "rauma-setup.ps1")
 Copy-Item -Force (Join-Path $root "scripts/install/rauma-setup.sh") (Join-Path $dist "rauma-setup.sh")
 
@@ -62,6 +71,7 @@ $archive = if ($ArchiveFormat -eq "zip") {
 $archiveMembers = @(
     $rmbAsset,
     $rmcAsset,
+    $raumaAsset,
     "rauma-setup.ps1",
     "rauma-setup.sh"
 )

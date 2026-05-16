@@ -48,6 +48,7 @@ switch ($archRaw) {
 }
 
 $asset = "rmc-windows-$arch.exe"
+$projectAsset = "rauma-windows-$arch.exe"
 $versionTag = Resolve-Version-Tag $Version
 $versionNumber = Normalize-Number $versionTag
 $archive = "rauma-v$versionNumber-windows-$arch.zip"
@@ -56,6 +57,7 @@ $url = "$baseUrl/$archive"
 
 Write-Host "platform: windows-$arch"
 Write-Host "asset: $asset"
+Write-Host "project manager: $projectAsset"
 Write-Host "archive: $archive"
 Write-Host "install dir: $Prefix"
 Write-Host "download URL: $url"
@@ -81,6 +83,9 @@ try {
     Expand-Archive -Force -Path $zip -DestinationPath $tmp
     New-Item -ItemType Directory -Force $Prefix | Out-Null
     Copy-Item -Force (Join-Path $tmp $asset) (Join-Path $Prefix "rmc.exe")
+    if (Test-Path (Join-Path $tmp $projectAsset)) {
+        Copy-Item -Force (Join-Path $tmp $projectAsset) (Join-Path $Prefix "rauma.exe")
+    }
 
     if ($AddToPath) {
         $current = [Environment]::GetEnvironmentVariable("Path", "User")
@@ -93,6 +98,9 @@ try {
     }
 
     & (Join-Path $Prefix "rmc.exe") version
+    if (Test-Path (Join-Path $Prefix "rauma.exe")) {
+        & (Join-Path $Prefix "rauma.exe") version
+    }
     Write-Host "rauma setup complete"
 } finally {
     if (Test-Path $tmp) {

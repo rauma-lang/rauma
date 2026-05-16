@@ -107,6 +107,7 @@ $moduleChecks = @(
     "../rmc/lsp/docs.rm",
     "../rmc/lsp/handlers.rm",
     "../rmc/lsp/dispatch.rm",
+    "../rauma/main.rm",
     "../std/core/option.rm",
     "../std/core/result.rm",
     "../std/str/str.rm",

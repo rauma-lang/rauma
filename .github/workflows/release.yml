@@ -142,6 +142,7 @@ jobs:
           ## Included binaries
 
           - `rmc` - self-hosted RauMa compiler
+          - `rauma` - RauMa project manager
           - `rmb` - C11 bootstrap compiler for recovery
           - `rauma-setup.sh` / `rauma-setup.ps1` - script installers
 

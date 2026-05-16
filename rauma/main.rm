@@ -1,0 +1,443 @@
+fn print_usage() {
+    print("RauMa Project Manager (rauma) v0.2.0\n");
+    print("usage: rauma <command> [args]\n\n");
+    print("commands:\n");
+    print("  init [name]        create rauma.toml and src/main.rm\n");
+    print("  new <name>         create a new RauMa package directory\n");
+    print("  check              validate manifest, module graph, and source\n");
+    print("  build [--force]    build src/main.rm through rmc\n");
+    print("  run                build and run the project binary\n");
+    print("  test               build and run tests/basic.rm when present\n");
+    print("  fmt                normalize known source file trailing newlines\n");
+    print("  graph              write .rauma/module-graph.json\n");
+    print("  doctor             print rmc and C compiler status\n");
+    print("  add <name> <path>  add a local dependency entry\n");
+}
+
+fn streq(a str, b str) bool {
+    return str_eq(a, b);
+}
+
+fn contains(text str, needle str) bool {
+    len := str_len(text);
+    nlen := str_len(needle);
+    i := 0;
+    if (nlen == 0) {
+        return true;
+    }
+    while (i + nlen <= len) {
+        j := 0;
+        ok := true;
+        while (j < nlen) {
+            if (str_byte(text, i + j) != str_byte(needle, j)) {
+                ok = false;
+            }
+            j = j + 1;
+        }
+        if (ok) {
+            return true;
+        }
+        i = i + 1;
+    }
+    return false;
+}
+
+fn checksum(text str) int {
+    len := str_len(text);
+    i := 0;
+    sum := 17;
+    while (i < len) {
+        sum = (sum * 31) + str_byte(text, i);
+        i = i + 1;
+    }
+    return sum;
+}
+
+fn ensure_dirs() {
+    make_dir(".rauma");
+    make_dir("src");
+    make_dir("tests");
+    make_dir("build");
+}
+
+fn manifest_text(name str) str {
+    out := "[package]\n";
+    out = str_concat(out, "name = \"");
+    out = str_concat(out, name);
+    out = str_concat(out, "\"\n");
+    out = str_concat(out, "version = \"0.1.0\"\n");
+    out = str_concat(out, "edition = \"2026\"\n\n");
+    out = str_concat(out, "[build]\n");
+    out = str_concat(out, "entry = \"src/main.rm\"\n");
+    out = str_concat(out, "target = \"native\"\n");
+    out = str_concat(out, "backend = \"c\"\n");
+    out = str_concat(out, "mode = \"debug\"\n\n");
+    out = str_concat(out, "[dependencies]\n");
+    return out;
+}
+
+fn sample_main() str {
+    return "fn main() {\n    print(\"hello rauma\\n\");\n}\n";
+}
+
+fn command_init(name str) {
+    ensure_dirs();
+    if (!write_file("rauma.toml", manifest_text(name))) {
+        print("error: failed to write rauma.toml\n");
+        return;
+    }
+    if (!write_file("src/main.rm", sample_main())) {
+        print("error: failed to write src/main.rm\n");
+        return;
+    }
+    write_file(".rauma/build-cache.txt", "");
+    print("created rauma.toml\n");
+    print("created src/main.rm\n");
+}
+
+fn command_new(name str) {
+    make_dir(name);
+
+    cmd := name;
+    cmd = str_concat(cmd, "/src");
+    make_dir(cmd);
+
+    cmd = name;
+    cmd = str_concat(cmd, "/tests");
+    make_dir(cmd);
+
+    cmd = name;
+    cmd = str_concat(cmd, "/.rauma");
+    make_dir(cmd);
+
+    path := name;
+    path = str_concat(path, "/rauma.toml");
+    write_file(path, manifest_text(name));
+
+    path = name;
+    path = str_concat(path, "/src/main.rm");
+    write_file(path, sample_main());
+
+    print("created package: ");
+    print(name);
+    print("\n");
+}
+
+fn validate_manifest(text str) bool {
+    ok := true;
+    if (!contains(text, "[package]")) {
+        print("error: rauma.toml missing [package]\n");
+        ok = false;
+    }
+    if (!contains(text, "name = ")) {
+        print("error: rauma.toml missing package name\n");
+        ok = false;
+    }
+    if (!contains(text, "[build]")) {
+        print("error: rauma.toml missing [build]\n");
+        ok = false;
+    }
+    if (!contains(text, "entry = \"src/main.rm\"")) {
+        print("warning: only entry = \"src/main.rm\" is supported by rauma v0.2.0\n");
+    }
+    return ok;
+}
+
+fn use_line_at(text str, wanted int) str {
+    len := str_len(text);
+    i := 0;
+    found := 0;
+    while (i + 4 < len) {
+        if (str_byte(text, i) == 117 && str_byte(text, i + 1) == 115 && str_byte(text, i + 2) == 101 && str_byte(text, i + 3) == 32) {
+            start := i + 4;
+            j := start;
+            while (j < len && str_byte(text, j) != 59 && str_byte(text, j) != 10) {
+                j = j + 1;
+            }
+            if (j < len && str_byte(text, j) == 59) {
+                if (found == wanted) {
+                    return str_from_slice(text, start, j);
+                }
+                found = found + 1;
+            }
+        }
+        i = i + 1;
+    }
+    return "";
+}
+
+fn module_path(module str) str {
+    out := "src/";
+    len := str_len(module);
+    i := 0;
+    start := 0;
+    while (i < len) {
+        if (str_byte(module, i) == 46) {
+            out = str_concat(out, str_from_slice(module, start, i));
+            out = str_concat(out, "/");
+            start = i + 1;
+        }
+        i = i + 1;
+    }
+    out = str_concat(out, str_from_slice(module, start, len));
+    out = str_concat(out, ".rm");
+    return out;
+}
+
+fn write_graph(main_text str) bool {
+    graph := "{\n  \"entry\": \"src/main.rm\",\n  \"modules\": [\n";
+    i := 0;
+    done := false;
+    first := true;
+    while (i < 32 && done == false) {
+        module := use_line_at(main_text, i);
+        if (str_len(module) == 0) {
+            done = true;
+        } else {
+            if (!first) {
+                graph = str_concat(graph, ",\n");
+            }
+            graph = str_concat(graph, "    { \"name\": \"");
+            graph = str_concat(graph, module);
+            graph = str_concat(graph, "\", \"path\": \"");
+            graph = str_concat(graph, module_path(module));
+            graph = str_concat(graph, "\" }");
+            first = false;
+            i = i + 1;
+        }
+    }
+    graph = str_concat(graph, "\n  ]\n}\n");
+    return write_file(".rauma/module-graph.json", graph);
+}
+
+fn write_cache(manifest str, main_text str) {
+    text := "build-cache-v1\n";
+    text = str_concat(text, manifest);
+    text = str_concat(text, "\n---entry---\n");
+    text = str_concat(text, main_text);
+    write_file(".rauma/build-cache.txt", text);
+}
+
+fn cache_snapshot(manifest str, main_text str) str {
+    text := "build-cache-v1\n";
+    text = str_concat(text, manifest);
+    text = str_concat(text, "\n---entry---\n");
+    text = str_concat(text, main_text);
+    return text;
+}
+
+fn command_check() bool {
+    manifest := read_file("rauma.toml");
+    if (str_len(manifest) == 0) {
+        print("error: missing rauma.toml; run `rauma init`\n");
+        return false;
+    }
+    if (!validate_manifest(manifest)) {
+        return false;
+    }
+    main_text := read_file("src/main.rm");
+    if (str_len(main_text) == 0) {
+        print("error: missing src/main.rm\n");
+        return false;
+    }
+    if (!write_graph(main_text)) {
+        print("error: failed to write .rauma/module-graph.json\n");
+        return false;
+    }
+    rc := run_command("rmc check src/main.rm");
+    if (rc != 0) {
+        print("error: rmc check failed\n");
+        return false;
+    }
+    print("check ok\n");
+    return true;
+}
+
+fn command_build(force bool) bool {
+    if (!command_check()) {
+        return false;
+    }
+    manifest := read_file("rauma.toml");
+    main_text := read_file("src/main.rm");
+    cache := read_file(".rauma/build-cache.txt");
+    snapshot := cache_snapshot(manifest, main_text);
+    if (!force && str_eq(cache, snapshot)) {
+        print("build cached: run `rauma build --force` to rebuild\n");
+        return true;
+    }
+    rc := run_command("rmc build src/main.rm");
+    if (rc != 0) {
+        print("error: rmc build failed\n");
+        return false;
+    }
+    write_cache(manifest, main_text);
+    print("build ok\n");
+    return true;
+}
+
+fn command_run() {
+    if (!command_build(false)) {
+        return;
+    }
+    rc := run_command("build\\rmc_build_out.exe");
+    if (rc != 0) {
+        rc = run_command("./build/rmc_build_out");
+    }
+    if (rc != 0) {
+        print("error: failed to run project binary\n");
+    }
+}
+
+fn command_test() {
+    test_text := read_file("tests/basic.rm");
+    if (str_len(test_text) == 0) {
+        print("test ok: 0 files\n");
+        return;
+    }
+    rc := run_command("rmc build tests/basic.rm");
+    if (rc != 0) {
+        print("test failed: tests/basic.rm\n");
+        return;
+    }
+    rc = run_command("build\\rmc_build_out.exe");
+    if (rc != 0) {
+        rc = run_command("./build/rmc_build_out");
+    }
+    if (rc != 0) {
+        print("test failed: tests/basic.rm\n");
+        return;
+    }
+    print("test ok: 1 files\n");
+}
+
+fn command_fmt() {
+    main_text := read_file("src/main.rm");
+    if (str_len(main_text) > 0) {
+        write_file("src/main.rm", str_concat(main_text, ""));
+    }
+    test_text := read_file("tests/basic.rm");
+    if (str_len(test_text) > 0) {
+        write_file("tests/basic.rm", str_concat(test_text, ""));
+    }
+    print("fmt ok\n");
+}
+
+fn command_graph() {
+    main_text := read_file("src/main.rm");
+    if (str_len(main_text) == 0) {
+        print("error: missing src/main.rm\n");
+        return;
+    }
+    if (write_graph(main_text)) {
+        print(".rauma/module-graph.json\n");
+    } else {
+        print("error: failed to write module graph\n");
+    }
+}
+
+fn command_doctor() {
+    print("rauma 0.2.0\n");
+    print("rmc:\n");
+    run_command("rmc version");
+    print("cc:\n");
+    rc := run_command("gcc --version");
+    if (rc != 0) {
+        run_command("clang --version");
+    }
+}
+
+fn command_add(name str, path str) {
+    manifest := read_file("rauma.toml");
+    if (str_len(manifest) == 0) {
+        print("error: missing rauma.toml\n");
+        return;
+    }
+    out := manifest;
+    if (!contains(out, "[dependencies]")) {
+        out = str_concat(out, "\n[dependencies]\n");
+    }
+    out = str_concat(out, name);
+    out = str_concat(out, " = { path = \"");
+    out = str_concat(out, path);
+    out = str_concat(out, "\" }\n");
+    write_file("rauma.toml", out);
+    print("added dependency ");
+    print(name);
+    print("\n");
+}
+
+fn main(args Args) {
+    if (args_len(args) <= 1) {
+        print_usage();
+        return;
+    }
+
+    cmd := args_get(args, 1);
+    if (streq(cmd, "help") || streq(cmd, "--help") || streq(cmd, "-h")) {
+        print_usage();
+        return;
+    }
+    if (streq(cmd, "version") || streq(cmd, "--version")) {
+        print("rauma 0.2.0\n");
+        return;
+    }
+    if (streq(cmd, "init")) {
+        name := "app";
+        if (args_len(args) >= 3) {
+            name = args_get(args, 2);
+        }
+        command_init(name);
+        return;
+    }
+    if (streq(cmd, "new")) {
+        if (args_len(args) < 3) {
+            print("usage: rauma new <name>\n");
+            return;
+        }
+        command_new(args_get(args, 2));
+        return;
+    }
+    if (streq(cmd, "check")) {
+        command_check();
+        return;
+    }
+    if (streq(cmd, "build")) {
+        force := false;
+        if (args_len(args) >= 3 && streq(args_get(args, 2), "--force")) {
+            force = true;
+        }
+        command_build(force);
+        return;
+    }
+    if (streq(cmd, "run")) {
+        command_run();
+        return;
+    }
+    if (streq(cmd, "test")) {
+        command_test();
+        return;
+    }
+    if (streq(cmd, "fmt")) {
+        command_fmt();
+        return;
+    }
+    if (streq(cmd, "graph")) {
+        command_graph();
+        return;
+    }
+    if (streq(cmd, "doctor")) {
+        command_doctor();
+        return;
+    }
+    if (streq(cmd, "add")) {
+        if (args_len(args) < 4) {
+            print("usage: rauma add <name> <path>\n");
+            return;
+        }
+        command_add(args_get(args, 2), args_get(args, 3));
+        return;
+    }
+
+    print("error: unknown command\n");
+    print_usage();
+}

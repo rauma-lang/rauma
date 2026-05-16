@@ -121,6 +121,7 @@ if [ "$platform_os" = "windows" ]; then
 fi
 
 asset="rmc-$platform_os-$platform_arch$exe_suffix"
+project_asset="rauma-$platform_os-$platform_arch$exe_suffix"
 version_tag="$(resolve_version_tag "$VERSION")"
 version_number="$(normalize_number "$version_tag")"
 archive="rauma-v$version_number-$platform_os-$platform_arch.$archive_suffix"
@@ -129,6 +130,7 @@ url="$base_url/$archive"
 
 echo "platform: $platform_os-$platform_arch"
 echo "asset: $asset"
+echo "project manager: $project_asset"
 echo "archive: $archive"
 echo "install dir: $PREFIX"
 echo "download URL: $url"
@@ -164,6 +166,10 @@ fi
 
 cp "$tmp/pkg/$asset" "$PREFIX/rmc$exe_suffix"
 chmod +x "$PREFIX/rmc$exe_suffix"
+if [ -f "$tmp/pkg/$project_asset" ]; then
+    cp "$tmp/pkg/$project_asset" "$PREFIX/rauma$exe_suffix"
+    chmod +x "$PREFIX/rauma$exe_suffix"
+fi
 
 case ":$PATH:" in
     *":$PREFIX:"*) ;;
@@ -171,4 +177,7 @@ case ":$PATH:" in
 esac
 
 "$PREFIX/rmc$exe_suffix" version
+if [ -x "$PREFIX/rauma$exe_suffix" ]; then
+    "$PREFIX/rauma$exe_suffix" version
+fi
 echo "rauma setup complete"
