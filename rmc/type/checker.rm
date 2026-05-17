@@ -151,6 +151,28 @@ pub fn is_type_name_slice(src str, start int, end int) bool {
     return false;
 }
 
+pub fn type_kind_unknown() int { return 0; }
+pub fn type_kind_int() int { return 1; }
+pub fn type_kind_str() int { return 2; }
+pub fn type_kind_bool() int { return 3; }
+pub fn type_kind_void() int { return 4; }
+
+pub fn type_kind_from_slice(src str, start int, end int) int {
+    if (is_text(src, start, end, "int")) { return type_kind_int(); }
+    if (is_text(src, start, end, "str")) { return type_kind_str(); }
+    if (is_text(src, start, end, "bool")) { return type_kind_bool(); }
+    if (is_text(src, start, end, "void")) { return type_kind_void(); }
+    return type_kind_unknown();
+}
+
+pub fn type_kind_name(kind int) str {
+    if (kind == 1) { return "int"; }
+    if (kind == 2) { return "str"; }
+    if (kind == 3) { return "bool"; }
+    if (kind == 4) { return "void"; }
+    return "unknown";
+}
+
 pub fn builtin_arity(src str, start int, end int) int {
     if (is_text(src, start, end, "print")) { return 1; }
     if (is_text(src, start, end, "print_int")) { return 1; }
@@ -478,6 +500,188 @@ pub fn expr_literal_type(src str, expr_pos int) str {
     return "";
 }
 
+pub fn expr_literal_kind(src str, expr_pos int) int {
+    kind := lex.stream.current_kind(src, expr_pos);
+    if (kind == lex.token.kind_int()) {
+        return type_kind_int();
+    }
+    if (kind == lex.token.kind_string()) {
+        return type_kind_str();
+    }
+    if (kind == lex.token.kind_ident()) {
+        s := lex.stream.token_start(src, expr_pos);
+        e := lex.stream.token_end(src, expr_pos);
+        if (is_text(src, s, e, "true")) { return type_kind_bool(); }
+        if (is_text(src, s, e, "false")) { return type_kind_bool(); }
+    }
+    return type_kind_unknown();
+}
+
+pub fn function_return_kind(src str, name_start int, name_end int) int {
+    pos := 0;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_fn() || lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+            ns := fn_name_start(src, pos);
+            ne := fn_name_end(src, pos);
+            if (ns >= 0 && token_slice_eq(src, ns, ne, name_start, name_end)) {
+                rs := fn_return_type_start(src, pos);
+                re := fn_return_type_end(src, pos);
+                if (rs >= 0) {
+                    return type_kind_from_slice(src, rs, re);
+                }
+                return type_kind_void();
+            }
+            pos = parse.parser.parse_fn_decl(src, pos, false);
+            if (pos == 0) { return type_kind_unknown(); }
+        } else {
+            pos = lex.stream.advance(src, pos);
+            if (pos == 0) { return type_kind_unknown(); }
+        }
+    }
+    return type_kind_unknown();
+}
+
+pub fn expr_kind_before(src str, fn_start int, expr_pos int) int {
+    lit := expr_literal_kind(src, expr_pos);
+    if (lit != type_kind_unknown()) {
+        return lit;
+    }
+
+    if (lex.stream.current_kind(src, expr_pos) != lex.token.kind_ident()) {
+        return type_kind_unknown();
+    }
+
+    name_start := lex.stream.token_start(src, expr_pos);
+    name_end := lex.stream.token_end(src, expr_pos);
+    next := lex.stream.advance(src, expr_pos);
+    if (lex.stream.current_kind(src, next) == lex.token.kind_l_paren()) {
+        return function_return_kind(src, name_start, name_end);
+    }
+
+    return name_type_kind_before(src, fn_start, expr_pos, name_start, name_end);
+}
+
+pub fn name_type_kind_before(src str, fn_start int, pos int, name_start int, name_end int) int {
+    lparen := fn_lparen_pos(src, fn_start);
+    if (lparen == 0) {
+        return type_kind_unknown();
+    }
+
+    p := lex.stream.advance(src, lparen);
+    while (p < pos && lex.stream.current_kind(src, p) != lex.token.kind_r_paren()) {
+        if (lex.stream.current_kind(src, p) != lex.token.kind_ident()) {
+            return type_kind_unknown();
+        }
+        ps := lex.stream.token_start(src, p);
+        pe := lex.stream.token_end(src, p);
+        p = lex.stream.advance(src, p);
+        if (lex.stream.current_kind(src, p) != lex.token.kind_ident()) {
+            return type_kind_unknown();
+        }
+        ts := lex.stream.token_start(src, p);
+        te := lex.stream.token_end(src, p);
+        if (token_slice_eq(src, ps, pe, name_start, name_end)) {
+            return type_kind_from_slice(src, ts, te);
+        }
+        p = lex.stream.advance(src, p);
+        if (lex.stream.current_kind(src, p) == lex.token.kind_comma()) {
+            p = lex.stream.advance(src, p);
+        }
+    }
+
+    body := fn_body_start(src, fn_start);
+    body_end := matching_brace(src, body);
+    scan := lex.stream.advance(src, body);
+    while (scan != 0 && scan < pos && scan < body_end) {
+        if (lex.stream.current_kind(src, scan) == lex.token.kind_ident()) {
+            s := lex.stream.token_start(src, scan);
+            e := lex.stream.token_end(src, scan);
+            next := lex.stream.advance(src, scan);
+            if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
+                expr := lex.stream.advance(src, next);
+                if (token_slice_eq(src, s, e, name_start, name_end)) {
+                    return expr_kind_before(src, fn_start, expr);
+                }
+            }
+        }
+        scan = lex.stream.advance(src, scan);
+    }
+
+    return type_kind_unknown();
+}
+
+pub fn name_declared_in_function_before(src str, fn_start int, pos int, name_start int, name_end int) bool {
+    return name_type_kind_before(src, fn_start, pos, name_start, name_end) != type_kind_unknown();
+}
+
+pub fn check_duplicate_params(path str, src str) bool {
+    fn_pos := 0;
+    ok := true;
+    while (lex.stream.current_kind(src, fn_pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, fn_pos) == lex.token.kind_kw_fn() || lex.stream.current_kind(src, fn_pos) == lex.token.kind_kw_pub()) {
+            lparen := fn_lparen_pos(src, fn_pos);
+            p := lex.stream.advance(src, lparen);
+            while (p != 0 && lex.stream.current_kind(src, p) != lex.token.kind_r_paren()) {
+                ps := lex.stream.token_start(src, p);
+                pe := lex.stream.token_end(src, p);
+                if (name_type_kind_before(src, fn_pos, p, ps, pe) != type_kind_unknown()) {
+                    diag.output.print_error_at(path, src, ps, "E0205", "duplicate parameter name", "rename one parameter so each binding is unique");
+                    ok = false;
+                }
+                p = lex.stream.advance(src, p);
+                p = lex.stream.advance(src, p);
+                if (lex.stream.current_kind(src, p) == lex.token.kind_comma()) {
+                    p = lex.stream.advance(src, p);
+                }
+            }
+            fn_pos = parse.parser.parse_fn_decl(src, fn_pos, false);
+            if (fn_pos == 0) { return false; }
+        } else {
+            fn_pos = lex.stream.advance(src, fn_pos);
+            if (fn_pos == 0) { return false; }
+        }
+    }
+    return ok;
+}
+
+pub fn check_function_bindings(path str, src str) bool {
+    fn_pos := 0;
+    ok := true;
+    while (lex.stream.current_kind(src, fn_pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, fn_pos) == lex.token.kind_kw_fn() || lex.stream.current_kind(src, fn_pos) == lex.token.kind_kw_pub()) {
+            body := fn_body_start(src, fn_pos);
+            body_end := matching_brace(src, body);
+            scan := lex.stream.advance(src, body);
+            while (scan != 0 && scan < body_end) {
+                if (lex.stream.current_kind(src, scan) == lex.token.kind_ident()) {
+                    s := lex.stream.token_start(src, scan);
+                    e := lex.stream.token_end(src, scan);
+                    next := lex.stream.advance(src, scan);
+                    if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
+                        if (name_declared_in_function_before(src, fn_pos, scan, s, e)) {
+                            diag.output.print_error_at(path, src, s, "E0206", "duplicate local binding", "use assignment for an existing variable or choose a new name");
+                            ok = false;
+                        }
+                    }
+                    if (lex.stream.current_kind(src, next) == lex.token.kind_eq() || lex.stream.current_kind(src, next) == lex.token.kind_plus_eq()) {
+                        if (name_declared_in_function_before(src, fn_pos, scan, s, e) == false) {
+                            diag.output.print_error_at(path, src, s, "E0204", "assignment to undeclared variable", "declare the variable with := before assigning to it");
+                            ok = false;
+                        }
+                    }
+                }
+                scan = lex.stream.advance(src, scan);
+            }
+            fn_pos = parse.parser.parse_fn_decl(src, fn_pos, false);
+            if (fn_pos == 0) { return false; }
+        } else {
+            fn_pos = lex.stream.advance(src, fn_pos);
+            if (fn_pos == 0) { return false; }
+        }
+    }
+    return ok;
+}
+
 pub fn check_returns(path str, src str) bool {
     pos := 0;
     ok := true;
@@ -499,9 +703,16 @@ pub fn check_returns(path str, src str) bool {
                             ok = false;
                         } else {
                             lit_type := expr_literal_type(src, expr);
-                            if (str_len(lit_type) > 0 && is_text(src, ret_start, ret_end, lit_type) == false) {
-                                diag.output.print_error_at(path, src, expr, "E0302", "return type mismatch", "returned literal does not match the declared return type");
+                            inferred := expr_kind_before(src, pos, expr);
+                            expected := type_kind_from_slice(src, ret_start, ret_end);
+                            if (inferred != type_kind_unknown() && expected != type_kind_unknown() && inferred != expected) {
+                                diag.output.print_error_at(path, src, expr, "E0302", "return type mismatch", "returned expression does not match the declared return type");
                                 ok = false;
+                            } else {
+                                if (str_len(lit_type) > 0 && is_text(src, ret_start, ret_end, lit_type) == false) {
+                                    diag.output.print_error_at(path, src, expr, "E0302", "return type mismatch", "returned expression does not match the declared return type");
+                                    ok = false;
+                                }
                             }
                         }
                     }
@@ -537,7 +748,13 @@ pub fn can_check_with_diagnostics(path str, text str) bool {
     if (check_duplicate_functions(path, text) == false) {
         ok = false;
     }
+    if (check_duplicate_params(path, text) == false) {
+        ok = false;
+    }
     if (check_calls(path, text) == false) {
+        ok = false;
+    }
+    if (check_function_bindings(path, text) == false) {
         ok = false;
     }
     if (check_returns(path, text) == false) {

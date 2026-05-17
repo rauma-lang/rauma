@@ -1,0 +1,9 @@
+fn make_name() str {
+    name := "rauma";
+    return name;
+}
+
+fn main() int {
+    value := make_name();
+    return value;
+}

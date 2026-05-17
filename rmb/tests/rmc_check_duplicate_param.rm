@@ -1,0 +1,7 @@
+fn add(a int, a int) int {
+    return a;
+}
+
+fn main() {
+    print(add(1, 2));
+}
