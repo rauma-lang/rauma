@@ -1,3 +1,8 @@
+use lex.token;
+use lex.stream;
+use parse.parser;
+use type.checker;
+
 pub fn sym_kind_var() int {
     return 1;
 }
@@ -40,8 +45,129 @@ pub fn symtab_count(count int) int {
 
 pub fn symtab_print_entry(name str, type_name str, kind int) {
     print("  ");
+    print_kind(kind);
+    print(" ");
     print(name);
     print(": ");
     print(type_name);
     print("\n");
+}
+
+pub fn print_kind(kind int) {
+    if (kind == 1) { print("var"); return; }
+    if (kind == 2) { print("func"); return; }
+    if (kind == 3) { print("struct"); return; }
+    if (kind == 4) { print("enum"); return; }
+    if (kind == 5) { print("module"); return; }
+    if (kind == 6) { print("field"); return; }
+    if (kind == 7) { print("variant"); return; }
+    if (kind == 8) { print("local"); return; }
+    if (kind == 9) { print("type_param"); return; }
+    print("unknown");
+}
+
+pub fn print_token_text(src str, pos int) {
+    lex.stream.print_token_text(src, lex.stream.token_start(src, pos), lex.stream.token_end(src, pos));
+}
+
+pub fn print_type_slice(src str, start int, end int) {
+    if (start >= 0 && end >= start) {
+        lex.stream.print_token_text(src, start, end);
+    } else {
+        print("void");
+    }
+}
+
+pub fn print_params(src str, lparen int) {
+    pos := lex.stream.advance(src, lparen);
+    while (pos != 0 && lex.stream.current_kind(src, pos) != lex.token.kind_r_paren()) {
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return;
+        }
+        name_pos := pos;
+        pos = lex.stream.advance(src, pos);
+        if (lex.stream.current_kind(src, pos) != lex.token.kind_ident()) {
+            return;
+        }
+        type_pos := pos;
+        print("    ");
+        print_kind(sym_kind_var());
+        print(" ");
+        print_token_text(src, name_pos);
+        print(": ");
+        print_token_text(src, type_pos);
+        print("\n");
+        pos = lex.stream.advance(src, pos);
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_comma()) {
+            pos = lex.stream.advance(src, pos);
+        }
+    }
+}
+
+pub fn print_locals(src str, fn_start int) {
+    body := type.checker.fn_body_start(src, fn_start);
+    body_end := type.checker.matching_brace(src, body);
+    scan := lex.stream.advance(src, body);
+    while (scan != 0 && scan < body_end) {
+        if (lex.stream.current_kind(src, scan) == lex.token.kind_ident()) {
+            next := lex.stream.advance(src, scan);
+            if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
+                expr := lex.stream.advance(src, next);
+                kind := type.checker.expr_kind_before(src, fn_start, expr);
+                print("    ");
+                print_kind(sym_kind_local());
+                print(" ");
+                print_token_text(src, scan);
+                print(": ");
+                print(type.checker.type_kind_name(kind));
+                print("\n");
+            }
+        }
+        scan = lex.stream.advance(src, scan);
+    }
+}
+
+pub fn print_function_symbols(src str, fn_start int) int {
+    name_start := type.checker.fn_name_start(src, fn_start);
+    name_end := type.checker.fn_name_end(src, fn_start);
+    ret_start := type.checker.fn_return_type_start(src, fn_start);
+    ret_end := type.checker.fn_return_type_end(src, fn_start);
+    lparen := type.checker.fn_lparen_pos(src, fn_start);
+
+    print("  ");
+    print_kind(sym_kind_func());
+    print(" ");
+    lex.stream.print_token_text(src, name_start, name_end);
+    print(": ");
+    print_type_slice(src, ret_start, ret_end);
+    print("\n");
+    print_params(src, lparen);
+    print_locals(src, fn_start);
+    return parse.parser.parse_fn_decl(src, fn_start, false);
+}
+
+pub fn print_module_symbols(path str, src str) bool {
+    if (type.checker.can_check_with_diagnostics(path, src) == false) {
+        return false;
+    }
+
+    print("symbols ");
+    print(path);
+    print("\n");
+
+    pos := 0;
+    while (lex.stream.current_kind(src, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(src, pos) == lex.token.kind_kw_fn() || lex.stream.current_kind(src, pos) == lex.token.kind_kw_pub()) {
+            pos = print_function_symbols(src, pos);
+            if (pos == 0) {
+                return false;
+            }
+        } else {
+            pos = lex.stream.advance(src, pos);
+            if (pos == 0) {
+                return false;
+            }
+        }
+    }
+    return true;
 }

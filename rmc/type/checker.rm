@@ -614,6 +614,51 @@ pub fn name_declared_in_function_before(src str, fn_start int, pos int, name_sta
     return name_type_kind_before(src, fn_start, pos, name_start, name_end) != type_kind_unknown();
 }
 
+pub fn binding_declared_in_function_before(src str, fn_start int, pos int, name_start int, name_end int) bool {
+    lparen := fn_lparen_pos(src, fn_start);
+    if (lparen == 0) {
+        return false;
+    }
+
+    p := lex.stream.advance(src, lparen);
+    while (p < pos && lex.stream.current_kind(src, p) != lex.token.kind_r_paren()) {
+        if (lex.stream.current_kind(src, p) != lex.token.kind_ident()) {
+            return false;
+        }
+        ps := lex.stream.token_start(src, p);
+        pe := lex.stream.token_end(src, p);
+        if (token_slice_eq(src, ps, pe, name_start, name_end)) {
+            return true;
+        }
+        p = lex.stream.advance(src, p);
+        if (lex.stream.current_kind(src, p) == lex.token.kind_ident()) {
+            p = lex.stream.advance(src, p);
+        }
+        if (lex.stream.current_kind(src, p) == lex.token.kind_comma()) {
+            p = lex.stream.advance(src, p);
+        }
+    }
+
+    body := fn_body_start(src, fn_start);
+    body_end := matching_brace(src, body);
+    scan := lex.stream.advance(src, body);
+    while (scan != 0 && scan < pos && scan < body_end) {
+        if (lex.stream.current_kind(src, scan) == lex.token.kind_ident()) {
+            s := lex.stream.token_start(src, scan);
+            e := lex.stream.token_end(src, scan);
+            next := lex.stream.advance(src, scan);
+            if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
+                if (token_slice_eq(src, s, e, name_start, name_end)) {
+                    return true;
+                }
+            }
+        }
+        scan = lex.stream.advance(src, scan);
+    }
+
+    return false;
+}
+
 pub fn check_duplicate_params(path str, src str) bool {
     fn_pos := 0;
     ok := true;
@@ -658,13 +703,13 @@ pub fn check_function_bindings(path str, src str) bool {
                     e := lex.stream.token_end(src, scan);
                     next := lex.stream.advance(src, scan);
                     if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
-                        if (name_declared_in_function_before(src, fn_pos, scan, s, e)) {
+                        if (binding_declared_in_function_before(src, fn_pos, scan, s, e)) {
                             diag.output.print_error_at(path, src, s, "E0206", "duplicate local binding", "use assignment for an existing variable or choose a new name");
                             ok = false;
                         }
                     }
                     if (lex.stream.current_kind(src, next) == lex.token.kind_eq() || lex.stream.current_kind(src, next) == lex.token.kind_plus_eq()) {
-                        if (name_declared_in_function_before(src, fn_pos, scan, s, e) == false) {
+                        if (binding_declared_in_function_before(src, fn_pos, scan, s, e) == false) {
                             diag.output.print_error_at(path, src, s, "E0204", "assignment to undeclared variable", "declare the variable with := before assigning to it");
                             ok = false;
                         }
@@ -788,4 +833,96 @@ pub fn run_file(path str, text str) {
     print("functions=");
     print(count);
     print("\n");
+}
+
+pub fn print_kind_label(kind int) {
+    if (kind == 1) { print("int"); return; }
+    if (kind == 2) { print("str"); return; }
+    if (kind == 3) { print("bool"); return; }
+    if (kind == 4) { print("void"); return; }
+    print("unknown");
+}
+
+pub fn print_name_slice(src str, start int, end int) {
+    lex.stream.print_token_text(src, start, end);
+}
+
+pub fn print_function_symbol(src str, fn_pos int) int {
+    ns := fn_name_start(src, fn_pos);
+    ne := fn_name_end(src, fn_pos);
+    rs := fn_return_type_start(src, fn_pos);
+    re := fn_return_type_end(src, fn_pos);
+
+    print("  func ");
+    print_name_slice(src, ns, ne);
+    print(": ");
+    if (rs >= 0) {
+        print_name_slice(src, rs, re);
+    } else {
+        print("void");
+    }
+    print("\n");
+
+    lparen := fn_lparen_pos(src, fn_pos);
+    p := lex.stream.advance(src, lparen);
+    while (p != 0 && lex.stream.current_kind(src, p) != lex.token.kind_r_paren()) {
+        print("    param ");
+        print_name_slice(src, lex.stream.token_start(src, p), lex.stream.token_end(src, p));
+        p = lex.stream.advance(src, p);
+        print(": ");
+        print_name_slice(src, lex.stream.token_start(src, p), lex.stream.token_end(src, p));
+        print("\n");
+        p = lex.stream.advance(src, p);
+        if (lex.stream.current_kind(src, p) == lex.token.kind_comma()) {
+            p = lex.stream.advance(src, p);
+        }
+    }
+
+    body := fn_body_start(src, fn_pos);
+    body_end := matching_brace(src, body);
+    scan := lex.stream.advance(src, body);
+    while (scan != 0 && scan < body_end) {
+        if (lex.stream.current_kind(src, scan) == lex.token.kind_ident()) {
+            next := lex.stream.advance(src, scan);
+            if (lex.stream.current_kind(src, next) == lex.token.kind_colon_eq()) {
+                expr := lex.stream.advance(src, next);
+                print("    local ");
+                print_name_slice(src, lex.stream.token_start(src, scan), lex.stream.token_end(src, scan));
+                print(": ");
+                print_kind_label(expr_kind_before(src, fn_pos, expr));
+                print("\n");
+            }
+        }
+        scan = lex.stream.advance(src, scan);
+    }
+
+    return parse.parser.parse_fn_decl(src, fn_pos, false);
+}
+
+pub fn run_symbols(path str, text str) {
+    if (can_check_with_diagnostics(path, text) == false) {
+        print("symbols failed\n");
+        return;
+    }
+
+    print("symbols ");
+    print(path);
+    print("\n");
+
+    pos := 0;
+    while (lex.stream.current_kind(text, pos) != lex.token.kind_eof()) {
+        if (lex.stream.current_kind(text, pos) == lex.token.kind_kw_fn() || lex.stream.current_kind(text, pos) == lex.token.kind_kw_pub()) {
+            pos = print_function_symbol(text, pos);
+            if (pos == 0) {
+                print("symbols failed\n");
+                return;
+            }
+        } else {
+            pos = lex.stream.advance(text, pos);
+            if (pos == 0) {
+                print("symbols failed\n");
+                return;
+            }
+        }
+    }
 }

@@ -97,6 +97,22 @@ fn main(args Args) {
         return;
     }
 
+    if (str_eq(cmd, "symbols")) {
+        if (args_len(args) < 3) {
+            print("usage: rmc symbols <path>\n");
+            return;
+        }
+
+        text := read_file(args_get(args, 2));
+        if (str_len(text) == 0) {
+            print("empty or unreadable file\n");
+            return;
+        }
+
+        type.checker.run_symbols(args_get(args, 2), text);
+        return;
+    }
+
     if (str_eq(cmd, "hir")) {
         if (args_len(args) < 3) {
             print("usage: rmc hir <path>\n");
